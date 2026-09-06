@@ -29,7 +29,8 @@ MVP는 기본 Export까지, PPTX/DOCX/HWPX/HTML 고도화는 후속 범위다(PR
 | Method | Path | 용도 |
 |---|---|---|
 | POST | `/api/v1/versions/{versionId}/exports` | Export Job 생성 |
-| GET | `/api/v1/exports/{exportId}` | 상태·결과 조회 |
+| GET | `/api/v1/exports/{exportId}` | 상태·메타데이터 조회 |
+| GET | `/api/v1/exports/{exportId}/download` | 완료된 결과 파일 다운로드 — 감사 대상 이벤트([FR-12](개발문서/기능명세/FR-12_감사추적.md)) |
 
 정본: [05_API_DB_SPEC.md](개발문서/05_API_DB_SPEC.md)
 
