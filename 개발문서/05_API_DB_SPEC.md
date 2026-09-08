@@ -135,6 +135,9 @@ element_patches    (2026-09-05 추가)
 | POST | `/screens/{screenId}/ai-edit` | 선택한 요소만 AI가 재생성. 요소의 outerHTML만 보낸다 |
 | GET/POST | `/screens/{screenId}/comments` | 요소 앵커 의견. POST는 `parentId`로 답글을 만든다(2026-09-08). 답글은 앵커를 갖지 않고, 답글의 답글은 뿌리로 평탄화된다 |
 | GET | `/mockups/{mockupId}/patches` | 한 Version의 편집 내역 전체(2026-09-08). 되돌린 것을 포함하고 `payload`는 뺀다. 편집 이력 목록과, 의견 스레드에 끼는 AI 반영 카드가 함께 읽는다 |
+| GET | `/screens/{screenId}/html` | 화면 하나의 HTML을 **편집이 반영된 상태로** 내려준다(2026-09-08). 다운로드가 쓴다 |
+
+**저장본을 직접 읽지 않는다(baking).** 요소 편집은 `screens.html_content`를 덮어쓰지 않고 패치로 쌓인다. 화면에 보이는 것은 프레임이 얹은 결과지만, HTML 다운로드·AI 검토(FR-14·FR-15)는 서버에서 저장본을 읽는다 — 얹지 않으면 **그쪽만 편집 이전 상태를 본다.** 그래서 서버에서 화면 HTML을 읽는 곳은 전부 `bakeScreenHtml()`을 거친다. 저장본은 그대로 두고 사본만 만든다.
 
 `ai-edit` 요청에 `commentId`를 실으면 만들어진 편집이 그 의견에 연결된다(`element_patches.comment_id`). 이것이 "의견 → AI 반영 → 스레드로 회신"의 연결 고리다. AI의 답을 `comments` 행으로 만들지 않는 이유는 [ARCHITECTURE.md 12절](../docs/architecture/ARCHITECTURE.md)과 같다 — **저장은 분리하고 합치는 것은 화면에서만 한다.**
 
