@@ -273,13 +273,18 @@ export default function ProjectPage() {
   useEffect(() => { fetchProject(); fetchMembers(); }, [fetchProject, fetchMembers]);
 
   // 디자인 시스템 목록. 못 읽어도 생성은 그대로 되므로 오류를 표시하지 않는다.
+  // ?ds= 는 Template 화면에서 고른 시스템이다. useSearchParams는 Suspense 경계를 요구하는데
+  // 이 페이지가 통짜 클라이언트 컴포넌트라, 이미 도는 이 응답 처리 안에서 location을 직접 읽는다.
   useEffect(() => {
     fetch('/api/design-systems')
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (!data?.systems?.length) return;
         setDesignSystems(data.systems);
-        setDesignSystemId((prev) => prev || data.systems[0].id);
+
+        const requested = new URLSearchParams(window.location.search).get('ds');
+        const preselected = data.systems.find((s: DesignSystemOption) => s.id === requested)?.id;
+        setDesignSystemId((prev) => preselected ?? (prev || data.systems[0].id));
       })
       .catch(() => {});
   }, []);
@@ -773,6 +778,29 @@ export default function ProjectPage() {
     }
   }
 
+  /**
+   * 지금 보고 있는 화면을 내려받는다.
+   *
+   * 저장본을 그대로 Blob으로 만들면 **편집이 빠진 파일**이 저장된다 —
+   * 편집은 원본을 덮어쓰지 않고 patch로 쌓이기 때문이다. 서버가 얹어 준 것을 받는다.
+   * (예전에는 버전의 html_content를 썼는데, 그건 첫 화면 한 장뿐이었다.)
+   */
+  async function handleDownloadHtml() {
+    if (!selectedMockup || !activeScreen?.html_content) return;
+    const res = await fetch(`/api/screens/${activeScreen.id}/html`);
+    if (!res.ok) {
+      setCommentError('HTML을 내려받지 못했습니다.');
+      return;
+    }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `mockup-v${selectedMockup.version}-${activeScreen.screen_key}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   async function handleDeleteComment(commentId: string) {
     await fetch(`/api/comments/${commentId}`, { method: 'DELETE' });
     if (selectedMockup) {
@@ -1179,15 +1207,13 @@ export default function ProjectPage() {
                     ))}
                   </div>
                   <button
-                    onClick={() => {
-                      const blob = new Blob([selectedMockup.html_content], { type: 'text/html' });
-                      const url = URL.createObjectURL(blob);
-                      const a = document.createElement('a');
-                      a.href = url;
-                      a.download = `mockup-v${selectedMockup.version}.html`;
-                      a.click();
-                      URL.revokeObjectURL(url);
-                    }}
+                    onClick={handleDownloadHtml}
+                    disabled={!activeScreen?.html_content}
+                    title={
+                      activeScreen?.html_content
+                        ? '지금 보고 있는 화면을 편집이 반영된 상태로 내려받습니다'
+                        : '아직 만들어지지 않은 화면입니다'
+                    }
                     className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
                   >
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>

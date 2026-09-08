@@ -77,3 +77,7 @@ node scripts/check-pages-assets.mjs
 ## 화면 목록
 
 `main.html` 이 진입점이다. 나머지는 거기서 링크된다.
+
+한 쌍만 짚어 둔다 — `template.html` 의 디자인 시스템 카드는 **선택 스위치가 아니라 진입 링크**다.
+누르면 `screen-brief.html?ds=<id>` 로 넘어가고, 브리프 화면은 그 쿼리로 배너·참고 템플릿을 갈아 끼운다.
+같은 흐름이 Next.js 쪽에는 `/proto/template` 에 있다(그쪽은 프로젝트를 고르는 단계를 한 번 거친다).

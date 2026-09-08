@@ -165,8 +165,19 @@ CSP는 `srcDoc` 조립 시 `<meta http-equiv="Content-Security-Policy">`로 넣�
 `default-src 'none'; style-src 'unsafe-inline'; img-src data:; font-src data:; script-src 'unsafe-inline'; form-action 'none'; base-uri 'none'`
 정제가 뚫렸을 때의 2차 방어선이며, `img-src data:`로 묶여 프레임이 바깥으로 요청을 낼 수 없다.
 
+### 편집 반영(baking)의 고유 위험 — CSP 밖으로 나가는 HTML (2026-09-08)
+
+요소 편집은 저장본을 덮어쓰지 않고 패치로 쌓이므로, 다운로드·AI 검토는 서버에서 패치를 얹은 사본을 만든다(`lib/canvas/patches.ts` `bakeScreenHtml`). 여기에 **프레임 안에는 없던 위험 두 가지**가 생긴다.
+
+| 위험 | 왜 프레임에는 없나 | 대응 |
+|---|---|---|
+| **스타일 값이 선언을 쪼갠다** | 프레임은 `el.style.setProperty(prop, value)`를 쓴다. 브라우저가 값을 검사하고 값 하나로 선언을 여러 개 만들 수 없다. baking은 문자열을 이어 붙이므로 `red; background-image: url(...)` 같은 값이 선언 둘로 갈라진다 | 값에 `;` `{` `}` `<` `>` `url(` `expression(` `javascript:` `@import` 가 섞이면 **그 선언을 적용하지 않고 버린다** |
+| **CSP가 따라가지 않는다** | 프레임은 `srcDoc`에 주입한 CSP meta가 외부 요청을 막는다. **다운로드한 파일은 그 밖에서 열린다** | 교체(`aiRewrite`) 조각을 baking 시점에 **다시 정제한다.** DB에 무엇이 들어 있든 나가는 것은 정제된 것이어야 한다 |
+
+편집 값(`element_patches.payload`)은 사용자·AI가 넣은 값이며 저장 시점에는 화이트리스트 검사만 받는다. **저장된 값을 신뢰하지 않는다**는 것이 이 두 대응의 전제다.
+
 ### 상태
-**부분 확정** — 위 샌드박스 조합과 정제 파이프라인은 프로토타입에 적용 완료. 운영 적용 시 행내 보안 검토를 거쳐 확정한다.
+**부분 확정** — 위 샌드박스 조합과 정제 파이프라인, baking 대응은 프로토타입에 적용 완료. 운영 적용 시 행내 보안 검토를 거쳐 확정한다.
 
 ---
 

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
 import { v4 as uuidv4 } from 'uuid';
 import { reviewResponsibility, REVIEW_MODEL } from '@/lib/review-responsibility';
+import { bakeScreenHtml } from '@/lib/canvas/patches';
 
 const FINDINGS_QUERY = `
   SELECT f.*, u.name as decided_by_name, u.color as decided_by_color
@@ -61,7 +62,25 @@ export async function POST(
   ).run(reviewId, mockupId, 'RUNNING', REVIEW_MODEL);
 
   try {
-    const findings = await reviewResponsibility(mockup.html_content, mockup.proposal_content);
+    // 저장본이 아니라 편집을 반영한 HTML을 검토한다.
+    // 저장본을 그대로 넣으면 사람이 이미 고친 것을 AI가 다시 지적한다.
+    //
+    // ❗ 이 검토는 여전히 **첫 화면만** 본다. mockup_versions.html_content가 sort_order 0
+    // 화면으로만 채워지기 때문이다. 다화면 검토는 findings에 화면 구분이 없어
+    // 스키마·프롬프트를 함께 고쳐야 하므로 별건으로 남긴다. (FR-15는 전 화면을 본다)
+    const firstScreen = db
+      .prepare(
+        `SELECT id, html_content FROM screens
+          WHERE mockup_version_id = ? AND html_content IS NOT NULL
+          ORDER BY sort_order ASC LIMIT 1`
+      )
+      .get(mockupId) as { id: string; html_content: string } | undefined;
+
+    const html = firstScreen
+      ? bakeScreenHtml(db, firstScreen.id, firstScreen.html_content)
+      : mockup.html_content; // 캔버스 이전에 만들어진 목업은 screens 행이 없다
+
+    const findings = await reviewResponsibility(html, mockup.proposal_content);
 
     const insert = db.prepare(`
       INSERT INTO responsibility_findings

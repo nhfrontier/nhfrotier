@@ -35,17 +35,35 @@ interface ManifestToken {
 interface ManifestTemplate {
   name: string;
   entryPath: string;
+  description?: string;
+  folder?: string;
+}
+
+interface ManifestComponent {
+  name: string;
 }
 
 interface Manifest {
   tokens?: ManifestToken[];
   templates?: ManifestTemplate[];
+  components?: ManifestComponent[];
+}
+
+/** Template 화면 카드가 쓰는 값. 개수·스와치를 손으로 적지 않기 위해 매니페스트에서 뽑는다. */
+export interface DesignSystemDetail extends DesignSystemMeta {
+  swatches: string[];
+  /** 썸네일 배경용 옅은 브랜드 색. */
+  tint: string;
+  tokenCount: number;
+  componentCount: number;
+  templateItems: { name: string; description: string; slug: string }[];
 }
 
 const ROOT = path.join(process.cwd(), '..', 'design-systems');
 
 let registryCache: { systems: DesignSystemMeta[]; defaultId: string } | null | undefined;
 const sectionCache = new Map<string, string>();
+const manifestCache = new Map<string, Manifest | null>();
 
 function readRegistry() {
   if (registryCache === undefined) {
@@ -76,17 +94,114 @@ export function resolveDesignSystem(id?: string | null): DesignSystemMeta | null
 }
 
 function readManifest(system: DesignSystemMeta): Manifest | null {
+  const cached = manifestCache.get(system.id);
+  if (cached !== undefined) return cached;
+
+  let manifest: Manifest | null;
   try {
-    return JSON.parse(fs.readFileSync(path.join(ROOT, system.dir, '_ds_manifest.json'), 'utf8'));
+    manifest = JSON.parse(fs.readFileSync(path.join(ROOT, system.dir, '_ds_manifest.json'), 'utf8'));
   } catch {
-    return null;
+    manifest = null;
   }
+  manifestCache.set(system.id, manifest);
+  return manifest;
 }
 
 export function listTemplates(id?: string | null): string[] {
   const system = resolveDesignSystem(id);
   if (!system) return [];
   return (readManifest(system)?.templates ?? []).map((t) => t.name);
+}
+
+const SWATCH_COUNT = 4;
+/** 색 계열의 대표값으로 삼을 밝기 단계. 50~900 스케일에서 브랜드 색이 놓이는 자리다. */
+const SWATCH_STEP = 500;
+/** 자산을 못 읽었을 때 카드 배경으로 쓸 중립색. */
+const FALLBACK_TINT = '#f1f5f9';
+
+interface ColorEntry { value: string; step: number; }
+
+/**
+ * 색 토큰을 계열별로 묶는다.
+ *
+ * --nh-blue-500 과 --nh-blue-deep 은 같은 계열이다. 마지막 조각을 떼어 계열을 잡고,
+ * 단계가 아닌 이름(-deep)은 정렬에서 뒤로 밀리도록 큰 수를 준다.
+ * 다른 토큰을 가리키는 별칭(var(...))은 값을 알 수 없으므로 건너뛴다.
+ */
+function groupColorFamilies(tokens: ManifestToken[]): ColorEntry[][] {
+  const families = new Map<string, ColorEntry[]>();
+
+  for (const token of tokens) {
+    if (token.kind !== 'color' || token.value.startsWith('var(')) continue;
+
+    const cut = token.name.lastIndexOf('-');
+    const family = cut > 1 ? token.name.slice(0, cut) : token.name;
+    const parsed = Number(token.name.slice(cut + 1));
+    const entry = { value: token.value, step: Number.isFinite(parsed) ? parsed : Number.MAX_SAFE_INTEGER };
+
+    const list = families.get(family);
+    if (list) list.push(entry);
+    else families.set(family, [entry]);
+  }
+
+  return [...families.values()];
+}
+
+/**
+ * 카드에 찍을 대표 색.
+ *
+ * 같은 계열의 명도 단계를 나란히 보여주면 팔레트가 아니라 그라데이션으로 읽히므로 계열마다 하나씩만 뽑는다.
+ */
+function pickSwatches(families: ColorEntry[][]): string[] {
+  return families
+    .slice(0, SWATCH_COUNT)
+    .map((entries) => entries.reduce((a, b) => (Math.abs(b.step - SWATCH_STEP) < Math.abs(a.step - SWATCH_STEP) ? b : a)))
+    .map((entry) => entry.value);
+}
+
+/**
+ * 썸네일 배경으로 쓸 옅은 색. 첫 계열(브랜드 색)의 가장 밝은 단계다.
+ *
+ * 대표 색을 그대로 깔면 카드가 시끄러워지고, 중립 회색만 쓰면 어느 시스템인지 구분되지 않는다.
+ */
+function pickTint(families: ColorEntry[][]): string {
+  const first = families[0];
+  if (!first) return FALLBACK_TINT;
+  return first.reduce((a, b) => (b.step < a.step ? b : a)).value;
+}
+
+/** templates/login → login. 정적 목업의 링크(?tpl=login)와 같은 값을 쓴다. */
+function templateSlug(template: ManifestTemplate): string {
+  const source = template.folder ?? template.entryPath ?? template.name;
+  return source.split('/').filter(Boolean).pop() ?? template.name;
+}
+
+/**
+ * Template 화면이 카드를 그리는 데 필요한 값 전부.
+ *
+ * 토큰·컴포넌트 개수와 대표 색을 화면에 손으로 적지 않기 위한 것이다.
+ * 자산을 못 읽어도 메타데이터만으로 카드가 그려져야 하므로 빈 배열/0으로 떨어진다.
+ */
+export function describeDesignSystem(id?: string | null): DesignSystemDetail | null {
+  const system = resolveDesignSystem(id);
+  if (!system) return null;
+
+  const manifest = readManifest(system);
+  const tokens = manifest?.tokens ?? [];
+  const families = groupColorFamilies(tokens);
+
+  return {
+    ...system,
+    swatches: pickSwatches(families),
+    tint: pickTint(families),
+    tokenCount: tokens.length,
+    componentCount: manifest?.components?.length ?? 0,
+    templateItems: (manifest?.templates ?? []).map((t) => ({
+      name: t.name,
+      description: t.description ?? '',
+      slug: templateSlug(t),
+    })),
+  };
 }
 
 const SURFACE_RULES: Record<DesignSystemMeta['surface'], string> = {

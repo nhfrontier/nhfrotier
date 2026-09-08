@@ -1,5 +1,6 @@
 import { createHash } from 'crypto';
 import { parse, parseFragment, serialize, serializeOuter, type DefaultTreeAdapterTypes } from 'parse5';
+import { EDITABLE_ATTRS, EDITABLE_STYLE_PROPS, type PatchOp } from './protocol';
 
 type Element = DefaultTreeAdapterTypes.Element;
 type ChildNode = DefaultTreeAdapterTypes.ChildNode;
@@ -303,4 +304,117 @@ export function sanitizeFragment(
   normalizeGoto(fragment, opts.knownScreenKeys, warnings);
 
   return { html: serialize(fragment), warnings: [...new Set(warnings)] };
+}
+
+/** 문서 전체에서 data-nh-id가 일치하는 첫 요소를 찾는다. */
+function findByNhId(root: ParentNode, nhId: string): Element | null {
+  for (const child of childrenOf(root)) {
+    if (!isElement(child)) continue;
+    if (getAttr(child, 'data-nh-id') === nhId) return child;
+    const found = findByNhId(child, nhId);
+    if (found) return found;
+  }
+  return null;
+}
+
+/**
+ * style 속성 한 줄에 선언 하나를 덮어쓴다.
+ *
+ * **런타임에는 없는 위험이 여기 있다.** 프레임에서는 `el.style.setProperty(prop, value)`를
+ * 쓰므로 브라우저가 값을 검사하고, 값 하나로 선언을 여러 개 만들 수 없다.
+ * 반면 baking은 문자열을 이어 붙이므로 `red; background-image: url(...)` 같은 값이
+ * 선언 두 개로 갈라진다. 다운로드한 HTML은 CSP 밖에서 열리므로 그대로 외부 요청이 된다.
+ * 그래서 선언을 쪼갤 수 있는 문자가 섞인 값은 **적용하지 않고 버린다.**
+ */
+const UNSAFE_STYLE_VALUE = /[;{}<>]|url\s*\(|expression\s*\(|javascript:|@import/i;
+
+function mergeStyleDeclaration(existing: string, prop: string, value: string): string | null {
+  if (UNSAFE_STYLE_VALUE.test(value)) return null;
+
+  const decls = new Map<string, string>();
+  for (const part of existing.split(';')) {
+    const colon = part.indexOf(':');
+    if (colon < 0) continue;
+    const key = part.slice(0, colon).trim().toLowerCase();
+    if (key) decls.set(key, part.slice(colon + 1).trim());
+  }
+  decls.set(prop, value.trim());
+
+  return [...decls].map(([k, v]) => `${k}: ${v}`).join('; ');
+}
+
+function replaceWithFragment(el: Element, html: string, warnings: string[]) {
+  const parent = el.parentNode;
+  if (!parent) return;
+  const index = parent.childNodes.indexOf(el);
+  if (index < 0) return;
+
+  // 삽입 시점에 이미 정제된 값이지만 다시 한 번 통과시킨다.
+  // 이 HTML은 DB에 있던 값이고, DB에 무엇이 들어 있든 나가는 것은 정제된 것이어야 한다.
+  const fragment = parseFragment(html);
+  sanitize(fragment, warnings);
+
+  const incoming = [...fragment.childNodes];
+  for (const node of incoming) node.parentNode = parent;
+  parent.childNodes.splice(index, 1, ...incoming);
+}
+
+/**
+ * 저장된 화면 HTML에 편집 패치를 실제로 반영한다("baking").
+ *
+ * 화면에 보이는 것은 프레임이 postMessage로 패치를 얹은 결과다. 하지만 HTML 다운로드,
+ * AI 검토, 다음 버전 생성은 서버에서 저장본을 읽는다 — 이 함수가 없으면 그쪽은 전부
+ * **편집 이전 상태**를 본다. 저장본(`screens.html_content`)은 그대로 두고 사본만 만든다.
+ *
+ * `lib/canvas/runtime.ts`의 `applyOp`와 같은 일을 parse5로 한다.
+ * 둘이 어긋나면 화면과 산출물이 달라지므로 연산을 추가할 때는 양쪽을 함께 고쳐야 한다.
+ * 다만 style만은 런타임보다 엄격하다(위 `mergeStyleDeclaration` 주석).
+ */
+export function applyPatchesToHtml(html: string, ops: PatchOp[]): { html: string; warnings: string[] } {
+  if (ops.length === 0) return { html, warnings: [] };
+
+  const warnings: string[] = [];
+  const doc = parse(html);
+
+  for (const op of ops) {
+    // 교체(replace)가 지나가면 그 아래 요소는 사라지므로 매번 새로 찾는다.
+    const el = findByNhId(doc, op.nhId);
+    if (!el) {
+      warnings.push(`편집 대상 요소를 찾지 못해 건너뜀: ${op.nhId}`);
+      continue;
+    }
+
+    if (op.kind === 'text') {
+      const text: TextNode = {
+        nodeName: '#text',
+        value: op.value,
+        parentNode: el,
+      } as TextNode;
+      el.childNodes = [text];
+      continue;
+    }
+
+    if (op.kind === 'style') {
+      if (!EDITABLE_STYLE_PROPS.includes(op.prop)) continue;
+      const merged = mergeStyleDeclaration(getAttr(el, 'style') ?? '', op.prop, op.value);
+      if (merged === null) {
+        warnings.push(`안전하지 않은 스타일 값이라 반영하지 않음: ${op.prop}`);
+        continue;
+      }
+      setAttr(el, 'style', merged);
+      continue;
+    }
+
+    if (op.kind === 'attr') {
+      if (!EDITABLE_ATTRS.includes(op.name)) continue;
+      setAttr(el, op.name, op.value);
+      continue;
+    }
+
+    if (op.kind === 'replace') {
+      replaceWithFragment(el, op.html, warnings);
+    }
+  }
+
+  return { html: serialize(doc), warnings: [...new Set(warnings)] };
 }

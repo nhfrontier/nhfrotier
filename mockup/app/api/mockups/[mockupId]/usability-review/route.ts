@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/db';
+import { bakeScreenHtml } from '@/lib/canvas/patches';
 import { v4 as uuidv4 } from 'uuid';
 import {
   reviewUsability,
@@ -46,6 +47,7 @@ export async function GET(
 }
 
 interface ScreenRow {
+  id: string;
   screen_key: string;
   name: string;
   html_content: string | null;
@@ -71,15 +73,21 @@ function collectInput(
   mockup: { id: string; html_content: string; proposal_content: string }
 ) {
   const screenRows = db.prepare(`
-    SELECT screen_key, name, html_content
+    SELECT id, screen_key, name, html_content
     FROM screens
     WHERE mockup_version_id = ? AND html_content IS NOT NULL
     ORDER BY sort_order ASC
   `).all(mockup.id) as ScreenRow[];
 
   // 캔버스 이전에 만들어진 목업은 screens 행이 없다. 그때는 버전 HTML 한 장이 전부다.
+  // 저장본이 아니라 편집을 반영한 HTML을 검토한다.
+  // 저장본을 그대로 넣으면 사람이 이미 고친 것을 AI가 다시 지적한다.
   const screens: ReviewScreen[] = screenRows.length
-    ? screenRows.map((s) => ({ screenKey: s.screen_key, name: s.name, html: s.html_content ?? '' }))
+    ? screenRows.map((s) => ({
+        screenKey: s.screen_key,
+        name: s.name,
+        html: bakeScreenHtml(db, s.id, s.html_content ?? ''),
+      }))
     : [{ screenKey: 'main', name: '화면', html: mockup.html_content }];
 
   const commentRows = db.prepare(`

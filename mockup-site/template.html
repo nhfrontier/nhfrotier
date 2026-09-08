@@ -20,21 +20,16 @@
   .tpl-body h3 { font-size:14px;font-weight:700;color:#0f172a;margin:0 0 4px; }
   .tpl-body p { font-size:11.5px;color:#94a3b8;margin:0 0 10px; }
   .tpl-tag { font-size:10px;font-weight:600;padding:2px 7px;border-radius:999px; }
-  .tpl-start { width:100%;padding:7px;background:#4f46e5;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer; }
+  .tpl-start { display:block;width:100%;padding:7px;background:#4f46e5;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;text-align:center;cursor:pointer; }
+  .tpl-start:hover { background:#4338ca;color:#fff; }
 
-  /* 디자인 시스템 선택 카드 */
-  .ds-card { flex:1;text-align:left;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px 18px;cursor:pointer;transition:all .15s;font-family:inherit; }
-  .ds-card:hover { border-color:#c7d2fe; }
-  .ds-card[aria-pressed="true"] { border-color:#4f46e5;box-shadow:0 0 0 3px rgba(79,70,229,.12); }
-  .ds-check { width:16px;height:16px;border-radius:50%;border:1.5px solid #cbd5e1;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
-  .ds-card[aria-pressed="true"] .ds-check { border-color:#4f46e5;background:#4f46e5; }
-  .ds-check span { width:6px;height:6px;border-radius:50%;background:#fff;opacity:0; }
-  .ds-card[aria-pressed="true"] .ds-check span { opacity:1; }
+  /* 디자인 시스템 진입 카드 — 고르는 순간 그 디자인으로 화면 만들기에 들어간다 */
+  .ds-card { flex:1;display:block;text-align:left;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px 18px;transition:all .15s; }
+  .ds-card:hover { border-color:#c7d2fe;box-shadow:0 4px 12px rgba(79,70,229,.08); }
+  .ds-hint { font-size:12px;font-weight:600;color:#94a3b8;margin:12px 0 0; }
+  .ds-card:hover .ds-hint { color:#4f46e5; }
   .sw { width:20px;height:20px;border-radius:5px;border:1px solid rgba(15,23,42,.08); }
-
-  /* 선택에 따라 화면 템플릿 목록을 갈아 끼운다 */
-  [data-ds="naru-bank"] [data-for="nh-ibz"] { display:none; }
-  [data-ds="nh-ibz"] [data-for="naru-bank"] { display:none; }
+  .grp-title { font-size:13px;font-weight:600;color:#64748b;margin:0 0 10px; }
 
   .sec-title { font-size:15px;font-weight:700;color:#0f172a;margin:0 0 2px; }
   .sec-desc { font-size:12.5px;color:#94a3b8;margin:0 0 14px; }
@@ -69,7 +64,7 @@
     </div>
   </header>
 
-  <main id="tpl-root" data-ds="naru-bank" style="max-width:1376px;margin:0 auto;padding:32px;">
+  <main style="max-width:1376px;margin:0 auto;padding:32px;">
     <div style="margin-bottom:24px;">
       <h1 style="font-size:22px;font-weight:700;color:#0f172a;margin:0 0 4px;">Template</h1>
       <p style="font-size:14px;color:#64748b;margin:0;">디자인 시스템을 고르면 그 디자인으로 화면을 만듭니다. 자주 쓰는 문서 양식도 여기서 불러오세요.</p>
@@ -78,12 +73,11 @@
     <!-- ── 디자인 시스템 선택 ── -->
     <section style="margin-bottom:28px;">
       <h2 class="sec-title">디자인 시스템</h2>
-      <p class="sec-desc">선택한 시스템의 컬러 토큰·컴포넌트 규칙이 AI 생성 컨텍스트로 전달됩니다.</p>
+      <p class="sec-desc">고르면 그 시스템의 컬러 토큰·컴포넌트 규칙을 가진 채 화면 만들기로 들어갑니다.</p>
 
       <div style="display:flex;gap:14px;">
-        <button type="button" class="ds-card" data-ds-pick="naru-bank" aria-pressed="true">
+        <a class="ds-card" href="screen-brief.html?ds=naru-bank">
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-            <div class="ds-check"><span></span></div>
             <span style="font-size:14px;font-weight:700;color:#0f172a;">올원뱅크</span>
             <span class="tpl-tag" style="color:#475569;background:#f1f5f9;">모바일 앱</span>
           </div>
@@ -94,11 +88,11 @@
             <div class="sw" style="background:#0E1414;"></div>
           </div>
           <p style="font-size:11.5px;color:#94a3b8;margin:0;line-height:1.6;">상단 앱바 · 하단 5칸 내비 · 바텀시트 전제. 360×780 폰 화면으로 생성됩니다.<br>토큰 189개 · 컴포넌트 23개</p>
-        </button>
+          <p class="ds-hint">이 디자인으로 시작 →</p>
+        </a>
 
-        <button type="button" class="ds-card" data-ds-pick="nh-ibz" aria-pressed="false">
+        <a class="ds-card" href="screen-brief.html?ds=nh-ibz">
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-            <div class="ds-check"><span></span></div>
             <span style="font-size:14px;font-weight:700;color:#0f172a;">NH 기업인터넷뱅킹</span>
             <span class="tpl-tag" style="color:#00689b;background:#eef8fd;">웹</span>
           </div>
@@ -109,19 +103,20 @@
             <div class="sw" style="background:#00A04E;"></div>
           </div>
           <p style="font-size:11.5px;color:#94a3b8;margin:0;line-height:1.6;">1200px 중앙 정렬 · GNB · 흰 카드/회색 섹션 교차 전제. 데스크톱 화면으로 생성됩니다.<br>토큰 129개 · 컴포넌트 6개</p>
-        </button>
+          <p class="ds-hint">이 디자인으로 시작 →</p>
+        </a>
       </div>
     </section>
 
-    <!-- ── 화면 템플릿 (선택된 디자인 시스템의 것) ── -->
+    <!-- ── 화면 템플릿 (디자인 시스템별) ── -->
     <section style="margin-bottom:28px;">
       <h2 class="sec-title">화면 템플릿</h2>
       <p class="sec-desc">백지에서 시작하지 않습니다. 완성된 화면을 복사해 내용만 바꾸세요.</p>
 
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;">
+      <h3 class="grp-title">올원뱅크</h3>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px;">
 
-        <!-- 올원뱅크 -->
-        <div class="tpl-card" data-for="naru-bank">
+        <div class="tpl-card">
           <div class="th" style="background:#E7F5F2;align-items:center;justify-content:center;">
             <div style="width:62px;height:86px;background:#fff;border:1px solid #93D6C8;border-radius:8px;padding:6px;display:flex;flex-direction:column;gap:4px;">
               <div class="th-bar" style="height:6px;width:70%;background:#C4E8E1;"></div>
@@ -133,12 +128,14 @@
             <div style="margin-bottom:6px;"><span class="tpl-tag" style="color:#0B8478;background:#E7F5F2;">앱 화면</span></div>
             <h3>모바일 앱 화면</h3>
             <p>앱바 + 계좌 카드 + 하단 내비 셸</p>
-            <button class="tpl-start">이 Template로 시작</button>
+            <a class="tpl-start" href="screen-brief.html?ds=naru-bank&amp;tpl=app-screen">이 Template로 시작</a>
           </div>
         </div>
+      </div>
 
-        <!-- NH 기업인터넷뱅킹 -->
-        <div class="tpl-card" data-for="nh-ibz">
+      <h3 class="grp-title">NH 기업인터넷뱅킹</h3>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;">
+        <div class="tpl-card">
           <div class="th" style="background:#122F50;align-items:center;justify-content:center;">
             <div style="width:76%;background:#fff;border-radius:6px;padding:8px;display:flex;flex-direction:column;gap:5px;">
               <div class="th-bar" style="height:6px;width:45%;background:#122F50;"></div>
@@ -151,11 +148,11 @@
             <div style="margin-bottom:6px;"><span class="tpl-tag" style="color:#00689b;background:#eef8fd;">화면</span></div>
             <h3>로그인</h3>
             <p>인증서·아이디 탭 + 네이비 로그인 버튼</p>
-            <button class="tpl-start">이 Template로 시작</button>
+            <a class="tpl-start" href="screen-brief.html?ds=nh-ibz&amp;tpl=login">이 Template로 시작</a>
           </div>
         </div>
 
-        <div class="tpl-card" data-for="nh-ibz">
+        <div class="tpl-card">
           <div class="th" style="background:#F5F6F8;">
             <div class="th-bar" style="height:8px;width:100%;background:#0094D9;"></div>
             <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:6px;">
@@ -169,11 +166,11 @@
             <div style="margin-bottom:6px;"><span class="tpl-tag" style="color:#00689b;background:#eef8fd;">화면</span></div>
             <h3>메인 대시보드</h3>
             <p>GNB + 잔액 요약 + 서비스 타일 그리드</p>
-            <button class="tpl-start">이 Template로 시작</button>
+            <a class="tpl-start" href="screen-brief.html?ds=nh-ibz&amp;tpl=dashboard">이 Template로 시작</a>
           </div>
         </div>
 
-        <div class="tpl-card" data-for="nh-ibz">
+        <div class="tpl-card">
           <div class="th" style="background:#F5F6F8;">
             <div class="th-bar" style="height:3px;width:100%;background:#1a1c1f;"></div>
             <div style="flex:1;background:#fff;border:1px solid #E2E5EA;border-radius:4px;padding:8px;display:flex;flex-direction:column;gap:5px;">
@@ -189,11 +186,11 @@
             <div style="margin-bottom:6px;"><span class="tpl-tag" style="color:#00689b;background:#eef8fd;">화면</span></div>
             <h3>상품 상세</h3>
             <p>금리 표기 + 가입대상 + 가입하기 CTA</p>
-            <button class="tpl-start">이 Template로 시작</button>
+            <a class="tpl-start" href="screen-brief.html?ds=nh-ibz&amp;tpl=product-detail">이 Template로 시작</a>
           </div>
         </div>
 
-        <div class="tpl-card" data-for="nh-ibz">
+        <div class="tpl-card">
           <div class="th" style="background:#fff;justify-content:center;">
             <div style="display:flex;align-items:center;gap:6px;">
               <div style="width:22px;height:22px;border-radius:50%;background:#0094D9;"></div>
@@ -212,7 +209,7 @@
             <div style="margin-bottom:6px;"><span class="tpl-tag" style="color:#00689b;background:#eef8fd;">섹션</span></div>
             <h3>프로세스 섹션</h3>
             <p>신청 절차 3~4단계 안내 블록</p>
-            <button class="tpl-start">이 Template로 시작</button>
+            <a class="tpl-start" href="screen-brief.html?ds=nh-ibz&amp;tpl=process-section">이 Template로 시작</a>
           </div>
         </div>
 
@@ -247,7 +244,7 @@
             <div style="margin-bottom:6px;"><span class="tpl-tag" style="color:#4f46e5;background:#eef2ff;">대시보드</span></div>
             <h3>NH 대시보드 공통형</h3>
             <p>고객 요약 카드 + 최근 활동 리스트 구성</p>
-            <button class="tpl-start">이 Template로 시작</button>
+            <a class="tpl-start" href="screen-brief.html?doc=nh-dashboard">이 Template로 시작</a>
           </div>
         </div>
 
@@ -261,7 +258,7 @@
             <div style="margin-bottom:6px;"><span class="tpl-tag" style="color:#15803d;background:#f0fdf4;">폼/온보딩</span></div>
             <h3>간편 온보딩 폼</h3>
             <p>단계형 입력 + 진행률 표시</p>
-            <button class="tpl-start">이 Template로 시작</button>
+            <a class="tpl-start" href="screen-brief.html?doc=onboarding-form">이 Template로 시작</a>
           </div>
         </div>
 
@@ -275,7 +272,7 @@
             <div style="margin-bottom:6px;"><span class="tpl-tag" style="color:#b45309;background:#fffbeb;">프로모션</span></div>
             <h3>이벤트 배너형</h3>
             <p>헤드라인 + CTA 버튼 중심 배너</p>
-            <button class="tpl-start">이 Template로 시작</button>
+            <a class="tpl-start" href="screen-brief.html?doc=event-banner">이 Template로 시작</a>
           </div>
         </div>
 
@@ -290,7 +287,7 @@
             <div style="margin-bottom:6px;"><span class="tpl-tag" style="color:#475569;background:#f1f5f9;">문서</span></div>
             <h3>안내문 리플렛형</h3>
             <p>지점 비치용 인쇄물 레이아웃</p>
-            <button class="tpl-start">이 Template로 시작</button>
+            <a class="tpl-start" href="screen-brief.html?doc=leaflet">이 Template로 시작</a>
           </div>
         </div>
 
@@ -298,21 +295,5 @@
     </section>
   </main>
 </div>
-
-<script>
-  // 디자인 시스템 선택 — 루트의 data-ds 를 바꾸면 CSS 가 화면 템플릿 목록을 갈아 끼운다.
-  (function () {
-    var root = document.getElementById('tpl-root');
-    var picks = document.querySelectorAll('[data-ds-pick]');
-    for (var i = 0; i < picks.length; i++) {
-      picks[i].addEventListener('click', function () {
-        root.setAttribute('data-ds', this.getAttribute('data-ds-pick'));
-        for (var j = 0; j < picks.length; j++) {
-          picks[j].setAttribute('aria-pressed', String(picks[j] === this));
-        }
-      });
-    }
-  })();
-</script>
 </body>
 </html>
