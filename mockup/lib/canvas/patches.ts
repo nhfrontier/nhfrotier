@@ -1,5 +1,6 @@
 import type { Database } from 'better-sqlite3';
 import { EDITABLE_ATTRS, EDITABLE_STYLE_PROPS, type PatchOp } from './protocol';
+import { applyPatchesToHtml } from './htmlPipeline';
 import type { ElementPatch } from '../db';
 
 /** 되돌리지 않은 패치만, 적용 순서대로. */
@@ -74,6 +75,20 @@ export function listVersionPatches(db: Database, mockupVersionId: string): Eleme
         ORDER BY p.created_at ASC, p.seq ASC`
     )
     .all(mockupVersionId) as ElementPatch[];
+}
+
+/**
+ * 화면 하나의 "지금 보이는 그대로"의 HTML.
+ *
+ * 저장본(`screens.html_content`)에 활성 편집을 얹은 사본을 만든다. 저장본은 건드리지 않는다 —
+ * 편집이 patch로 쌓이는 구조 자체가 "누가 왜 바꿨는지"를 남기기 위한 것이기 때문이다.
+ *
+ * **서버에서 화면 HTML을 읽는 곳은 전부 이 함수를 거쳐야 한다.** 저장본을 직접 읽으면
+ * 편집 이전 상태를 보게 되고, 화면에 보이는 것과 다운로드·검토 결과가 어긋난다.
+ */
+export function bakeScreenHtml(db: Database, screenId: string, storedHtml: string): string {
+  const ops = toPatchOps(listActivePatches(db, screenId));
+  return applyPatchesToHtml(storedHtml, ops).html;
 }
 
 export interface PatchInput {
