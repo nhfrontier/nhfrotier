@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { LENS_IDS, buildLensInstruction, findLens } from './usability-lenses';
+import { verifyQuotes } from './usability-evidence';
 
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -14,9 +15,6 @@ export const USABILITY_MODEL = 'claude-opus-5';
 export const MAX_INPUT_CHARS = 300_000;
 
 export class InputTooLargeError extends Error {}
-
-/** 인용이 우연히 맞는 것을 막는 최소 길이 */
-const MIN_QUOTE_LENGTH = 6;
 
 /** FR-14의 Severity와 값은 같지만 모듈을 묶지 않기 위해 여기서 다시 선언한다 */
 export type Severity = 'HIGH' | 'MEDIUM' | 'LOW';
@@ -169,11 +167,6 @@ function isNonEmptyString(v: unknown): v is string {
   return typeof v === 'string' && v.trim().length > 0;
 }
 
-/** 대조를 위해 공백을 한 칸으로 줄이고 소문자화한다 */
-function canonical(text: string): string {
-  return text.replace(/\s+/g, ' ').trim().toLowerCase();
-}
-
 function buildUserMessage(input: UsabilityInput): string {
   const screens = input.screens
     .map((s) => `### 화면 ${s.screenKey} — ${s.name}\n\n${s.html}`)
@@ -212,7 +205,6 @@ ${comments}`;
  * 인용 조각이 원문에 글자 그대로 있는지 대조하고 하나도 맞지 않으면 그 지적을 통째로 버린다.
  */
 function normalize(raw: RawFinding[], corpus: string): UsabilityFinding[] {
-  const haystack = canonical(corpus);
   const seen = new Set<string>();
   const out: UsabilityFinding[] = [];
 
@@ -226,17 +218,8 @@ function normalize(raw: RawFinding[], corpus: string): UsabilityFinding[] {
     ) {
       continue;
     }
-    if (!Array.isArray(item.evidence_quotes)) continue;
-
-    const verified = item.evidence_quotes
-      .filter(isNonEmptyString)
-      .map((q) => q.trim())
-      .filter((q) => {
-        const needle = canonical(q);
-        return needle.length >= MIN_QUOTE_LENGTH && haystack.includes(needle);
-      });
-
     // 살아남은 인용이 없으면 담당자가 검증할 수 없는 지적이다
+    const verified = verifyQuotes(item.evidence_quotes, corpus);
     if (verified.length === 0) continue;
 
     const evidence = verified.join('\n');
