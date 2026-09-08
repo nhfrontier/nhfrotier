@@ -12,8 +12,10 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // 히어로의 부트스트랩 스크립트가 하이드레이션 전에 <html>에 js 클래스를 붙인다.
+  // 서버 렌더와 달라지는 것이 의도이므로 그 경고만 끈다.
   return (
-    <html lang="ko" className="h-full">
+    <html lang="ko" className="h-full" suppressHydrationWarning>
       <body className="min-h-full flex flex-col bg-slate-50">
         <UserProvider>{children}</UserProvider>
       </body>
