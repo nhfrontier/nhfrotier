@@ -27,7 +27,12 @@ public class LocalFileStorage implements FileStorage {
         try {
             Files.createDirectories(root);
         } catch (IOException ex) {
-            throw new IllegalStateException("파일 저장소 디렉터리를 만들 수 없습니다: " + root, ex);
+            throw new IllegalStateException(StorageAccessDiagnostics.describe(root, "만들 수"), ex);
+        }
+        // 디렉터리가 이미 있는데 쓸 수 없는 경우는 createDirectories 가 잡아 주지 않는다.
+        // 첫 업로드까지 미루면 "기동은 됐는데 파일만 안 올라간다"가 되므로 기동 시점에 끊는다.
+        if (!Files.isWritable(root)) {
+            throw new IllegalStateException(StorageAccessDiagnostics.describe(root, "쓸 수"));
         }
     }
 
