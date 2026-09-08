@@ -29,6 +29,7 @@ const PLATFORM = "linux/amd64";
 
 /** compose 와 같은 값을 써야 한다. 바꾸려면 docker-compose.yml 도 함께 고칠 것. */
 const BACKEND_IMAGE = `nh-canvas-backend:${VERSION}`;
+const FRONTEND_IMAGE = `nh-canvas-frontend:${VERSION}`;
 const POSTGRES_IMAGE =
   "postgres:16@sha256:f1c3376c26f2609ab9f29f71f824103fe2fcd8ee0346485cb6122a4f93df6f94";
 
@@ -113,6 +114,17 @@ step(`backend 이미지 빌드 (${BACKEND_IMAGE})`, () =>
 );
 
 const POSTGRES_TAG = "postgres:16";
+step(`frontend 이미지 빌드 (${FRONTEND_IMAGE})`, () =>
+  run("docker", [
+    "build",
+    "--platform", PLATFORM,
+    "--build-arg", `GIT_SHA=${sha}`,
+    "--build-arg", `BUILD_TIME=${buildTime}`,
+    "-t", FRONTEND_IMAGE,
+    "./frontend",
+  ])
+);
+
 step("postgres 이미지 확보", () => {
   run("docker", ["pull", "--platform", PLATFORM, POSTGRES_IMAGE]);
   // 다이제스트로만 저장하면 폐쇄망에서 load 후 `postgres:<none>` 으로 복원된다.
@@ -124,13 +136,16 @@ step("postgres 이미지 확보", () => {
 // 없어도 load 만으로 실행된다.
 const imagesTar = path.join(outDir, "images.tar");
 step("이미지를 tar 로 저장", () =>
-  run("docker", ["save", "-o", imagesTar, BACKEND_IMAGE, POSTGRES_TAG])
+  run("docker", ["save", "-o", imagesTar, BACKEND_IMAGE, FRONTEND_IMAGE, POSTGRES_TAG])
 );
 
 step("아키텍처 검증", () => {
-  const arch = run("docker", ["image", "inspect", BACKEND_IMAGE, "--format", "{{.Os}}/{{.Architecture}}"]);
-  if (arch !== "linux/amd64") throw new Error(`이미지 아키텍처가 ${arch} 입니다. linux/amd64 여야 합니다.`);
-  return arch;
+  for (const image of [BACKEND_IMAGE, FRONTEND_IMAGE]) {
+    const arch = run("docker", ["image", "inspect", image, "--format", "{{.Os}}/{{.Architecture}}"]);
+    if (arch !== "linux/amd64") {
+      throw new Error(`${image} 의 아키텍처가 ${arch} 입니다. linux/amd64 여야 합니다.`);
+    }
+  }
 });
 
 step("설정 파일 복사", () => {
@@ -236,11 +251,24 @@ DBA 사전 검토가 필요하면 \`backend/src/main/resources/db/migration/\` �
 
 ## 6. 확인
 
+사용자 진입점은 **frontend** 다. 백엔드는 호스트로 열려 있지 않고 frontend 의 Nginx 가
+\`/api\` 만 넘긴다. 백엔드에 직접 붙어야 하면 compose 의 backend ports 주석을 잠시 푼다.
+
 \`\`\`bash
-curl -fsS http://localhost:\${HOST_PORT:-8080}/actuator/health
+# ① 컨테이너 상태 — 셋 다 healthy 여야 한다
+docker compose ps
+
+# ② 백엔드 (컨테이너 안에서)
+docker compose exec backend curl -fsS http://127.0.0.1:8080/actuator/health
+
+# ③ 화면
+curl -fsS -o /dev/null -w "%{http_code}" http://localhost:\${HOST_PORT:-8080}/
 \`\`\`
 
-\`{"status":"UP"}\` 이면 정상이다. 첫 기동은 Flyway 때문에 수십 초 걸릴 수 있다.
+②가 \`{"status":"UP"}\`, ③이 \`200\` 이면 정상이다. 첫 기동은 Flyway 때문에 수십 초 걸릴 수 있다.
+
+브라우저로 \`http://<서버>:\${HOST_PORT}\` 에 접속하면 화면이 뜬다.
+\`AUTH_PROVIDER=dev\` 인 동안에는 로그인 ID 를 직접 입력하는 칸이 보인다 — **운영 전환 시 사라져야 한다.**
 
 ## 7. 데이터 위치
 

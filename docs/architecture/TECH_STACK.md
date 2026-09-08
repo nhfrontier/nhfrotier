@@ -72,6 +72,18 @@
 - **무엇**: 고유 ID 생성기. 모든 테이블의 PK가 TEXT UUID다.
 - **왜 선택**: 순번 PK는 URL에 노출될 때 다른 리소스를 추측하기 쉽다(IDOR). UUID로 추측 난이도를 올린다. 단, **UUID는 권한 검증의 대체재가 아니다** — 조회 시 멤버십 확인은 별도로 해야 한다.
 
+### gsap 3.15 (SplitText 포함) — 2026-09-08 도입
+- **무엇**: 애니메이션 라이브러리. 대시보드 히어로 섹션의 진입 연출과 3단계 흐름 루프에 쓴다. 소비 지점은 `mockup/app/proto/hero-lab/variants/` 의 `"use client"` 컴포넌트뿐이다.
+- **왜 선택**: 히어로가 헤드라인을 단어 단위로 쪼개 순차 리빌하고, 그 뒤 3단계 배지가 무한 루프로 점등해야 한다. 순수 CSS `@keyframes`로는 **단어 단위 분할 자체가 불가능**하고(DOM을 쪼개 줄 주체가 없다), 여러 요소의 stagger·타임라인 오프셋(`"-=0.34"`)을 손으로 계산해 유지하는 비용이 크다.
+- **왜 SplitText가 무료인가**: 2025년 Webflow 인수 후 GSAP 3.13부터 SplitText를 포함한 전 플러그인이 표준 라이선스에 들어왔다. Club 계정·유료 등록이 필요 없고 공개 npm `gsap` 패키지에 `gsap/SplitText`로 들어 있다. 도구 제안 규칙(무과금 범위)에 맞는다.
+- **왜 framer-motion이 아닌지**: 텍스트 분할이 없어 SplitText에 해당하는 것을 직접 만들어야 하고, React 렌더 사이클에 묶여 있어 정적 목업 미러(`mockup-site/`, React 없음)에 같은 연출을 옮길 수 없다. GSAP은 CDN 스크립트 한 줄로 그쪽에서도 동일하게 돈다.
+- **비용**: 클라이언트 번들에만 들어간다. 네이티브 모듈이 없어 `serverExternalPackages` 등록이 필요 없고, `/proto/hero-lab`이 정적 프리렌더되는 것으로 SSR 안전이 확인됐다.
+- **주의 — 반드시 지킬 것**:
+  - `gsap.matchMedia().add()`에 조건을 **양쪽 다** 등록한다. `reduce` 하나만 넣으면 모션을 켠 일반 환경에서 콜백이 아예 실행되지 않아 애니메이션이 통째로 사라진다.
+  - `repeat: -1` 타임라인을 다른 타임라인 안에 `add()`로 넣지 않는다. 부모가 유한한 duration을 요구한다. 형제로 두고 `delay`로 이어 붙인다.
+  - `useLayoutEffect`는 SSR에서 경고를 낸다. `typeof window` 분기로 감싼다.
+  - 정리는 `gsap.context(fn, ref)` + `ctx.revert()`. SplitText는 `split.revert()`도 함께 부른다.
+
 ### 디자인 시스템 레지스트리 (`design-systems/`) — 패키지가 아니라 자산 계층
 - **무엇**: 저장소 루트의 `design-systems/` 아래 폴더 하나가 디자인 시스템 하나다. 선택지 정본은 `registry.json`이고, 코드가 읽는 것은 각 시스템의 `_ds_manifest.json` 안 `tokens[]`(컬러·타이포·간격 토큰)와 `templates[]`(완성 화면 목록) 두 개다. **(2026-09-08) `templates[]`는 이름만이 아니라 `entryPath`가 가리키는 `.dc.html` 본문까지 읽어 화면 생성 프롬프트의 예시로 넣는다**(`buildExampleScreensSection`). 사용자에게 참고할 화면을 고르게 하는 대신 그 시스템의 완성 화면을 전부 넣고 모델이 고르게 한다. 예시는 `sanitizeFragment`(parse5)를 거치고 `var(--token)`을 실값으로 치환해 넣는다 — 생성 규칙이 CSS 변수를 금지하므로 예시도 같은 형태여야 한다. 소비 지점은 `mockup/lib/canvas/designSystem.ts` 한 파일이다.
 - **왜 필요**: 화면 생성 프롬프트에 넣을 디자인 토큰이 **하나로 하드코딩**돼 있었다. 그 하나가 실제 NH 값이 아닌 대체 팔레트(올원뱅크 DS, teal)라 결과물을 "NH 디자인"이라 부를 수 없었다. 실제 NH 컬러를 쓰는 기업인터넷뱅킹 시스템이 들어오면서, 하나를 갈아끼우는 대신 **고를 수 있게** 만들었다.
@@ -87,10 +99,20 @@
 > ~~아직 구현 전.~~ → **2026-09-08 착수.** Backend 는 `backend/` 에 구현되어 있다(기동·Flyway 마이그레이션·API 호출 확인 완료).
 > Frontend(Vue 3)는 아직 없다. 각 항목은 [04_SYSTEM_ARCHITECTURE.md](../../개발문서/04_SYSTEM_ARCHITECTURE.md)의 결정을 따른다.
 
-### Vue 3 (Frontend)
-- **무엇**: 컴포넌트 기반 프론트엔드 프레임워크.
+### Vue 3.5 + Vite 6 + TypeScript (Frontend) — 2026-09-08 착수
+- **무엇**: 컴포넌트 기반 프론트엔드. 구현 위치는 `frontend/` 다. 빌드 산출물을 Nginx 이미지로 굽는다.
 - **왜 선택**: 행내 기존 시스템과 개발 인력의 익숙함. 빌드 산출물을 Nginx에 정적 배포하는 구조라 반입이 단순하다.
 - **역할 경계**: 화면 표시, 파일 선택, Chat 입력, Version/History 시각화까지. **LLM을 직접 호출하지 않는다.**
+- **현재 범위**: 프로젝트 목록·상세 두 화면뿐인 walking skeleton 이다. 반입 경로를 먼저 뚫는 것이 목적이었고, 업무 화면은 아직 없다.
+- **의존성을 최소로 둔 이유**: 지금 있는 것은 `vue` 와 `vue-router` 둘뿐이다. 상태 관리(Pinia)와 UI 프레임워크는 **필요해진 뒤에** 넣는다 — 반입 심사에 올라가는 의존성 목록을 짧게 유지하는 편이 낫고, 화면이 두 개인 지금은 정당화되지 않는다.
+- **`@types/node` 를 넣지 않은 이유**: `vite.config.ts` 에서 `node:url`·`process` 를 쓰지 않고 Vite 의 루트 기준 별칭(`"@": "/src"`)으로 대체했다. 의존성 하나를 줄인다.
+- **소스맵을 끈 이유**: 폐쇄망에 반출되는 산출물에 소스맵이 들어가면 소스가 그대로 노출된다. 필요해지면 별도 반출 절차를 정한다.
+
+### Nginx (Frontend 서빙 + API 프록시)
+- **무엇**: `frontend/nginx.conf`. 정적 파일을 서빙하고 `/api` 만 백엔드로 넘긴다. SPA 라 나머지는 `index.html` 로 폴백한다.
+- **왜 이 구조**: [04_SYSTEM_ARCHITECTURE.md](../../개발문서/04_SYSTEM_ARCHITECTURE.md) 2절의 `U → RP → FE → BE` 경로 그대로다. 운영에서 백엔드는 호스트로 열지 않는다.
+- **주의 — 타임아웃**: 프록시 타임아웃을 180초로 늘렸다. AI 동기 단건 호출이 수십 초 걸려 Nginx 기본 60초로는 502 가 난다.
+- **주의 — 업로드 상한**: `client_max_body_size` 를 백엔드 `FILE_MAX_BYTES` 기본값(50MB)과 맞췄다. 여기서 먼저 잘리면 백엔드의 413 대신 Nginx 기본 오류 페이지가 나가 원인이 안 보인다. **한쪽만 바꾸지 말 것.**
 
 ### Spring Boot 3.5.6 / Java 21 LTS / Maven (Backend) — 2026-09-08 구현
 - **무엇**: Java 기반 백엔드 프레임워크. 구현 위치는 `backend/` 다.
@@ -184,6 +206,9 @@
 | DS별 토큰 변환기 자작 | 디자인 시스템마다 다른 토큰 포맷을 하나로 맞추기 | Claude Design export가 이미 `_ds_manifest.json`에 공통 스키마(`{name, value, kind}`)로 토큰을 내려준다. 변환기를 만들면 export 포맷이 바뀔 때마다 따라 고쳐야 한다 | `_ds_manifest.json`의 `tokens[]`를 그대로 읽는다 |
 | 디자인 시스템 단일화(하나만 유지) | 선택 UI·분기 제거 | 모바일 앱과 기업 웹은 캔버스 폭·내비게이션 구조가 달라 한쪽으로 통일하면 다른 쪽 화면을 만들 수 없다 | `design-systems/registry.json` 기반 선택 |
 | 참고 템플릿 선택 UI | 생성 출발점 지정 | 고른 값이 프롬프트까지 가지 않아 사용자 선택이 버려지고 있었다. 고르게 하는 것보다 **완성 화면을 전부 넣고 모델이 고르게 하는 편**이 정확하고, 시스템 프롬프트 캐시도 살린다 | `buildExampleScreensSection` 자동 주입 |
+| framer-motion | 히어로 애니메이션 | 텍스트를 단어 단위로 쪼개는 기능이 없어 SplitText에 해당하는 것을 직접 만들어야 한다. React 렌더 사이클에 묶여 있어 정적 목업 미러(`mockup-site/`)로 같은 연출을 옮길 수 없다 | gsap 3.15 |
+| 순수 CSS `@keyframes`만으로 히어로 연출 | 의존성 0 | 헤드라인 단어 단위 분할이 원리상 불가능하다(DOM을 쪼갤 주체가 없다). 여러 요소의 stagger·오프셋을 손으로 유지하는 비용도 크다 | gsap 3.15 |
+| @gsap/react (`useGSAP` 훅) | GSAP 정리(cleanup) 자동화 | `gsap.context()` + `ctx.revert()`로 같은 일을 한다. 훅이 감싸는 것이 그것뿐이라 패키지를 하나 더 늘릴 이유가 없다 | `gsap.context` 직접 사용 |
 | 그래프 라이브러리 (react-flow 등) | 화면 흐름도 | 화면 8개 이하 격자 배치면 충분하다. 절대배치 박스 + SVG 라인 100줄로 해결됨 | `ScreenFlow.tsx` 직접 구현 |
 
 ---
