@@ -26,6 +26,18 @@ const comments = ref<Comment[]>([]);
 const editing = ref(false);
 const commenting = ref(false);
 
+/**
+ * AI 가 교체한 요소는 서버가 식별자를 다시 붙이기 전까지 편집이 조용히 무시된다
+ * (교체된 서브트리에 data-nh-id 가 없고 screen_elements 도 갱신되지 않는다).
+ * 201 을 받고도 baking 에서 "요소를 찾지 못해 건너뜀"이 되므로, 사용자가 헛수고하지
+ * 않도록 화면에서 먼저 막는다. 백엔드가 고쳐지면 이 잠금은 지운다.
+ */
+const aiRewrittenIds = computed(
+  () => new Set(patches.value.filter((p) => p.op === "aiRewrite" && !p.revertedAt).map((p) => p.nhId))
+);
+
+const pickedLocked = computed(() => !!picked.value && aiRewrittenIds.value.has(picked.value.nhId));
+
 const screens = computed(() => detail.value?.screens ?? []);
 const current = computed(() => screens.value.find((s) => s.id === selected.value) ?? null);
 const generating = computed(() => busy.value.size > 0);
@@ -275,6 +287,7 @@ onMounted(load);
             v-if="mode === 'edit'"
             :element="picked"
             :busy="editing"
+            :locked="pickedLocked"
             @set-text="setText"
             @set-style="setStyle"
             @set-attr="setAttr"

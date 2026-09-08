@@ -79,3 +79,20 @@ export function isTrustedFrameMessage(
   const data = event.data as Partial<FrameMessage> | null;
   return !!data && typeof data === "object" && typeof data.type === "string";
 }
+
+/**
+ * baking 이 버리는 스타일 값.
+ *
+ * 정본은 backend 의 `HtmlPipeline.UNSAFE_STYLE_VALUE` 다. 선언을 쪼갤 수 있는 값
+ * (`red; background-image: url(...)` 같은)이 들어오면 서버는 **201 로 저장은 하되
+ * baking 에서 버린다.** 화면에서 막지 않으면 "프레임에서는 됐는데 다운로드에는 없다"가
+ * 되고, 사용자는 원인을 알 수 없다. 그래서 같은 규칙을 여기서 먼저 건다.
+ *
+ * 이것은 보안 통제가 아니라 사용자에게 결과를 미리 알려 주는 장치다.
+ * 통제는 서버가 저장·반영 양쪽에서 한다.
+ */
+const UNSAFE_STYLE_VALUE = /[;{}<>]|url\s*\(|expression\s*\(|javascript:|@import/i;
+
+export function isSafeStyleValue(value: string): boolean {
+  return !UNSAFE_STYLE_VALUE.test(value);
+}
