@@ -9,12 +9,7 @@ import {
   type ElementMeta,
 } from "@/canvas/protocol";
 
-const props = defineProps<{
-  element: ElementMeta | null;
-  busy: boolean;
-  /** AI 로 교체된 요소는 서버가 식별자를 다시 붙이기 전까지 편집이 조용히 무시된다. */
-  locked?: boolean;
-}>();
+const props = defineProps<{ element: ElementMeta | null; busy: boolean }>();
 const emit = defineEmits<{
   setText: [value: string];
   setStyle: [prop: EditableStyleProp, value: string];
@@ -60,15 +55,10 @@ watch(attrName, (name) => (attrValue.value = props.element?.attrs[name] ?? ""));
         <span class="muted mono">{{ element.nhId }}</span>
       </header>
 
-      <p v-if="locked" class="warn">
-        AI 가 다시 만든 요소입니다. 서버가 식별자를 다시 붙이기 전까지 편집이 반영되지 않으므로
-        막아 두었습니다. 화면을 다시 만들면 풀립니다.
-      </p>
-
       <label>
         <span>텍스트</span>
-        <textarea v-model="text" rows="2" :disabled="busy || locked"></textarea>
-        <button :disabled="busy || locked || !text.trim()" @click="emit('setText', text)">텍스트 반영</button>
+        <textarea v-model="text" rows="2" :disabled="busy"></textarea>
+        <button :disabled="busy || !text.trim()" @click="emit('setText', text)">텍스트 반영</button>
       </label>
 
       <label>
@@ -76,13 +66,13 @@ watch(attrName, (name) => (attrValue.value = props.element?.attrs[name] ?? ""));
         <select v-model="styleProp" :disabled="busy">
           <option v-for="p in EDITABLE_STYLE_PROPS" :key="p" :value="p">{{ p }}</option>
         </select>
-        <input v-model="styleValue" placeholder="예: #00a04b" :disabled="busy || locked" />
+        <input v-model="styleValue" placeholder="예: #00a04b" :disabled="busy" />
         <p v-if="styleRejected" class="warn">
           <code>; {{ "{ } < >" }} url( expression( javascript: @import</code> 가 들어간 값은
           저장되어도 화면에 반영되지 않습니다.
         </p>
         <button
-          :disabled="busy || locked || styleRejected || !styleValue.trim()"
+          :disabled="busy || styleRejected || !styleValue.trim()"
           @click="emit('setStyle', styleProp, styleValue)"
         >
           스타일 반영
@@ -94,16 +84,16 @@ watch(attrName, (name) => (attrValue.value = props.element?.attrs[name] ?? ""));
         <select v-model="attrName" :disabled="busy">
           <option v-for="a in EDITABLE_ATTRS" :key="a" :value="a">{{ a }}</option>
         </select>
-        <input v-model="attrValue" :disabled="busy || locked" />
-        <button :disabled="busy || locked || !attrValue.trim()" @click="emit('setAttr', attrName, attrValue)">
+        <input v-model="attrValue" :disabled="busy" />
+        <button :disabled="busy || !attrValue.trim()" @click="emit('setAttr', attrName, attrValue)">
           속성 반영
         </button>
       </label>
 
       <label class="ai">
         <span>AI 로 이 요소만 다시 만들기</span>
-        <textarea v-model="instruction" rows="3" placeholder="어떻게 바꿀지 적어주세요." :disabled="busy || locked"></textarea>
-        <button class="primary" :disabled="busy || locked || !instruction.trim()" @click="emit('aiEdit', instruction)">
+        <textarea v-model="instruction" rows="3" placeholder="어떻게 바꿀지 적어주세요." :disabled="busy"></textarea>
+        <button class="primary" :disabled="busy || !instruction.trim()" @click="emit('aiEdit', instruction)">
           {{ busy ? "요청 중…" : "AI 편집" }}
         </button>
       </label>

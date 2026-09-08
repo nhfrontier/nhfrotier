@@ -90,8 +90,10 @@ function submit() {
           </label>
         </div>
         <input v-model="reason" placeholder="이유 (선택)" :disabled="busy" />
-        <button type="submit" :disabled="busy || !chosen">확정</button>
-        <button type="button" @click="open = false">취소</button>
+        <div class="actions">
+          <button type="submit" :disabled="busy || !chosen">확정</button>
+          <button type="button" @click="open = false">취소</button>
+        </div>
       </form>
     </template>
   </li>
@@ -121,5 +123,6 @@ function submit() {
 .decide input[type="text"], .decide input:not([type]) {
   font: inherit; padding: 6px 9px; border: 1px solid var(--line); border-radius: 8px;
 }
+.actions { display: flex; gap: 8px; }
 .tiny { padding: 2px 8px; font-size: 12px; }
 </style>
