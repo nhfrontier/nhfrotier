@@ -4,7 +4,17 @@ import { api, ApiError } from "@/api/client";
 import DesignCanvas from "@/components/DesignCanvas.vue";
 import ElementPanel from "@/components/ElementPanel.vue";
 import CommentThread from "@/components/CommentThread.vue";
-import type { Comment, Patch, ScreenHtml, ScreenSummary, VersionDetail } from "@/api/types";
+import ReviewPanel from "@/components/ReviewPanel.vue";
+import type {
+  Comment,
+  Patch,
+  ResponsibilityFinding,
+  ReviewView,
+  ScreenHtml,
+  ScreenSummary,
+  UsabilityFinding,
+  VersionDetail,
+} from "@/api/types";
 import type { CanvasMode, EditableAttr, EditableStyleProp, ElementMeta } from "@/canvas/protocol";
 
 const props = defineProps<{ versionId: string }>();
@@ -26,6 +36,11 @@ const comments = ref<Comment[]>([]);
 const editing = ref(false);
 const commenting = ref(false);
 
+const responsibility = ref<ReviewView<ResponsibilityFinding> | null>(null);
+const usability = ref<ReviewView<UsabilityFinding> | null>(null);
+const reviewing = ref<string | null>(null);
+const deciding = ref(false);
+
 /**
  * AI 가 교체한 요소는 서버가 식별자를 다시 붙이기 전까지 편집이 조용히 무시된다
  * (교체된 서브트리에 data-nh-id 가 없고 screen_elements 도 갱신되지 않는다).
@@ -46,11 +61,61 @@ async function load() {
   try {
     detail.value = await api.get<VersionDetail>(`/versions/${props.versionId}`);
     selected.value = detail.value.screens[0]?.id ?? null;
-    await Promise.all([loadPatches(), loadComments()]);
+    await Promise.all([loadPatches(), loadComments(), loadReviews()]);
     // 이미 만들어진 화면은 바로 보여준다.
     await Promise.all(detail.value.screens.filter((s) => s.status === "READY").map(fetchHtml));
   } catch (e) {
     error.value = e instanceof ApiError ? e.message : "버전을 불러오지 못했습니다.";
+  }
+}
+
+/**
+ * 검토는 Version 단위다(화면 단위가 아니다). 책임성은 생성 직후 돌 수 있고,
+ * UX 리스크는 논의가 쌓인 뒤 담당자가 부를 때만 돈다 (ARCHITECTURE 12절).
+ * 여기서는 이미 돌아 있는 최신 결과만 읽는다 — 실행은 사용자가 누를 때만 한다.
+ */
+async function loadReviews() {
+  const paths = [
+    ["responsibility", `/versions/${props.versionId}/responsibility-review`] as const,
+    ["usability", `/versions/${props.versionId}/usability-review`] as const,
+  ];
+  for (const [kind, path] of paths) {
+    try {
+      const view = await api.get<ReviewView<never>>(path);
+      if (kind === "responsibility") responsibility.value = view as ReviewView<ResponsibilityFinding>;
+      else usability.value = view as ReviewView<UsabilityFinding>;
+    } catch {
+      // 아직 한 번도 돌지 않았으면 없는 게 정상이다. 오류로 시끄럽게 하지 않는다.
+    }
+  }
+}
+
+async function runReview(kind: "responsibility" | "usability") {
+  reviewing.value = kind;
+  error.value = null;
+  try {
+    const path = `/versions/${props.versionId}/${kind === "responsibility" ? "responsibility" : "usability"}-review`;
+    const view = await api.post<ReviewView<never>>(path);
+    if (kind === "responsibility") responsibility.value = view as ReviewView<ResponsibilityFinding>;
+    else usability.value = view as ReviewView<UsabilityFinding>;
+  } catch (e) {
+    error.value = e instanceof ApiError ? e.message : "검토를 실행하지 못했습니다.";
+  } finally {
+    reviewing.value = null;
+  }
+}
+
+/** 결정이 Version 의 근거로 남는다. 그래서 이유를 함께 보낸다. */
+async function decide(kind: "responsibility" | "usability", findingId: string, decision: string, reason: string) {
+  deciding.value = true;
+  try {
+    const base = kind === "responsibility" ? "responsibility-findings" : "usability-findings";
+    await api.patch(`/${base}/${findingId}`, { decision, reason: reason || null });
+    await loadReviews();
+  } catch (e) {
+    error.value = e instanceof ApiError ? e.message : "결정을 저장하지 못했습니다.";
+  } finally {
+    deciding.value = false;
   }
 }
 
@@ -295,6 +360,17 @@ onMounted(load);
           />
         </div>
 
+        <ReviewPanel
+          class="reviews"
+          :responsibility="responsibility"
+          :usability="usability"
+          :busy="reviewing"
+          :deciding="deciding"
+          @run="runReview"
+          @decide-responsibility="(id, d, r) => decide('responsibility', id, d, r)"
+          @decide-usability="(id, d, r) => decide('usability', id, d, r)"
+        />
+
         <CommentThread
           class="comments"
           :comments="comments"
@@ -339,6 +415,7 @@ onMounted(load);
 .badge.ready { border-color: var(--nh-green); color: var(--nh-green); }
 .stage { display: grid; gap: 12px; }
 .stage.editing { grid-template-columns: 1fr 300px; }
+.reviews { margin-top: 14px; }
 .comments { margin-top: 14px; }
 .history { margin-top: 14px; }
 .history h2 { font-size: 14px; margin: 0 0 10px; }

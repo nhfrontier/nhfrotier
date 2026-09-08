@@ -178,3 +178,61 @@ export interface Comment {
   updatedAt: string | null;
   resolvedAt: string | null;
 }
+
+// ---------------------------------------------------------------- AI 검토 (FR-14 · FR-15)
+
+export type ReviewStatus = "RUNNING" | "DONE" | "FAILED";
+
+export interface ReviewRow {
+  id: string;
+  versionId: string;
+  status: ReviewStatus;
+  model: string | null;
+  error: string | null;
+  createdAt: string;
+}
+
+/**
+ * 결정 축이 둘로 갈린다.
+ * 준법 검토 요청은 **책임성 검토(FR-14) 고유**다 — UX 리스크 검토에는 준법 축이 없다.
+ */
+export type ResponsibilityDecision = "ACCEPTED" | "DEFERRED" | "REJECTED" | "COMPLIANCE_REQUESTED";
+export type UsabilityDecision = "ACCEPTED" | "DEFERRED" | "REJECTED";
+
+interface FindingBase {
+  id: string;
+  reviewId: string;
+  severity: string;
+  title: string;
+  /** 목업·기획안·의견 원문에서 그대로 인용한 조각. 근거 없는 지적은 서버가 버린다. */
+  evidence: string;
+  why: string;
+  suggestion: string;
+  decisionBy: string | null;
+  decisionByName: string | null;
+  decisionReason: string | null;
+  decidedAt: string | null;
+  createdAt: string;
+}
+
+export interface ResponsibilityFinding extends FindingBase {
+  ruleId: string;
+  needsComplianceReview: boolean;
+  decision: ResponsibilityDecision | null;
+}
+
+/** 근거를 어디서 인용했는지. V1__init.sql 의 evidence_source CHECK 와 같아야 한다. */
+export type EvidenceSource = "PROPOSAL" | "SCREEN" | "DISCUSSION";
+
+export interface UsabilityFinding extends FindingBase {
+  lensId: string;
+  evidenceSource: EvidenceSource;
+  decision: UsabilityDecision | null;
+}
+
+export interface ReviewView<F> {
+  review: ReviewRow | null;
+  findings: F[];
+  /** 근거 대조를 통과하지 못해 버려진 지적 수. 0 이 아니면 화면에 알린다. */
+  discardedCount: number;
+}
