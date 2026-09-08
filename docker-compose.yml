@@ -1,0 +1,69 @@
+# NH위드캔버스 — 로컬 확인 및 폐쇄망 실행용 구성.
+#
+# 같은 파일을 두 곳에서 쓴다.
+#   개발망  : docker compose up --build   (backend 를 소스에서 빌드)
+#   폐쇄망  : docker compose up           (반입한 이미지를 그대로 실행. build 는 돌지 않는다)
+#
+# 값은 .env 에서 온다. .env.example 을 복사해 채울 것. 이 파일에 비밀값을 적지 않는다.
+# 스키마는 Flyway 가 기동 시 적용한다. 초기화 SQL 을 여기에 넣지 말 것.
+
+services:
+  db:
+    image: postgres:16@sha256:f1c3376c26f2609ab9f29f71f824103fe2fcd8ee0346485cb6122a4f93df6f94
+    environment:
+      POSTGRES_DB: ${DB_NAME:-nhcanvas}
+      POSTGRES_USER: ${DB_USER:-nhcanvas}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD 를 .env 에 설정하세요}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-nhcanvas} -d ${DB_NAME:-nhcanvas}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+    # 운영에서는 DB 포트를 호스트로 열지 않는다. 로컬에서 직접 붙어볼 때만 주석을 푼다.
+    # ports: ["5432:5432"]
+
+  backend:
+    image: nh-canvas-backend:${APP_VERSION:-0.1.0}
+    build:
+      context: ./backend
+      args:
+        GIT_SHA: ${GIT_SHA:-unknown}
+        BUILD_TIME: ${BUILD_TIME:-unknown}
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-nhcanvas}
+      DB_USER: ${DB_USER:-nhcanvas}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD 를 .env 에 설정하세요}
+
+      # dev = 요청 헤더의 사용자 식별자를 그대로 믿는다. 운영에서는 sso 로 바꾼다.
+      AUTH_PROVIDER: ${AUTH_PROVIDER:-dev}
+
+      FILE_STORAGE_PATH: /var/storage
+      FILE_MAX_BYTES: ${FILE_MAX_BYTES:-52428800}
+
+      # 승인 LLM endpoint 가 확정되기 전까지는 false. 스텁이 응답한다.
+      LLM_ENABLED: ${LLM_ENABLED:-false}
+      LLM_API_ENDPOINT: ${LLM_API_ENDPOINT:-}
+      LLM_API_CREDENTIAL: ${LLM_API_CREDENTIAL:-}
+      LLM_MODEL_NAME: ${LLM_MODEL_NAME:-}
+
+      WORKER_ENABLED: ${WORKER_ENABLED:-true}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    volumes:
+      - file-storage:/var/storage
+    ports:
+      - "${HOST_PORT:-8080}:8080"
+    restart: unless-stopped
+
+volumes:
+  db-data:
+  file-storage:

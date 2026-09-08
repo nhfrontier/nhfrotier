@@ -1,0 +1,80 @@
+spring:
+  application:
+    name: nh-canvas-backend
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:nhcanvas}
+    username: ${DB_USER:nhcanvas}
+    password: ${DB_PASSWORD:}
+    hikari:
+      maximum-pool-size: ${DB_POOL_MAX:10}
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+  servlet:
+    multipart:
+      # 413 으로 즉시 거절하기 위한 상한. FILE_MAX_BYTES 와 함께 움직인다
+      max-file-size: ${FILE_MAX_SIZE:50MB}
+      max-request-size: ${FILE_MAX_SIZE:50MB}
+  mvc:
+    problemdetails:
+      enabled: false
+
+server:
+  port: ${SERVER_PORT:8080}
+  error:
+    # 스택 트레이스·내부 경로를 사용자에게 노출하지 않는다 (SECURITY D-2)
+    include-message: never
+    include-stacktrace: never
+    include-exception: false
+    include-binding-errors: never
+  forward-headers-strategy: framework
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+logging:
+  level:
+    root: INFO
+    com.nh.canvas: ${LOG_LEVEL:INFO}
+
+canvas:
+  auth:
+    # SSO 연계 방식이 미결이라 구현체를 프로파일로 고른다 (08_DECISIONS 2절)
+    #   dev  — 요청 헤더의 사용자 식별자를 그대로 믿는다. 개발 전용
+    #   sso  — 사내 SSO 검증. 방식 확정 후 구현
+    provider: ${AUTH_PROVIDER:dev}
+  storage:
+    # File Storage 종류가 미결이라 인터페이스 뒤에 둔다 (ARCHITECTURE 7절)
+    #   local — 로컬 디스크. NFS 마운트도 이것으로 동작한다
+    type: ${FILE_STORAGE_TYPE:local}
+    local-root: ${FILE_STORAGE_PATH:./var/storage}
+    max-bytes: ${FILE_MAX_BYTES:52428800}
+    allowed-content-types: >-
+      application/pdf,
+      application/vnd.openxmlformats-officedocument.wordprocessingml.document,
+      application/vnd.openxmlformats-officedocument.presentationml.presentation,
+      application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,
+      text/plain,text/markdown,text/csv,
+      image/png,image/jpeg,image/gif,image/webp
+  llm:
+    # SSRF 방지: 호출 대상은 환경변수 화이트리스트로 고정한다. 사용자 입력이 URL 을 정하지 않는다
+    # (SECURITY_CHECKLIST 3절 A10)
+    enabled: ${LLM_ENABLED:false}
+    endpoint: ${LLM_API_ENDPOINT:}
+    credential: ${LLM_API_CREDENTIAL:}
+    model: ${LLM_MODEL_NAME:}
+    timeout-seconds: ${LLM_TIMEOUT_SECONDS:120}
+    max-input-chars: ${LLM_MAX_INPUT_CHARS:400000}
+  worker:
+    enabled: ${WORKER_ENABLED:true}
+    poll-interval-ms: ${WORKER_POLL_INTERVAL_MS:2000}
+    max-attempts: ${WORKER_MAX_ATTEMPTS:3}
