@@ -6,8 +6,8 @@ const COLORS = ['red', 'orange', 'amber', 'green', 'teal', 'cyan', 'blue', 'indi
 
 export async function GET() {
   try {
-    const db = getDb();
-    const users = db.prepare('SELECT * FROM users ORDER BY created_at ASC').all();
+    const db = await getDb();
+    const users = await db.prepare('SELECT * FROM users ORDER BY created_at ASC').all();
     return NextResponse.json(users);
   } catch (error) {
     console.error(error);
@@ -22,16 +22,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: '이름을 입력해주세요.' }, { status: 400 });
     }
 
-    const db = getDb();
-    const count = (db.prepare('SELECT COUNT(*) as c FROM users').get() as { c: number }).c;
+    const db = await getDb();
+    const count = (await db.prepare('SELECT COUNT(*) as c FROM users').get() as { c: number }).c;
     const color = COLORS[count % COLORS.length];
     const id = uuidv4();
 
-    db.prepare('INSERT INTO users (id, name, role, color) VALUES (?, ?, ?, ?)').run(
+    await db.prepare('INSERT INTO users (id, name, role, color) VALUES (?, ?, ?, ?)').run(
       id, name.trim(), role?.trim() || 'member', color
     );
 
-    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(id);
+    const user = await db.prepare('SELECT * FROM users WHERE id = ?').get(id);
     return NextResponse.json(user, { status: 201 });
   } catch (error) {
     console.error(error);

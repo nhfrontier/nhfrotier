@@ -19,10 +19,10 @@ export async function PATCH(
       return NextResponse.json({ error: '올바르지 않은 결정입니다.' }, { status: 400 });
     }
 
-    const db = getDb();
+    const db = await getDb();
 
     // finding → review → mockup_version 이 모두 살아 있는지 확인한다
-    const target = db.prepare(`
+    const target = await db.prepare(`
       SELECT f.id
       FROM usability_findings f
       JOIN usability_reviews r ON f.review_id = r.id
@@ -31,16 +31,16 @@ export async function PATCH(
     `).get(findingId);
     if (!target) return NextResponse.json({ error: '검토 항목을 찾을 수 없습니다.' }, { status: 404 });
 
-    const user = db.prepare('SELECT id FROM users WHERE id = ?').get(userId);
+    const user = await db.prepare('SELECT id FROM users WHERE id = ?').get(userId);
     if (!user) return NextResponse.json({ error: '사용자를 찾을 수 없습니다.' }, { status: 404 });
 
-    db.prepare(`
+    await db.prepare(`
       UPDATE usability_findings
       SET decision = ?, decision_by = ?, decision_reason = ?, decided_at = datetime('now')
       WHERE id = ?
     `).run(decision, userId, typeof reason === 'string' && reason.trim() ? reason.trim() : null, findingId);
 
-    const finding = db.prepare(`
+    const finding = await db.prepare(`
       SELECT f.*, u.name as decided_by_name, u.color as decided_by_color
       FROM usability_findings f
       LEFT JOIN users u ON f.decision_by = u.id

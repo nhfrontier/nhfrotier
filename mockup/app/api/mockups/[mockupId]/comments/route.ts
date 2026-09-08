@@ -8,9 +8,9 @@ export async function GET(
 ) {
   try {
     const { mockupId } = await params;
-    const db = getDb();
+    const db = await getDb();
     // screen_key를 함께 내려야 클라이언트가 어느 화면의 핀인지 알 수 있다.
-    const comments = db.prepare(`
+    const comments = await db.prepare(`
       SELECT c.*, u.name as user_name, u.color as user_color, s.screen_key
       FROM comments c
       JOIN users u ON c.user_id = u.id
@@ -36,9 +36,9 @@ export async function POST(
     if (!userId) return NextResponse.json({ error: '사용자를 선택해주세요.' }, { status: 400 });
     if (!content?.trim()) return NextResponse.json({ error: '내용을 입력해주세요.' }, { status: 400 });
 
-    const db = getDb();
+    const db = await getDb();
 
-    const mockup = db.prepare('SELECT id FROM mockup_versions WHERE id = ?').get(mockupId);
+    const mockup = await db.prepare('SELECT id FROM mockup_versions WHERE id = ?').get(mockupId);
     if (!mockup) return NextResponse.json({ error: '목업을 찾을 수 없습니다.' }, { status: 404 });
 
     // 답글이면 뿌리를 검증한다. 스레드는 한 겹까지만 둔다 —
@@ -46,9 +46,9 @@ export async function POST(
     // 스레드인지도 흐려진다. 부모가 이미 답글이면 그 부모의 뿌리에 붙인다.
     let rootId: string | null = null;
     if (parentId) {
-      const parent = db
+      const parent = (await db
         .prepare('SELECT id, mockup_version_id, parent_id FROM comments WHERE id = ?')
-        .get(parentId) as
+        .get(parentId)) as
         | { id: string; mockup_version_id: string; parent_id: string | null }
         | undefined;
       if (!parent || parent.mockup_version_id !== mockupId) {
@@ -66,17 +66,17 @@ export async function POST(
     let anchorNhId: string | null = null;
 
     if (!rootId && screenKey && nhId) {
-      const screen = db
+      const screen = (await db
         .prepare('SELECT id FROM screens WHERE mockup_version_id = ? AND screen_key = ?')
-        .get(mockupId, screenKey) as { id: string } | undefined;
+        .get(mockupId, screenKey)) as { id: string } | undefined;
 
       if (!screen) {
         return NextResponse.json({ error: '화면을 찾을 수 없습니다.' }, { status: 404 });
       }
 
-      const element = db
+      const element = (await db
         .prepare('SELECT id FROM screen_elements WHERE screen_id = ? AND nh_id = ?')
-        .get(screen.id, nhId) as { id: string } | undefined;
+        .get(screen.id, nhId)) as { id: string } | undefined;
 
       if (!element) {
         return NextResponse.json({ error: '지목한 요소를 찾을 수 없습니다.' }, { status: 404 });
@@ -87,7 +87,7 @@ export async function POST(
     }
 
     const commentId = uuidv4();
-    db.prepare(
+    await db.prepare(
       `INSERT INTO comments (id, mockup_version_id, user_id, content, screen_id, nh_id, anchor_status, parent_id)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
     ).run(
@@ -103,7 +103,7 @@ export async function POST(
 
     // screen_key까지 실어 보낸다. 클라이언트가 곧바로 AI 편집을 이어 부를 때
     // 어느 화면의 어느 요소인지 다시 조회하지 않아도 되게 하기 위해서다.
-    const comment = db.prepare(`
+    const comment = await db.prepare(`
       SELECT c.*, u.name as user_name, u.color as user_color, s.screen_key
       FROM comments c
       JOIN users u ON c.user_id = u.id

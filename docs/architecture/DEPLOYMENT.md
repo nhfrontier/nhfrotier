@@ -66,7 +66,7 @@ npm run lint         # ESLint
 
 - 본체는 **커밋한다.** 토큰·컴포넌트·템플릿은 공개돼도 무방한 대체재다.
 - **`design-systems/*/uploads/` 는 커밋하지 않는다.** `.gitignore`에 등록되어 있다.
-  - `naru-bank/uploads/` — 올원뱅크 앱 화면 캡처 10장
+  - `allone-bank/uploads/` — 올원뱅크 앱 화면 캡처 10장
   - `nh-ibz/uploads/` — `ibz.nonghyup.com` 실제 화면 캡처 4.5MB
   - **이유**: 위와 같다. 루트가 공개 서빙되므로 실제 서비스 화면이 그대로 공개 URL이 된다.
 - 원본 export zip(`올원뱅크 Design System.zip` · `NH기업뱅킹 Design System.zip`)도 같은 이유로 제외한다. 풀어서 커밋하므로 중복이기도 하다.
@@ -84,8 +84,37 @@ npm run lint         # ESLint
 | 키 | 용도 | 필수 |
 |---|---|---|
 | `ANTHROPIC_API_KEY` | Claude API 호출용 키. `lib/generate.ts`에서 서버 측에서만 사용 | 필수 |
+| `PREVIEW_ACCESS_PASSWORD` | 팀 공유용 비밀번호 게이트. `proxy.ts`가 `/api`를 포함한 전 경로를 막는다 | 배포 시 필수 |
+| `TURSO_DATABASE_URL` | libSQL 접속 주소(`libsql://...`). **없으면 로컬 파일 DB를 쓴다** | 배포 시 필수 |
+| `TURSO_AUTH_TOKEN` | Turso 인증 토큰 | 배포 시 필수 |
 
 - `NEXT_PUBLIC_` 접두사를 붙이면 브라우저 번들에 포함된다. **API 키에는 절대 붙이지 않는다.**
+- `PREVIEW_ACCESS_PASSWORD`를 비워 두면 로컬 개발은 그대로 통과하지만, `NODE_ENV=production`에서는 **503으로 막힌다.**
+  무방비 배포를 원천 차단하기 위한 것이므로 이 동작을 완화하지 말 것.
+- 키 목록의 정본은 `mockup/.env.example`이다. 키를 추가하면 그 파일도 함께 고칠 것.
+
+### 팀 공유 배포 (Vercel) — 2026-09-08
+
+`mockup/`을 Vercel에 올려 팀이 실물을 쓰게 한다. `mockup-site/`(정적 미러)를 손으로 유지하던 이중 작업을 없애기 위한 것이다.
+
+| 항목 | 내용 |
+|---|---|
+| Root Directory | `mockup` |
+| DB | Turso (파일 DB는 serverless에서 쓸 수 없다) |
+| 접근 통제 | **앱 자체의 `proxy.ts` 게이트.** Vercel Deployment Protection을 쓰지 않는다 |
+
+**왜 Vercel Deployment Protection을 쓰지 않는가**: Hobby 플랜은 production 도메인을 보호할 수 없고
+(preview만 가능), 외부 사용자도 계정당 1명까지다. Password Protection은 Pro + 월 $150다.
+그래서 보호를 플랫폼이 아니라 앱 안에 두었다.
+
+**알아 둘 것**: Vercel Hobby는 fair use상 **비상업·개인 용도 전용**이며, 급여를 받는 직원이 코드를 쓰는 것도
+상업적 사용으로 정의되어 있다. 이 프로젝트는 그 정의에 해당한다. 무료 조건을 우선해 감수한 선택이며,
+계정 정지 가능성이 있다는 것을 전제로 쓴다.
+
+**`design-systems/` 경로 주의**: `lib/canvas/designSystem.ts`가 `process.cwd()/../design-systems`를 읽는데
+Root Directory가 `mockup`이라 기본 추적 범위 밖이다. `next.config.ts`의 `outputFileTracingRoot`·
+`outputFileTracingIncludes`로 넣어 두었으나 **첫 배포에서 실제로 읽히는지 확인이 필요하다.**
+읽히지 않으면 화면 생성은 계속 동작하고 프롬프트에서 디자인 토큰 절만 빠진다.
 
 ### B. 운영 (미확정 — 인프라 협의 후 확정)
 
@@ -189,7 +218,17 @@ Nginx / Reverse Proxy
 
 > 배포·실행 중 발생한 오류와 해결 방법을 여기에 누적한다.
 
-### `better-sqlite3` 설치·실행 실패
+### `npm install` 직후 dev 서버가 "Cannot find module 'uuid'"로 죽는다
+- **증상**: 멀쩡히 설치된 패키지를 못 찾는다고 한다. `npm ls uuid`는 정상이다.
+- **원인**: `node_modules`가 바뀌었는데 Turbopack의 `.next/dev` 캐시가 stale하다.
+- **해결**: `rm -rf .next` 후 재기동.
+
+### dev 서버가 두 개 뜨지 않는다
+- **증상**: `Another next dev server is already running.` 후 종료.
+- **원인**: 같은 디렉터리에 대해 dev 서버는 하나만 뜬다. 포트를 바꿔도 마찬가지다.
+- **해결**: 기존 프로세스를 먼저 정리한다. 메시지에 PID가 찍힌다.
+
+### ~~`better-sqlite3` 설치·실행 실패~~ (2026-09-08 — libSQL로 교체되어 해당 없음)
 - **증상**: `npm install` 시 네이티브 빌드 실패, 또는 실행 시 모듈 로드 오류.
 - **원인**: 네이티브 모듈이라 Node 버전에 맞춰 컴파일되어야 한다.
 - **해결**: Node 버전을 바꿨다면 `npm rebuild better-sqlite3`. Windows에서는 Visual Studio Build Tools(C++ 워크로드)가 필요하다.

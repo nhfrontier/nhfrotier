@@ -18,9 +18,9 @@ export async function GET(
 ) {
   try {
     const { mockupId } = await params;
-    const db = getDb();
+    const db = await getDb();
 
-    const rows = listVersionPatches(db, mockupId).map((row) => {
+    const rows = (await listVersionPatches(db, mockupId)).map((row) => {
       const { payload, ...rest } = row;
       void payload;
       return rest;

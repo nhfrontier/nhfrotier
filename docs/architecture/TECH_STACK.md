@@ -13,7 +13,7 @@
 
 | 구분 | 위치 | 스택 | 목적 |
 |---|---|---|---|
-| **A. 프로토타입 스택** | `mockup/` | Next.js 16 + React 19 + SQLite | 아이디어 검증·데모용. 행내 반입 대상이 아니다. |
+| **A. 프로토타입 스택** | `mockup/` | Next.js 16 + React 19 + libSQL/Turso | 아이디어 검증·데모용. 행내 반입 대상이 아니다. |
 | **B. 목표 운영 스택** | 미구현 | Vue 3 + Spring Boot + PostgreSQL + Docker | 행내 Linux 서버에 실제 배포할 스택. [04_SYSTEM_ARCHITECTURE.md](../../개발문서/04_SYSTEM_ARCHITECTURE.md) 기준. |
 
 두 스택은 겹치는 부분이 거의 없다. **프로토타입 코드는 운영 스택으로 이식되지 않으며**, 검증된 것은 화면 흐름·프롬프트 설계·데이터 모델뿐이다. 이 점을 전제로 아래를 읽는다.
@@ -37,11 +37,23 @@
 - **무엇**: 클래스 이름으로 스타일을 직접 지정하는 CSS 프레임워크.
 - **왜 선택**: 별도 CSS 파일 관리 없이 화면을 빠르게 조립할 수 있다. 검증 단계라 디자인 시스템을 세우지 않았다.
 
-### better-sqlite3 12.11
-- **무엇**: 파일 하나(`mockup/data/mockup.db`)로 동작하는 동기식 SQLite 드라이버.
-- **왜 선택**: DB 서버 설치 없이 바로 굴러간다. `foreign_keys = ON`, `journal_mode = WAL`을 켜서 관계 무결성은 유지한다.
-- **한계**: 단일 파일·단일 프로세스 전제라 동시 쓰기와 다중 컨테이너에 부적합하다. 운영 스택에서는 PostgreSQL로 간다.
-- **주의**: 네이티브 모듈이라 `next.config.ts`의 `serverExternalPackages`에 등록되어 있다.
+### @libsql/client 0.18 (Turso) — 2026-09-08 도입
+- **무엇**: SQLite 호환 DB 클라이언트. 로컬은 파일(`mockup/data/mockup.db`), 배포는 Turso 원격을 같은 코드로 쓴다.
+  접속 대상은 `TURSO_DATABASE_URL` 유무로 갈린다.
+- **왜 선택**: 팀 공유를 위해 Vercel에 올리기로 했는데 **serverless는 파일시스템에 쓸 수 없어** ~~better-sqlite3~~를 계속 쓸 수 없었다.
+  libSQL은 SQLite의 포크라 **SQL 방언이 같다** — 쿼리 문자열 115곳을 한 글자도 고치지 않고 옮겼다.
+  `datetime('now')`·`PRAGMA user_version`·`PRAGMA table_info`가 전부 그대로 동작하므로 마이그레이션 러너도 그대로 남았다.
+- **왜 Postgres가 아닌지**: C 표 참고. 요약하면 이 저장소에 테스트가 하나도 없어서, `?`→`$n`과 방언 차이를 손으로 115번 고치는 것이
+  가장 큰 사고 위험이었다. 운영 스택은 그대로 PostgreSQL이며 프로토타입 코드는 어차피 이식되지 않는다(0절).
+- **무엇이 바뀌었나**: 호출이 전부 async가 됐다. `getDb()`는 `Promise<Db>`를 돌려주고, `prepare().get/all/run`은 **모양은 그대로**지만 Promise를 반환한다.
+  `db.transaction(fn)`은 `(tx: Db) => Promise<T>`를 받는 형태로 바뀌었다 — 트랜잭션 안에서는 `db`가 아니라 `tx`를 써야 한다.
+- **한계**: 무료 5GB. 참조 화면 이미지가 base64로 DB에 들어가므로(`reference_screens.image_data`) 용량이 여기서 먼저 찬다.
+- **주의**: 네이티브 모듈(`libsql`)을 포함하므로 `next.config.ts`의 `serverExternalPackages`에 `@libsql/client`·`libsql`이 등록되어 있다.
+- **마이그레이션의 달라진 점**: 각 단계를 트랜잭션으로 감싸지 않는다. libSQL에서 다문장(`executeMultiple`)을 트랜잭션 안에서 돌리는 것이 보장되지 않기 때문이다.
+  대신 **모든 단계가 멱등이어야 한다**(원래도 그랬다). 실패하면 `user_version`이 오르지 않아 다음 기동에서 같은 단계를 다시 실행한다.
+
+### ~~better-sqlite3 12.11~~ (2026-09-08 사용 중단)
+- 위 항목으로 대체됐다. `package.json`에는 아직 남아 있으나 코드에서 참조하지 않는다.
 
 ### @anthropic-ai/sdk 0.106
 - **무엇**: Claude API 클라이언트. `lib/generate.ts`에서 기획안 텍스트 + 참조 화면 이미지를 넣고 HTML 목업을 받는다.
@@ -62,9 +74,9 @@
 
 ### 디자인 시스템 레지스트리 (`design-systems/`) — 패키지가 아니라 자산 계층
 - **무엇**: 저장소 루트의 `design-systems/` 아래 폴더 하나가 디자인 시스템 하나다. 선택지 정본은 `registry.json`이고, 코드가 읽는 것은 각 시스템의 `_ds_manifest.json` 안 `tokens[]`(컬러·타이포·간격 토큰)와 `templates[]`(완성 화면 목록) 두 개뿐이다. 소비 지점은 `mockup/lib/canvas/designSystem.ts` 한 파일이다.
-- **왜 필요**: 화면 생성 프롬프트에 넣을 디자인 토큰이 **하나로 하드코딩**돼 있었다. 그 하나가 가상 은행(나루뱅크, teal)이라 결과물을 "NH 디자인"이라 부를 수 없었다. 실제 NH 컬러를 쓰는 기업인터넷뱅킹 시스템이 들어오면서, 하나를 갈아끼우는 대신 **고를 수 있게** 만들었다.
+- **왜 필요**: 화면 생성 프롬프트에 넣을 디자인 토큰이 **하나로 하드코딩**돼 있었다. 그 하나가 실제 NH 값이 아닌 대체 팔레트(올원뱅크 DS, teal)라 결과물을 "NH 디자인"이라 부를 수 없었다. 실제 NH 컬러를 쓰는 기업인터넷뱅킹 시스템이 들어오면서, 하나를 갈아끼우는 대신 **고를 수 있게** 만들었다.
 - **왜 갈아끼우지 않았는지**: 모바일 앱(360×780 · 하단 내비)과 기업 웹(1200px · GNB)은 표면이 달라 한쪽으로 통일할 수 없다. 만들려는 화면이 어느 쪽인지는 사용자만 안다.
-- **왜 `_ds_manifest.json`이 정본인지**: Claude Design export 두 벌이 모두 이 파일에 `{name, value, kind}` 형태의 동일한 토큰 배열을 갖고 있다. 반면 사람이 읽기 좋은 `tokens.json`은 `naru-bank`에만 있다. 공통으로 있는 쪽을 읽어야 새 시스템을 넣을 때 변환 작업이 생기지 않는다.
+- **왜 `_ds_manifest.json`이 정본인지**: Claude Design export 두 벌이 모두 이 파일에 `{name, value, kind}` 형태의 동일한 토큰 배열을 갖고 있다. 반면 사람이 읽기 좋은 `tokens.json`은 `allone-bank`에만 있다. 공통으로 있는 쪽을 읽어야 새 시스템을 넣을 때 변환 작업이 생기지 않는다.
 - **비용**: 0. 런타임 의존성이 아니라 읽기 전용 자산이며, `fs.readFileSync` + 캐시로 끝난다.
 - **주의**: `<id>/uploads/` 는 커밋하지 않는다. 디자인 시스템을 만들 때 넣은 **실제 서비스 화면 캡처**라, 루트가 GitHub Pages로 공개 서빙되는 이 저장소에서는 그대로 공개 URL이 된다. 자산의 실체와 대체재 목록은 `design-systems/README.md`.
 
@@ -121,6 +133,11 @@
 | Kubernetes (초기 도입) | 오케스트레이션 | 초기 사용자 규모 대비 운영 부담이 크다 | Docker 단일/소수 컨테이너, stateless 설계로 전환 여지 확보 |
 | DB BLOB 파일 저장 | 파일 관리 단순화 | 백업/복구 시간과 커넥션 점유가 급증한다 | File Storage + DB 메타데이터 |
 | SQLite (운영) | DB 설치 부담 제거 | 단일 파일·단일 프로세스 전제라 동시 쓰기와 다중 컨테이너에 부적합 | PostgreSQL (프로토타입에서만 SQLite 유지) |
+| better-sqlite3 (배포본) | 프로토타입 DB | Vercel serverless는 파일시스템에 쓸 수 없다. 로컬 전용이면 팀이 볼 수 없다 | `@libsql/client` + Turso |
+| Neon Postgres (프로토타입 DB) | Vercel 네이티브 연동·운영 스택과 동일한 Postgres | 방언이 달라 `?`→`$n`, `datetime('now')` 등을 115곳에서 손으로 고쳐야 한다. **테스트가 하나도 없는 저장소에서 가장 큰 사고 위험.** 무료 용량도 0.5GB로 base64 이미지에 빠듯하다 | libSQL(SQL 무변경, 무료 5GB) |
+| Vercel Pro ($20/월) | production 배포 보호·팀 뷰어 무료 | 무료 조건에 어긋난다. 대신 앱 자체에 `proxy.ts` 비밀번호 게이트를 달아 Deployment Protection 없이 전 경로를 막았다 | 자체 게이트 |
+| Tailscale (무료 Personal) | 도메인 없이 팀 사설 접근 | 무료 Personal은 **비상업 전용**이고 회사 도메인 이메일은 자동으로 비즈니스로 분류된다. 이 프로젝트에 쓸 수 없다 | 자체 게이트 + 공개 URL |
+| Cloudflare Zero Trust Access | 무료 50명 이메일 인증 | Access를 걸려면 Cloudflare에 등록된 **도메인이 필요**하다(유료). 완전 무료 조건에 맞지 않는다 | 자체 게이트 |
 | 외부 SaaS 협업 도구 연동 | 협업 기능 확보 | 행내 업무 자료의 외부 반출 불가 | 내부 구축 |
 | 외부 이미지 생성 AI (DALL·E, Imagen 등) | 카드·홍보물 시안의 그래픽 소재 생성 | 행내 반입 승인 절차가 별도로 필요하고, 업무 자료의 외부 반출이 불가하며, 생성 이미지의 저작권·상표 리스크를 은행 산출물에 지울 수 없다 | 브랜드 자산 라이브러리(FR-04 `BRAND_ASSET`)에 사전 등록된 소재 + CSS/SVG 조합. AI는 배치만 한다 |
 | 신규 NH 디자인 시스템 구축 | UI 일관성 | 기존 NH 자산과 중복되며 유지 주체가 이원화된다 | 기존 NH 디자인 자산을 업무 맥락에 연결 |

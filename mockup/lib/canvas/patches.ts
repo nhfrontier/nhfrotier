@@ -1,11 +1,10 @@
-import type { Database } from 'better-sqlite3';
 import { EDITABLE_ATTRS, EDITABLE_STYLE_PROPS, type PatchOp } from './protocol';
 import { applyPatchesToHtml } from './htmlPipeline';
-import type { ElementPatch } from '../db';
+import type { Db, ElementPatch } from '../db';
 
 /** 되돌리지 않은 패치만, 적용 순서대로. */
-export function listActivePatches(db: Database, screenId: string): ElementPatch[] {
-  return db
+export async function listActivePatches(db: Db, screenId: string): Promise<ElementPatch[]> {
+  return (await db
     .prepare(
       `SELECT p.*, u.name as user_name, u.color as user_color
          FROM element_patches p
@@ -13,7 +12,7 @@ export function listActivePatches(db: Database, screenId: string): ElementPatch[
         WHERE p.screen_id = ? AND p.reverted_at IS NULL
         ORDER BY p.seq ASC`
     )
-    .all(screenId) as ElementPatch[];
+    .all(screenId)) as ElementPatch[];
 }
 
 /**
@@ -64,8 +63,8 @@ export function toPatchOps(rows: ElementPatch[]): PatchOp[] {
  * 그리고 편집 이력 목록. 되돌린 것을 빼지 않는 이유는 이력이 그것도 보여줘야 하기 때문이다.
  * (프레임에 적용할 연산만 필요하면 listActivePatches를 쓴다.)
  */
-export function listVersionPatches(db: Database, mockupVersionId: string): ElementPatch[] {
-  return db
+export async function listVersionPatches(db: Db, mockupVersionId: string): Promise<ElementPatch[]> {
+  return (await db
     .prepare(
       `SELECT p.*, u.name as user_name, u.color as user_color, s.screen_key
          FROM element_patches p
@@ -74,7 +73,7 @@ export function listVersionPatches(db: Database, mockupVersionId: string): Eleme
         WHERE s.mockup_version_id = ?
         ORDER BY p.created_at ASC, p.seq ASC`
     )
-    .all(mockupVersionId) as ElementPatch[];
+    .all(mockupVersionId)) as ElementPatch[];
 }
 
 /**
@@ -86,8 +85,8 @@ export function listVersionPatches(db: Database, mockupVersionId: string): Eleme
  * **서버에서 화면 HTML을 읽는 곳은 전부 이 함수를 거쳐야 한다.** 저장본을 직접 읽으면
  * 편집 이전 상태를 보게 되고, 화면에 보이는 것과 다운로드·검토 결과가 어긋난다.
  */
-export function bakeScreenHtml(db: Database, screenId: string, storedHtml: string): string {
-  const ops = toPatchOps(listActivePatches(db, screenId));
+export async function bakeScreenHtml(db: Db, screenId: string, storedHtml: string): Promise<string> {
+  const ops = toPatchOps(await listActivePatches(db, screenId));
   return applyPatchesToHtml(storedHtml, ops).html;
 }
 
@@ -134,13 +133,13 @@ export function validatePatch(input: PatchInput): string | null {
  * seq 채번과 삽입을 한 트랜잭션에 묶고 UNIQUE(screen_id, seq)로 경쟁을 막는다.
  * 같은 요소·같은 속성에 여러 사람이 쓰면 seq 순으로 마지막 것이 이긴다.
  */
-export function insertPatch(db: Database, id: string, input: PatchInput): ElementPatch {
-  return db.transaction(() => {
-    const row = db
+export async function insertPatch(db: Db, id: string, input: PatchInput): Promise<ElementPatch> {
+  return db.transaction(async (tx) => {
+    const row = (await tx
       .prepare('SELECT MAX(seq) as max_seq FROM element_patches WHERE screen_id = ?')
-      .get(input.screenId) as { max_seq: number | null };
+      .get(input.screenId)) as { max_seq: number | null };
 
-    db.prepare(
+    await tx.prepare(
       `INSERT INTO element_patches (id, screen_id, nh_id, user_id, op, payload, reason, source, seq, comment_id)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).run(
@@ -156,12 +155,12 @@ export function insertPatch(db: Database, id: string, input: PatchInput): Elemen
       input.commentId ?? null
     );
 
-    return db
+    return (await tx
       .prepare(
         `SELECT p.*, u.name as user_name, u.color as user_color
            FROM element_patches p JOIN users u ON p.user_id = u.id
           WHERE p.id = ?`
       )
-      .get(id) as ElementPatch;
-  })();
+      .get(id)) as ElementPatch;
+  });
 }

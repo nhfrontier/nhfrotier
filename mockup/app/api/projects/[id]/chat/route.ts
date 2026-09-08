@@ -11,10 +11,10 @@ export async function GET(
     const { searchParams } = new URL(req.url);
     const since = searchParams.get('since');
 
-    const db = getDb();
+    const db = await getDb();
     let messages;
     if (since) {
-      messages = db.prepare(`
+      messages = await db.prepare(`
         SELECT cm.*, u.name as user_name, u.color as user_color
         FROM chat_messages cm
         JOIN users u ON cm.user_id = u.id
@@ -23,7 +23,7 @@ export async function GET(
         LIMIT 100
       `).all(id, since);
     } else {
-      messages = db.prepare(`
+      messages = await db.prepare(`
         SELECT cm.*, u.name as user_name, u.color as user_color
         FROM chat_messages cm
         JOIN users u ON cm.user_id = u.id
@@ -51,13 +51,13 @@ export async function POST(
     if (!userId) return NextResponse.json({ error: '사용자를 선택해주세요.' }, { status: 400 });
     if (!content?.trim()) return NextResponse.json({ error: '내용을 입력해주세요.' }, { status: 400 });
 
-    const db = getDb();
+    const db = await getDb();
     const msgId = uuidv4();
-    db.prepare(
+    await db.prepare(
       'INSERT INTO chat_messages (id, project_id, user_id, content) VALUES (?, ?, ?, ?)'
     ).run(msgId, id, userId, content.trim());
 
-    const message = db.prepare(`
+    const message = await db.prepare(`
       SELECT cm.*, u.name as user_name, u.color as user_color
       FROM chat_messages cm JOIN users u ON cm.user_id = u.id
       WHERE cm.id = ?

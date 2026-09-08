@@ -11,12 +11,12 @@ export async function DELETE(
 ) {
   try {
     const { patchId } = await params;
-    const db = getDb();
+    const db = await getDb();
 
-    const patch = db.prepare('SELECT id FROM element_patches WHERE id = ?').get(patchId);
+    const patch = await db.prepare('SELECT id FROM element_patches WHERE id = ?').get(patchId);
     if (!patch) return NextResponse.json({ error: '편집 내역을 찾을 수 없습니다.' }, { status: 404 });
 
-    db.prepare('UPDATE element_patches SET reverted_at = ? WHERE id = ?').run(
+    await db.prepare('UPDATE element_patches SET reverted_at = ? WHERE id = ?').run(
       new Date().toISOString(),
       patchId
     );

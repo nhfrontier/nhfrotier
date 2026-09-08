@@ -23,32 +23,32 @@ export async function POST(
       return NextResponse.json({ error: '기획안 내용을 입력해주세요.' }, { status: 400 });
     }
 
-    const db = getDb();
+    const db = await getDb();
 
-    const project = db.prepare('SELECT id FROM projects WHERE id = ?').get(id);
+    const project = await db.prepare('SELECT id FROM projects WHERE id = ?').get(id);
     if (!project) {
       return NextResponse.json({ error: '프로젝트를 찾을 수 없습니다.' }, { status: 404 });
     }
 
-    const refScreens = db
+    const refScreens = (await db
       .prepare('SELECT * FROM reference_screens WHERE project_id = ? ORDER BY created_at ASC')
-      .all(id) as ReferenceScreen[];
+      .all(id)) as ReferenceScreen[];
 
     // 모르는 id는 registry의 default로 떨어진다. 옛 클라이언트가 값을 안 보내도 같은 경로다.
     const designSystem = resolveDesignSystem(designSystemId);
 
     const planned = await planScreens(proposalContent, refScreens, designSystem?.id);
 
-    const lastVersion = db
+    const lastVersion = (await db
       .prepare('SELECT MAX(version) as max_version FROM mockup_versions WHERE project_id = ?')
-      .get(id) as { max_version: number | null };
+      .get(id)) as { max_version: number | null };
 
     const version = (lastVersion.max_version ?? 0) + 1;
     const mockupId = uuidv4();
 
-    db.transaction(() => {
+    await db.transaction(async (tx) => {
       // html_content는 NOT NULL이다. 첫 화면이 만들어지면 그 HTML로 채워진다.
-      db.prepare(
+      await tx.prepare(
         `INSERT INTO mockup_versions (id, project_id, version, proposal_content, html_content, description, design_system_id)
          VALUES (?, ?, ?, ?, '', ?, ?)`
       ).run(
@@ -60,16 +60,16 @@ export async function POST(
         designSystem?.id ?? null
       );
 
-      const insert = db.prepare(
+      const insert = tx.prepare(
         `INSERT INTO screens (id, mockup_version_id, screen_key, name, role, sort_order, status)
          VALUES (?, ?, ?, ?, ?, ?, 'pending')`
       );
-      planned.forEach((screen, i) => {
-        insert.run(uuidv4(), mockupId, screen.screenKey, screen.name, screen.role, i);
-      });
-    })();
+      for (const [i, screen] of planned.entries()) {
+        await insert.run(uuidv4(), mockupId, screen.screenKey, screen.name, screen.role, i);
+      }
+    });
 
-    const screens = db
+    const screens = await db
       .prepare('SELECT * FROM screens WHERE mockup_version_id = ? ORDER BY sort_order ASC')
       .all(mockupId);
 

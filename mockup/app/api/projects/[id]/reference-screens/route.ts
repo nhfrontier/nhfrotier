@@ -8,8 +8,8 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const db = getDb();
-    const screens = db.prepare(
+    const db = await getDb();
+    const screens = await db.prepare(
       'SELECT id, project_id, name, mime_type, created_at FROM reference_screens WHERE project_id = ? ORDER BY created_at ASC'
     ).all(id);
     return NextResponse.json(screens);
@@ -25,14 +25,14 @@ export async function POST(
 ) {
   try {
     const { id } = await params;
-    const db = getDb();
+    const db = await getDb();
 
-    const project = db.prepare('SELECT id FROM projects WHERE id = ?').get(id);
+    const project = await db.prepare('SELECT id FROM projects WHERE id = ?').get(id);
     if (!project) {
       return NextResponse.json({ error: '프로젝트를 찾을 수 없습니다.' }, { status: 404 });
     }
 
-    const existingCount = (db.prepare(
+    const existingCount = (await db.prepare(
       'SELECT COUNT(*) as count FROM reference_screens WHERE project_id = ?'
     ).get(id) as { count: number }).count;
 
@@ -63,7 +63,7 @@ export async function POST(
     const screenId = uuidv4();
     const screenName = name?.trim() || file.name || `참조화면 ${existingCount + 1}`;
 
-    db.prepare(`
+    await db.prepare(`
       INSERT INTO reference_screens (id, project_id, name, image_data, mime_type)
       VALUES (?, ?, ?, ?, ?)
     `).run(screenId, id, screenName, base64, file.type);
@@ -82,8 +82,8 @@ export async function DELETE(
   try {
     const { id } = await params;
     const { screenId } = await req.json();
-    const db = getDb();
-    db.prepare('DELETE FROM reference_screens WHERE id = ? AND project_id = ?').run(screenId, id);
+    const db = await getDb();
+    await db.prepare('DELETE FROM reference_screens WHERE id = ? AND project_id = ?').run(screenId, id);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error(error);

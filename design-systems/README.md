@@ -6,7 +6,7 @@ AI가 화면을 만들 때 **어떤 디자인으로 뽑을지** 고르는 재료
 
 | id | UI 라벨 | 표면 | 출처 |
 |---|---|---|---|
-| `naru-bank` | 올원뱅크 (모바일 앱) | 모바일 360×780 | Claude Design export |
+| `allone-bank` | 올원뱅크 (모바일 앱) | 모바일 360×780 | Claude Design export |
 | `nh-ibz` | NH 기업인터넷뱅킹 (웹) | 웹 1200px | Claude Design export |
 
 ---
@@ -18,7 +18,7 @@ AI가 화면을 만들 때 **어떤 디자인으로 뽑을지** 고르는 재료
 3. 끝이다. 생성 화면의 선택지·프롬프트 토큰·Template 카드가 자동으로 따라온다.
 
 읽는 파일은 `<id>/_ds_manifest.json` 의 `tokens[]` 와 `templates[]` 두 개뿐이다.
-`naru-bank` 만 갖고 있는 `tokens.json` 에는 의존하지 않는다 — export 마다 있을 수도 없을 수도 있어서다.
+`allone-bank` 만 갖고 있는 `tokens.json` 에는 의존하지 않는다 — export 마다 있을 수도 없을 수도 있어서다.
 
 ---
 
@@ -27,7 +27,7 @@ AI가 화면을 만들 때 **어떤 디자인으로 뽑을지** 고르는 재료
 `.github/workflows/pages.yml` 이 **저장소 루트를 통째로** GitHub Pages 로 공개 서빙한다(main → `/`, dev → `/dev/`).
 export 에 딸려오는 `uploads/` 는 디자인 시스템을 만들 때 넣은 **실제 화면 캡처**라 그대로 공개 URL 이 된다.
 
-- `naru-bank/uploads/` — 올원뱅크 앱 화면 캡처 10장
+- `allone-bank/uploads/` — 올원뱅크 앱 화면 캡처 10장
 - `nh-ibz/uploads/` — `ibz.nonghyup.com` 실제 화면 캡처 4.5MB
 
 `.gitignore` 의 `design-systems/*/uploads/` 가 막는다. 파일이 없어도 빌드·생성은 그대로 동작한다.
@@ -36,19 +36,20 @@ export 에 딸려오는 `uploads/` 는 디자인 시스템을 만들 때 넣은 
 
 ## 자산의 실체 — 그대로 "NH 공식"이라고 부르면 안 되는 것들
 
-### `naru-bank` — 창작 브랜드다
+### `allone-bank` — 이름은 올원뱅크지만 색·로고는 대체재다
 
-UI 라벨은 `올원뱅크`지만, 폴더 안의 실체는 **"나루뱅크(Naru Bank)"라는 지어낸 은행**이다.
-올원뱅크 앱 캡처를 *입력 소재*로 UX 패턴만 가져왔고, 정체성은 새로 만들었다.
+올원뱅크 앱 캡처를 *입력 소재*로 삼았으나 가져온 것은 **UX 패턴뿐**이다.
+브랜드 색·로고·서체는 실제 올원뱅크 CI가 아니라 검증용으로 새로 만든 대체값이다.
+결과물을 "올원뱅크 공식 디자인"이라고 부르면 안 된다.
 
 | | 실제 값 |
 |---|---|
-| 브랜드 색 | teal `#0B8478` — NH 색이 아니다 |
-| 로고 | **없다.** 워드마크 자리에 `나루`를 활자로 조판한다 |
+| 브랜드 색 | teal `#0B8478` — **실제 올원뱅크·NH 색이 아니다** |
+| 로고 | **없다.** 워드마크 자리에 `올원`을 활자로 조판한다 |
 | 폰트 | Pretendard Variable (CDN) |
 | 아이콘 | Lucide |
 
-자세한 내용은 [`naru-bank/readme.md`](naru-bank/readme.md) 의 Provenance 절.
+자세한 내용은 [`allone-bank/readme.md`](allone-bank/readme.md) 의 Provenance 절.
 
 ### `nh-ibz` — 색은 실제 NH, 나머지는 대체재다
 

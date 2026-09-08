@@ -74,7 +74,7 @@ export const NH_CI_COLORS = [
   { name: "NH Light Green", pantone: "PANTONE 368 C", hex: "#A2C617" },
 ];
 
-/** design-systems/naru-bank/tokens/ 실측값. 토큰 카드는 썸네일이 아니라 값 자체를 보여준다. */
+/** design-systems/allone-bank/tokens/ 실측값. 토큰 카드는 썸네일이 아니라 값 자체를 보여준다. */
 export const BRAND_RAMP = ["#E7F5F2", "#C4E8E1", "#93D6C8", "#55BCA9", "#1E9F8C", "#0B8478", "#076A61", "#05534C"];
 
 export const STATUS_TOKENS = [

@@ -4,8 +4,8 @@ import { v4 as uuidv4 } from 'uuid';
 
 export async function GET() {
   try {
-    const db = getDb();
-    const projects = db.prepare(`
+    const db = await getDb();
+    const projects = await db.prepare(`
       SELECT p.*,
         (SELECT COUNT(*) FROM reference_screens WHERE project_id = p.id) as ref_count,
         (SELECT COUNT(*) FROM mockup_versions WHERE project_id = p.id) as mockup_count
@@ -26,13 +26,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: '프로젝트 이름을 입력해주세요.' }, { status: 400 });
     }
 
-    const db = getDb();
+    const db = await getDb();
     const id = uuidv4();
-    db.prepare(`
+    await db.prepare(`
       INSERT INTO projects (id, name, description) VALUES (?, ?, ?)
     `).run(id, name.trim(), description?.trim() || null);
 
-    const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(id);
+    const project = await db.prepare('SELECT * FROM projects WHERE id = ?').get(id);
     return NextResponse.json(project, { status: 201 });
   } catch (error) {
     console.error(error);

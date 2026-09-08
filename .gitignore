@@ -12,7 +12,7 @@ NH기업뱅킹 Design System.zip
 reference/농협CI 이미지 아카이브.zip
 
 # 디자인 시스템에 첨부된 참고 캡처.
-#   naru-bank/uploads — 올원뱅크 앱 화면 캡처
+#   allone-bank/uploads — 올원뱅크 앱 화면 캡처
 #   nh-ibz/uploads    — ibz.nonghyup.com 실제 화면 캡처(4.5MB)
 # 저장소 루트가 GitHub Pages 로 공개 서빙되므로 커밋하지 않는다.
 # 빌드는 design-systems/<id>/_ds_manifest.json 만 읽으므로 없어도 동작한다.

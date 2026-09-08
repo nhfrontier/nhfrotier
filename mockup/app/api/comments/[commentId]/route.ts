@@ -12,39 +12,39 @@ export async function PATCH(
   try {
     const { commentId } = await params;
     const { resolved, screenKey, nhId } = await req.json();
-    const db = getDb();
+    const db = await getDb();
 
-    const comment = db
+    const comment = (await db
       .prepare('SELECT id, mockup_version_id FROM comments WHERE id = ?')
-      .get(commentId) as { id: string; mockup_version_id: string } | undefined;
+      .get(commentId)) as { id: string; mockup_version_id: string } | undefined;
     if (!comment) return NextResponse.json({ error: '의견을 찾을 수 없습니다.' }, { status: 404 });
 
     if (typeof resolved === 'boolean') {
-      db.prepare('UPDATE comments SET resolved_at = ? WHERE id = ?').run(
+      await db.prepare('UPDATE comments SET resolved_at = ? WHERE id = ?').run(
         resolved ? new Date().toISOString() : null,
         commentId
       );
     }
 
     if (screenKey && nhId) {
-      const screen = db
+      const screen = (await db
         .prepare('SELECT id FROM screens WHERE mockup_version_id = ? AND screen_key = ?')
-        .get(comment.mockup_version_id, screenKey) as { id: string } | undefined;
+        .get(comment.mockup_version_id, screenKey)) as { id: string } | undefined;
       if (!screen) return NextResponse.json({ error: '화면을 찾을 수 없습니다.' }, { status: 404 });
 
-      const element = db
+      const element = (await db
         .prepare('SELECT id FROM screen_elements WHERE screen_id = ? AND nh_id = ?')
-        .get(screen.id, nhId) as { id: string } | undefined;
+        .get(screen.id, nhId)) as { id: string } | undefined;
       if (!element) {
         return NextResponse.json({ error: '지목한 요소를 찾을 수 없습니다.' }, { status: 404 });
       }
 
-      db.prepare(
+      await db.prepare(
         "UPDATE comments SET screen_id = ?, nh_id = ?, anchor_status = 'anchored' WHERE id = ?"
       ).run(screen.id, nhId, commentId);
     }
 
-    const updated = db.prepare(`
+    const updated = await db.prepare(`
       SELECT c.*, u.name as user_name, u.color as user_color, s.screen_key
       FROM comments c
       JOIN users u ON c.user_id = u.id
@@ -65,8 +65,8 @@ export async function DELETE(
 ) {
   try {
     const { commentId } = await params;
-    const db = getDb();
-    db.prepare('DELETE FROM comments WHERE id = ?').run(commentId);
+    const db = await getDb();
+    await db.prepare('DELETE FROM comments WHERE id = ?').run(commentId);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error(error);

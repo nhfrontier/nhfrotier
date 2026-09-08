@@ -39,6 +39,7 @@
 | AI 입력 자료 | 사용자가 대상 자료를 **명시적으로 선택** | 결정 |
 | AI 입력 자료의 범위 (FR-15) | UX 리스크 검토는 **사람이 작성한 의견 원문**을 함께 보낸다. FR-14까지는 목업 HTML과 기획안뿐이었다 | **미결** — 아래 참고 |
 | 전송 구간 | HTTPS. 공개 접점은 DMZ 배치 | 결정 |
+| 프로토타입 팀 공유 접근 통제 | **공유 비밀번호 게이트**(`mockup/proxy.ts`). `/api` 포함 전 경로를 막는다. Vercel Deployment Protection은 쓰지 않는다 | 결정 (프로토타입 한정) |
 | Prompt·Response 저장 | 저장 허용 범위 협의 필요 | **미결** |
 | AI 입력 민감정보 처리 기준 | 어떤 자료를 AI에 넣을 수 있는지 기준 필요. **FR-15(UX 리스크 검토)가 의견 원문을 입력에 포함시키면서 범위가 넓어졌다** — 의견에는 사내 정보·개인정보가 섞일 수 있다 | **미결** |
 | HTML preview 보안 정책 | 아래 4절 참고 | **미결** |
@@ -211,5 +212,7 @@ CSP는 `srcDoc` 조립 시 `<meta http-equiv="Content-Security-Policy">`로 넣�
 | 인가 없음 | 프로젝트 멤버십 검증 없이 조회·수정이 가능하다 (IDOR 노출) |
 | 감사 로그 없음 | 접근·변경 이력을 남기지 않는다 |
 | 외부 LLM 직접 호출 | 행내 승인 LLM이 아닌 외부 Anthropic API를 호출한다 |
+| 공유 비밀번호 게이트 | 팀 공유 배포를 위해 `proxy.ts`에 **공유 비밀번호** 하나를 둔다. `SECURITY.md` A-1의 "공유 계정 금지"에 어긋나며 누가 접속했는지 남지 않는다. 게이트가 없던 상태보다는 낫다는 판단이고, **운영 코드로 이식하지 않는다.** 운영은 SSO다.<br>비밀번호는 `PREVIEW_ACCESS_PASSWORD` 환경변수로만 주입하며 코드·로그에 넣지 않는다. 미설정 시 배포본은 503으로 막힌다 |
+| 외부 SaaS에 데이터 저장 | 프로토타입 DB가 **Turso(외부 SaaS)** 로 옮겨졌다. 기획안·의견 원문·생성 HTML이 외부에 저장된다. `TECH_STACK.md` C표의 "외부 SaaS 반출 불가" 원칙은 **운영 기준**이며, 프로토타입은 이미 외부 Anthropic API를 쓰고 있어 같은 선에 있다. **실제 업무 자료를 넣지 말 것** |
 | 의견 원문의 외부 전송 | FR-15 UX 리스크 검토가 **사람이 작성한 의견 원문**을 외부 Anthropic API로 보낸다. 프로토타입에는 의견 내용에 대한 필터·마스킹이 없다. 운영에서는 승인 LLM 경유가 전제이며 허용 범위는 1절의 미결 항목이다 |
 | ~~HTML preview 부분 적용~~ | ~~`app/projects/[id]/page.tsx:523`에서 `<iframe srcDoc sandbox="allow-same-origin">`으로 렌더링한다. `allow-scripts`가 없어 스크립트는 실행되지 않는다. 다만 저장 전 서버 측 정제와 CSP는 없다~~ → **해소(2026-09-05).** `app/components/canvas/DesignCanvas.tsx`가 `sandbox="allow-scripts"`(불투명 오리진)로 렌더링하고, `lib/canvas/htmlPipeline.ts`가 저장 전 정제하며, `srcDoc`에 CSP meta를 주입한다. 4절 참고 |
