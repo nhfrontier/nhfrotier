@@ -65,6 +65,30 @@
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
     </dependency>
+
+    <!--
+      인가(ProjectAccessGuard)와 SQL 을 진짜 PostgreSQL 위에서 검증하기 위한 것이다.
+      이 클래스의 위험은 로직이 아니라 조인이 틀리는 것이라, DB 를 대역으로 두면 검증이 성립하지 않는다.
+      H2 는 V1__init.sql 의 JSONB 를 못 받아 테스트용 스키마를 따로 써야 하는데,
+      그러면 운영과 다른 스키마를 검증하게 되므로 쓰지 않는다.
+      버전은 spring-boot-dependencies 의 testcontainers-bom 이 관리한다.
+      test scope 이므로 Dockerfile 의 반입 빌드(-DskipTests)에는 들어가지 않는다.
+    -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-testcontainers</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>postgresql</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -72,6 +96,22 @@
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <systemPropertyVariables>
+            <!--
+              Docker Engine 29 는 API 1.40 미만을 거절한다(MinAPIVersion=1.40). Testcontainers 가
+              끌고 오는 docker-java 3.4.2 는 그보다 낮은 버전으로 붙어 /info 가 본문 없는 400 을
+              받고, "Could not find a valid Docker environment" 로만 보인다 — Docker 는 멀쩡히
+              돌고 docker CLI 도 되는데 테스트만 죽으므로 원인을 찾기 어렵다.
+              1.44 는 Docker 25 이상이 모두 지원하므로 구버전 Docker 에서도 안전하다.
+            -->
+            <api.version>1.44</api.version>
+          </systemPropertyVariables>
+        </configuration>
       </plugin>
     </plugins>
   </build>

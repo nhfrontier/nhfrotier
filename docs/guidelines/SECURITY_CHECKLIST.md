@@ -229,7 +229,7 @@ CSP는 `srcDoc` 조립 시 `<meta http-equiv="Content-Security-Policy">`로 넣�
 
 | 항목 | 구현 |
 |---|---|
-| 인가 (A01 IDOR) | `ProjectAccessGuard` 한 곳. `projectId`/`fileId`/`versionId`/`commentId`/`jobId`/`exportId` 를 받는 모든 경로가 지난다. 리소스 id → 프로젝트 역추적 메서드를 가드에 모아, 호출부가 조인을 손으로 쓰다 빠뜨리는 경로를 없앴다 |
+| 인가 (A01 IDOR) | `ProjectAccessGuard` 한 곳. `projectId`/`fileId`/`versionId`/`commentId`/`jobId`/`exportId` 를 받는 모든 경로가 지난다. 리소스 id → 프로젝트 역추적 메서드를 가드에 모아, 호출부가 조인을 손으로 쓰다 빠뜨리는 경로를 없앴다. **`ProjectAccessGuardTest` 20건이 실제 PostgreSQL 위에서 회귀를 막는다** — 타 프로젝트 멤버의 접근, 삭제된 프로젝트·소프트 삭제 리소스, 역할 미달을 각 진입점마다 확인한다 (2026-09-08) |
 | 인가 모델 | `OWNER`/`EDITOR`/`REVIEWER`/`VIEWER`. 판정은 Backend 한 곳에서만 |
 | 파라미터 바인딩 (A03) | `JdbcClient` 로 값은 전부 `?`. 동적인 것은 `WHERE` 절 구조뿐이며 값 문자열을 잇지 않는다 |
 | 에러 비노출 (D-2) | `GlobalExceptionHandler` 가 `ErrorCode` 로 정규화. 스택·DB 제약 메시지·내부 경로를 응답에 넣지 않고 traceId 만 준다. `server.error.include-*` 도 전부 never |
@@ -251,6 +251,7 @@ CSP는 `srcDoc` 조립 시 `<meta http-equiv="Content-Security-Policy">`로 넣�
 | 개인정보 마스킹 (P-2) | 미적용. 현재 표시 대상이 사용자 이름·부서뿐이나, 화면이 생기면 적용 대상을 다시 본다 |
 | 파기 절차 (P-3) | 미적용. 보관기간·파기 로그 수립 필요 |
 | 감사 로그 보존 | 테이블에 남기지만 **1년 이상 보존을 보장하는 운영 절차와 조회 수단이 없다** |
+| **가드 호출 자체는 미검증** | 가드의 판정은 테스트가 덮지만, **컨트롤러가 그 가드를 실제로 부르는지는 확인하지 않는다.** 호출부 52곳 중 하나가 가드를 건너뛰어도 현재 테스트는 전부 통과한다. HTTP 진입점 단위 테스트가 필요하다 |
 | SAST/DAST | 미적용. 배포 전 승인 항목 |
 | 전송 구간 | 애플리케이션은 평문 HTTP 다. HTTPS 종단은 Reverse Proxy 몫이며 아직 구성되지 않았다 |
 | AI 입력 범위 | FR-15 가 의견 원문을 LLM 에 보내는 구조는 그대로다. 필터·마스킹이 없고 허용 범위는 1절의 미결 항목이다 |
