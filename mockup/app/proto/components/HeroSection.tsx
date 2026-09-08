@@ -51,26 +51,28 @@ export default function HeroSection() {
       const mm = gsap.matchMedia();
 
       /* ---------- 모션 최소화: 애니메이션 없이 최종 상태로 ---------- */
+      /* 커튼은 CSS 쪽 미디어 쿼리가 감춘다. 여기서 건드리지 않는다. */
       mm.add("(prefers-reduced-motion: reduce)", () => {
         gsap.set("[data-anim]", { opacity: 1, y: 0 });
         gsap.set("[data-step], [data-arrow]", { opacity: 1, y: 0, x: 0 });
-        gsap.set("[data-curtain]", { display: "none" });
       });
 
       /* ---------- 기본 모션 ---------- */
       mm.add("(prefers-reduced-motion: no-preference)", () => {
         const heading = el.querySelector<HTMLElement>("[data-heading]");
-        const steps = gsap.utils.toArray<HTMLElement>("[data-step]");
-        const arrows = gsap.utils.toArray<HTMLElement>("[data-arrow]");
+        const curtain = el.querySelector<HTMLElement>("[data-curtain]");
+        // gsap.utils.toArray 는 context 의 스코프를 받지 않아 문서 전체에서 고른다.
+        // 한 페이지에 히어로가 둘 이상이면 서로의 요소를 잡으므로 직접 좁힌다.
+        const steps = Array.from(el.querySelectorAll<HTMLElement>("[data-step]"));
+        const arrows = Array.from(el.querySelectorAll<HTMLElement>("[data-arrow]"));
 
-        const showCurtain =
-          typeof window !== "undefined" &&
-          !window.sessionStorage.getItem(CURTAIN_KEY);
-
-        if (!showCurtain) {
-          gsap.set("[data-curtain]", { display: "none" });
-        } else {
+        // 커튼을 걷는 것은 CSS 다. JS 는 "이번 세션에 이미 봤으니 건너뛴다"만 정한다.
+        // 걷는 일을 JS 가 맡으면 번들 로드 실패·예외 한 번에 히어로가 영영 가려진다.
+        const showCurtain = !window.sessionStorage.getItem(CURTAIN_KEY);
+        if (showCurtain) {
           window.sessionStorage.setItem(CURTAIN_KEY, "1");
+        } else {
+          curtain?.classList.add("hero-curtain--skip");
         }
 
         let split: SplitText | null = null;
@@ -119,6 +121,8 @@ export default function HeroSection() {
           gsap.set(arrows, { opacity: 0.35, x: 0 });
 
           const tl = gsap.timeline({
+            // 커튼(CSS 0.8s)이 걷힌 직후부터 시작한다.
+            delay: showCurtain ? 0.9 : 0,
             defaults: { ease: "expo.out" },
             onComplete: () => {
               // 마크업을 원래대로 되돌려 리사이즈 시 줄바꿈이 깨지지 않게 합니다.
@@ -129,15 +133,7 @@ export default function HeroSection() {
             },
           });
 
-          if (showCurtain) {
-            tl.to("[data-curtain]", {
-              clipPath: "inset(0% 0% 100% 0%)",
-              duration: 0.8,
-              ease: "power3.inOut",
-            }).set("[data-curtain]", { display: "none" });
-          }
-
-          tl.to("[data-eyebrow]", { opacity: 1, y: 0, duration: 0.5 }, "<0.1")
+          tl.to("[data-eyebrow]", { opacity: 1, y: 0, duration: 0.5 })
             .set(heading, { opacity: 1 }, "<")
             .to(
               split ? split.words : [],
@@ -180,13 +176,13 @@ export default function HeroSection() {
   return (
     <section
       ref={root}
-      className="hero-fx relative mx-auto max-w-6xl px-8 pt-12 pb-10"
+      className="relative mx-auto max-w-6xl px-8 pt-12 pb-10"
     >
+      {/* 헤더(56px)까지 덮는다. 히어로 폭이 아니라 화면 폭으로 펴야 헤더 위에 사각형만 얹히지 않는다. */}
       <div
         data-curtain
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 -top-14 bottom-0 z-20 bg-slate-900"
-        style={{ clipPath: "inset(0% 0% 0% 0%)" }}
+        className="hero-curtain pointer-events-none absolute -top-14 bottom-0 left-1/2 z-20 w-screen -translate-x-1/2 bg-slate-900"
       />
 
       <p

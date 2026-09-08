@@ -20,10 +20,9 @@
    * 같은 연출을 하지만, 이 정적 목업은 의존성 없이 유지하는 것이 원칙이라 CSS로 근사한다.
    * 그래서 헤드라인은 단어 단위가 아니라 줄 단위로 올라오고, 줄바꿈 위치는 손으로 고정했다.
    */
-  .hero-curtain { animation: hero-curtain 0.8s cubic-bezier(0.65,0,0.35,1) forwards; }
+  .hero-curtain { clip-path: inset(0 0 0 0); animation: hero-curtain 0.8s cubic-bezier(0.65,0,0.35,1) forwards; }
   @keyframes hero-curtain {
-    from { clip-path: inset(0 0 0 0); }
-    to   { clip-path: inset(0 0 100% 0); visibility: hidden; }
+    to { clip-path: inset(0 0 100% 0); visibility: hidden; }
   }
 
   .hero-line { display: block; overflow: clip; }
@@ -108,7 +107,8 @@
   <main style="max-width:1376px;margin:0 auto;padding:32px 32px 48px;">
     <!-- Hero -->
     <section class="hero" style="position:relative;margin:0 0 36px;">
-      <div class="hero-curtain" style="position:absolute;top:-32px;right:-32px;bottom:-14px;left:-32px;z-index:20;background:#0f172a;pointer-events:none;"></div>
+      <!-- 헤더(56px) + main 상단 여백(32px)까지 덮는다. 히어로 폭이 아니라 화면 폭으로 편다. -->
+      <div class="hero-curtain" style="position:absolute;top:-88px;bottom:-14px;left:50%;width:100vw;transform:translateX(-50%);z-index:20;background:#0f172a;pointer-events:none;"></div>
 
       <p class="hero-in hero-d1" style="font-size:11px;font-weight:600;color:#94a3b8;margin:0;">NH 위드캔버스</p>
 

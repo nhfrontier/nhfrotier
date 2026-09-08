@@ -45,3 +45,31 @@ body {
 .hero-line {
   overflow: clip;
 }
+
+/*
+ * 히어로 프리로더 커튼.
+ * 마크업 상태로 이미 화면을 덮고 있으므로 걷는 일을 JS에 맡기면 안 된다 —
+ * 번들 로드 실패나 예외 한 번에 히어로가 영영 가려진다. CSS가 걷고, GSAP은 건드리지 않는다.
+ * JS가 하는 일은 재방문 시 .hero-curtain--skip 을 붙이는 것뿐이다.
+ */
+.hero-curtain {
+  clip-path: inset(0 0 0 0);
+  animation: hero-curtain 0.8s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+
+@keyframes hero-curtain {
+  to {
+    clip-path: inset(0 0 100% 0);
+    visibility: hidden;
+  }
+}
+
+.hero-curtain--skip {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-curtain {
+    display: none;
+  }
+}
