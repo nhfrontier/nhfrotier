@@ -36,3 +36,12 @@ body {
   width: 100%;
   height: 100%;
 }
+
+/*
+ * 히어로 헤드라인의 SplitText 줄 마스크.
+ * 단어를 yPercent:115로 줄 밖에 내려놓고 끌어올리므로, 줄 상자가 잘라주지 않으면 그대로 보인다.
+ * intro가 끝나면 split.revert()가 이 래퍼를 걷어간다.
+ */
+.hero-line {
+  overflow: clip;
+}
