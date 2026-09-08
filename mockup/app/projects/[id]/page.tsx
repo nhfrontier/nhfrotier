@@ -273,13 +273,18 @@ export default function ProjectPage() {
   useEffect(() => { fetchProject(); fetchMembers(); }, [fetchProject, fetchMembers]);
 
   // 디자인 시스템 목록. 못 읽어도 생성은 그대로 되므로 오류를 표시하지 않는다.
+  // ?ds= 는 Template 화면에서 고른 시스템이다. useSearchParams는 Suspense 경계를 요구하는데
+  // 이 페이지가 통짜 클라이언트 컴포넌트라, 이미 도는 이 응답 처리 안에서 location을 직접 읽는다.
   useEffect(() => {
     fetch('/api/design-systems')
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (!data?.systems?.length) return;
         setDesignSystems(data.systems);
-        setDesignSystemId((prev) => prev || data.systems[0].id);
+
+        const requested = new URLSearchParams(window.location.search).get('ds');
+        const preselected = data.systems.find((s: DesignSystemOption) => s.id === requested)?.id;
+        setDesignSystemId((prev) => preselected ?? (prev || data.systems[0].id));
       })
       .catch(() => {});
   }, []);

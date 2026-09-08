@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NH뚝딱협업스튜디오 - 화면 만들기</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  a { color: #4f46e5; text-decoration: none; }
+  a:hover { color: #4338ca; }
+  .nav-link { padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 500; color: #64748b; }
+  .nav-link:hover { background: #f1f5f9; color: #0f172a; }
+  .nav-link.active { color: #4f46e5; background: #eef2ff; }
+
+  .card { background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:20px; }
+  .card h2 { font-size:15px;font-weight:700;color:#0f172a;margin:0 0 4px; }
+  .card p.hint { font-size:12px;color:#94a3b8;margin:0 0 14px; }
+  .sw { width:20px;height:20px;border-radius:5px;border:1px solid rgba(15,23,42,.08); }
+  .tag { font-size:10px;font-weight:600;padding:2px 7px;border-radius:999px; }
+
+  /* Template 화면에서 넘어온 선택을 그대로 보여준다. 루트의 data-ds 하나로 갈아 끼운다. */
+  [data-for] { display:none; }
+  [data-ds="naru-bank"] [data-for="naru-bank"],
+  [data-ds="nh-ibz"] [data-for="nh-ibz"],
+  [data-ds="doc"] [data-for="doc"] { display:block; }
+  .chips { gap:8px;flex-wrap:wrap; }
+  [data-ds="naru-bank"] .chips[data-for="naru-bank"],
+  [data-ds="nh-ibz"] .chips[data-for="nh-ibz"],
+  [data-ds="doc"] .chips[data-for="doc"] { display:flex; }
+
+  .chip { padding:6px 14px;border-radius:999px;font-size:12.5px;font-weight:500;border:1px solid #e2e8f0;color:#64748b;background:#fff;cursor:pointer;font-family:inherit; }
+  .chip:hover { border-color:#c7d2fe; }
+  [data-tpl="app-screen"] .chip[data-tpl="app-screen"],
+  [data-tpl="login"] .chip[data-tpl="login"],
+  [data-tpl="dashboard"] .chip[data-tpl="dashboard"],
+  [data-tpl="product-detail"] .chip[data-tpl="product-detail"],
+  [data-tpl="process-section"] .chip[data-tpl="process-section"],
+  [data-tpl="nh-dashboard"] .chip[data-tpl="nh-dashboard"],
+  [data-tpl="onboarding-form"] .chip[data-tpl="onboarding-form"],
+  [data-tpl="event-banner"] .chip[data-tpl="event-banner"],
+  [data-tpl="leaflet"] .chip[data-tpl="leaflet"] { background:#4f46e5;border-color:#4f46e5;color:#fff; }
+
+  .slot { flex:1;height:88px;border:2px dashed #cbd5e1;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:11.5px;color:#94a3b8; }
+  .go { width:100%;padding:11px;background:#4f46e5;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;text-align:center;display:block; }
+  .go:hover { background:#4338ca;color:#fff; }
+</style>
+</head>
+<body>
+<div style="width:1440px;min-height:1000px;background:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Apple SD Gothic Neo','Malgun Gothic',sans-serif;">
+
+  <header style="height:56px;background:#ffffff;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;gap:28px;padding:0 32px;">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div style="width:28px;height:28px;background:#4f46e5;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+      </div>
+      <span style="font-weight:700;color:#0f172a;font-size:14px;">NH뚝딱협업스튜디오</span>
+    </div>
+    <nav style="display:flex;align-items:center;gap:4px;">
+      <a class="nav-link" href="main.html">대시보드</a>
+      <a class="nav-link" href="projects.html">프로젝트</a>
+      <a class="nav-link" href="design-assets.html">디자인 자산</a>
+      <span class="nav-link active">Template</span>
+      <a class="nav-link" href="my-work.html">내 작업</a>
+    </nav>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:16px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="width:28px;height:28px;border-radius:50%;background:#4f46e5;color:#fff;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;">김</div>
+        <span style="font-size:13px;font-weight:500;color:#334155;">김민준</span>
+      </div>
+    </div>
+  </header>
+
+  <main id="brief-root" data-ds="naru-bank" data-tpl="" style="max-width:1376px;margin:0 auto;padding:32px;">
+
+    <div style="margin-bottom:20px;">
+      <a href="template.html" style="font-size:12.5px;color:#94a3b8;">← Template</a>
+      <h1 style="font-size:22px;font-weight:700;color:#0f172a;margin:6px 0 4px;">화면 만들기</h1>
+      <p style="font-size:14px;color:#64748b;margin:0;">무엇을 만들지 적으면 고른 디자인으로 화면을 만듭니다. 디자인 용어는 몰라도 됩니다.</p>
+    </div>
+
+    <!-- ── 고른 디자인 시스템 ── -->
+    <div style="display:flex;align-items:flex-start;gap:20px;">
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:16px;">
+
+        <div class="card" style="padding:16px 18px;">
+          <div data-for="naru-bank">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+              <span style="font-size:14px;font-weight:700;color:#0f172a;">올원뱅크</span>
+              <span class="tag" style="color:#475569;background:#f1f5f9;">모바일 앱</span>
+              <a href="template.html" style="margin-left:auto;font-size:12px;">바꾸기 →</a>
+            </div>
+            <div style="display:flex;gap:6px;margin-bottom:10px;">
+              <div class="sw" style="background:#0B8478;"></div>
+              <div class="sw" style="background:#55BCA9;"></div>
+              <div class="sw" style="background:#FF8A3D;"></div>
+              <div class="sw" style="background:#0E1414;"></div>
+            </div>
+            <p style="font-size:11.5px;color:#94a3b8;margin:0;line-height:1.6;">상단 앱바 · 하단 5칸 내비 · 바텀시트 전제. 360×780 폰 화면으로 생성됩니다.</p>
+          </div>
+
+          <div data-for="nh-ibz">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+              <span style="font-size:14px;font-weight:700;color:#0f172a;">NH 기업인터넷뱅킹</span>
+              <span class="tag" style="color:#00689b;background:#eef8fd;">웹</span>
+              <a href="template.html" style="margin-left:auto;font-size:12px;">바꾸기 →</a>
+            </div>
+            <div style="display:flex;gap:6px;margin-bottom:10px;">
+              <div class="sw" style="background:#0094D9;"></div>
+              <div class="sw" style="background:#122F50;"></div>
+              <div class="sw" style="background:#3F4A68;"></div>
+              <div class="sw" style="background:#00A04E;"></div>
+            </div>
+            <p style="font-size:11.5px;color:#94a3b8;margin:0;line-height:1.6;">1200px 중앙 정렬 · GNB · 흰 카드/회색 섹션 교차 전제. 데스크톱 화면으로 생성됩니다.</p>
+          </div>
+
+          <div data-for="doc">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+              <span style="font-size:14px;font-weight:700;color:#0f172a;">문서 양식</span>
+              <span class="tag" style="color:#475569;background:#f1f5f9;">디자인 시스템 무관</span>
+              <a href="template.html" style="margin-left:auto;font-size:12px;">바꾸기 →</a>
+            </div>
+            <p style="font-size:11.5px;color:#94a3b8;margin:0;line-height:1.6;">보고서·안내물 양식입니다. 컬러 토큰 대신 문서 서식을 따릅니다.</p>
+          </div>
+        </div>
+
+        <!-- ── 참고 템플릿 ── -->
+        <div class="card">
+          <h2>참고 템플릿</h2>
+          <p class="hint">백지에서 시작하지 않습니다. 가까운 것을 고르면 그 구성을 바탕으로 만듭니다.</p>
+          <div class="chips" data-for="naru-bank">
+            <button type="button" class="chip" data-tpl="app-screen">모바일 앱 화면</button>
+          </div>
+          <div class="chips" data-for="nh-ibz">
+            <button type="button" class="chip" data-tpl="login">로그인</button>
+            <button type="button" class="chip" data-tpl="dashboard">메인 대시보드</button>
+            <button type="button" class="chip" data-tpl="product-detail">상품 상세</button>
+            <button type="button" class="chip" data-tpl="process-section">프로세스 섹션</button>
+          </div>
+          <div class="chips" data-for="doc">
+            <button type="button" class="chip" data-tpl="nh-dashboard">NH 대시보드 공통형</button>
+            <button type="button" class="chip" data-tpl="onboarding-form">간편 온보딩 폼</button>
+            <button type="button" class="chip" data-tpl="event-banner">이벤트 배너형</button>
+            <button type="button" class="chip" data-tpl="leaflet">안내문 리플렛형</button>
+          </div>
+        </div>
+
+        <!-- ── 기획안 ── -->
+        <div class="card">
+          <h2>기획안</h2>
+          <p class="hint">화면에 무엇이 들어가야 하는지 적습니다. 문장으로 적어도 됩니다.</p>
+          <textarea rows="12" style="width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:12.5px;font-family:inherit;color:#334155;line-height:1.7;resize:none;" placeholder="예시:&#10;- 화면명: 기업 자금 현황&#10;- 목적: 입출금·이체 예정·잔액을 한눈에 보기&#10;- 구성:&#10;  1) 상단: 총 잔액 + 계좌 요약&#10;  2) 중단: 이체 예정 목록&#10;  3) 하단: 최근 거래 내역"></textarea>
+        </div>
+
+        <!-- ── 참조 화면 ── -->
+        <div class="card">
+          <h2>참조 화면 <span style="font-size:11.5px;font-weight:500;color:#94a3b8;">(선택 · 최대 3장)</span></h2>
+          <p class="hint">비슷하게 만들고 싶은 화면 캡처가 있으면 올립니다. 스타일 참고에만 씁니다.</p>
+          <div style="display:flex;gap:10px;">
+            <div class="slot">+ 화면 추가</div>
+            <div class="slot">+ 화면 추가</div>
+            <div class="slot">+ 화면 추가</div>
+          </div>
+        </div>
+
+        <a class="go" href="workspace.html">화면 생성</a>
+      </div>
+
+      <!-- ── 우측 안내 ── -->
+      <aside style="width:300px;flex-shrink:0;display:flex;flex-direction:column;gap:16px;">
+        <div class="card">
+          <h2 style="margin-bottom:10px;">무엇이 반영되나요</h2>
+          <ul style="margin:0;padding-left:16px;font-size:12px;color:#64748b;line-height:1.9;">
+            <li>고른 디자인 시스템의 <strong style="color:#334155;">컬러 토큰</strong>과 간격·반경 규칙</li>
+            <li>모바일/웹에 따른 <strong style="color:#334155;">화면 흐름과 기준 폭</strong></li>
+            <li>참고 템플릿의 <strong style="color:#334155;">구성 순서</strong></li>
+            <li>올린 참조 화면의 스타일</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h2 style="margin-bottom:10px;">만든 뒤에는</h2>
+          <p style="font-size:12px;color:#64748b;margin:0;line-height:1.9;">
+            생성된 화면은 작업공간에서 요소를 직접 고쳐가며 다듬습니다.
+            팀원 의견은 화면 위에 메모로 붙고, 반영 여부는 담당자가 정합니다.
+            AI는 제안만 하고 결정하지 않습니다.
+          </p>
+        </div>
+      </aside>
+    </div>
+  </main>
+</div>
+
+<script>
+  // Template 화면에서 넘어온 ?ds= / ?tpl= / ?doc= 을 그대로 화면에 반영한다.
+  (function () {
+    var root = document.getElementById('brief-root');
+    var params = new URLSearchParams(location.search);
+    var doc = params.get('doc');
+
+    root.setAttribute('data-ds', doc ? 'doc' : (params.get('ds') === 'nh-ibz' ? 'nh-ibz' : 'naru-bank'));
+    root.setAttribute('data-tpl', doc || params.get('tpl') || '');
+
+    var chips = document.querySelectorAll('.chip');
+    for (var i = 0; i < chips.length; i++) {
+      chips[i].addEventListener('click', function () {
+        root.setAttribute('data-tpl', this.getAttribute('data-tpl'));
+      });
+    }
+  })();
+</script>
+</body>
+</html>

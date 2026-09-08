@@ -4,7 +4,7 @@ const NAV = [
   { key: "dashboard", label: "대시보드", href: "/proto" },
   { key: "projects", label: "프로젝트", href: "/proto/projects" },
   { key: "assets", label: "디자인 자산", href: "/proto/assets" },
-  { key: "template", label: "Template", href: "#" },
+  { key: "template", label: "Template", href: "/proto/template" },
   { key: "mywork", label: "내 작업", href: "#" },
 ];
 
