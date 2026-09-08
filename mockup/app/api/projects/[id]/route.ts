@@ -7,18 +7,18 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const db = getDb();
+    const db = await getDb();
 
-    const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(id);
+    const project = await db.prepare('SELECT * FROM projects WHERE id = ?').get(id);
     if (!project) {
       return NextResponse.json({ error: '프로젝트를 찾을 수 없습니다.' }, { status: 404 });
     }
 
-    const refScreens = db.prepare(
+    const refScreens = await db.prepare(
       'SELECT id, project_id, name, mime_type, created_at FROM reference_screens WHERE project_id = ? ORDER BY created_at ASC'
     ).all(id);
 
-    const mockups = db.prepare(
+    const mockups = await db.prepare(
       'SELECT id, project_id, version, proposal_content, description, created_at, design_system_id FROM mockup_versions WHERE project_id = ? ORDER BY version DESC'
     ).all(id);
 
@@ -35,8 +35,8 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const db = getDb();
-    db.prepare('DELETE FROM projects WHERE id = ?').run(id);
+    const db = await getDb();
+    await db.prepare('DELETE FROM projects WHERE id = ?').run(id);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error(error);

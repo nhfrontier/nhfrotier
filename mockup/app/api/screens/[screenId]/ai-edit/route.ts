@@ -43,9 +43,9 @@ export async function POST(
       return NextResponse.json({ error: '어떻게 바꿀지 입력해주세요.' }, { status: 400 });
     }
 
-    const db = getDb();
+    const db = await getDb();
 
-    const screen = db.prepare('SELECT * FROM screens WHERE id = ?').get(screenId) as
+    const screen = await db.prepare('SELECT * FROM screens WHERE id = ?').get(screenId) as
       | Screen
       | undefined;
     if (!screen?.html_content) {
@@ -57,14 +57,14 @@ export async function POST(
       return NextResponse.json({ error: '수정할 요소를 찾을 수 없습니다.' }, { status: 404 });
     }
 
-    const siblings = db
+    const siblings = (await db
       .prepare('SELECT screen_key FROM screens WHERE mockup_version_id = ?')
-      .all(screen.mockup_version_id) as Array<{ screen_key: string }>;
+      .all(screen.mockup_version_id)) as Array<{ screen_key: string }>;
 
     // 편집 결과가 원래 화면과 다른 팔레트로 나오지 않도록, 이 버전을 만든 디자인 시스템을 그대로 쓴다.
-    const version = db
+    const version = (await db
       .prepare('SELECT design_system_id FROM mockup_versions WHERE id = ?')
-      .get(screen.mockup_version_id) as { design_system_id: string | null } | undefined;
+      .get(screen.mockup_version_id)) as { design_system_id: string | null } | undefined;
 
     const stream = client.messages.stream({
       model: 'claude-opus-5',
@@ -126,12 +126,12 @@ ${prompt.trim()}
     // 스레드에 붙지 않는 것이 편집 자체를 잃는 것보다 낫다.
     const linkedComment =
       typeof commentId === 'string' && commentId
-        ? (db.prepare('SELECT id FROM comments WHERE id = ?').get(commentId) as
+        ? (await db.prepare('SELECT id FROM comments WHERE id = ?').get(commentId) as
             | { id: string }
             | undefined)
         : undefined;
 
-    const patch = insertPatch(db, uuidv4(), {
+    const patch = await insertPatch(db, uuidv4(), {
       screenId,
       nhId,
       userId,

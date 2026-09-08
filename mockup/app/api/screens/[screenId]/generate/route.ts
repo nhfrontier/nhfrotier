@@ -13,27 +13,27 @@ export async function POST(
   { params }: { params: Promise<{ screenId: string }> }
 ) {
   const { screenId } = await params;
-  const db = getDb();
+  const db = await getDb();
 
-  const screen = db.prepare('SELECT * FROM screens WHERE id = ?').get(screenId) as
+  const screen = await db.prepare('SELECT * FROM screens WHERE id = ?').get(screenId) as
     | Screen
     | undefined;
   if (!screen) return NextResponse.json({ error: '화면을 찾을 수 없습니다.' }, { status: 404 });
 
-  const mockup = db
+  const mockup = (await db
     .prepare('SELECT * FROM mockup_versions WHERE id = ?')
-    .get(screen.mockup_version_id) as MockupVersion | undefined;
+    .get(screen.mockup_version_id)) as MockupVersion | undefined;
   if (!mockup) return NextResponse.json({ error: '목업을 찾을 수 없습니다.' }, { status: 404 });
 
-  const siblings = db
+  const siblings = (await db
     .prepare('SELECT * FROM screens WHERE mockup_version_id = ? ORDER BY sort_order ASC')
-    .all(screen.mockup_version_id) as Screen[];
+    .all(screen.mockup_version_id)) as Screen[];
 
-  const refScreens = db
+  const refScreens = (await db
     .prepare('SELECT * FROM reference_screens WHERE project_id = ? ORDER BY created_at ASC')
-    .all(mockup.project_id) as ReferenceScreen[];
+    .all(mockup.project_id)) as ReferenceScreen[];
 
-  db.prepare("UPDATE screens SET status = 'generating', error_message = NULL WHERE id = ?").run(
+  await db.prepare("UPDATE screens SET status = 'generating', error_message = NULL WHERE id = ?").run(
     screenId
   );
 
@@ -55,8 +55,8 @@ export async function POST(
       mockup.design_system_id
     );
 
-    const saved = db.transaction(() =>
-      saveScreenHtml(db, {
+    const saved = await db.transaction((tx) =>
+      saveScreenHtml(tx, {
         mockupVersionId: screen.mockup_version_id,
         screenKey: screen.screen_key,
         name: screen.name,
@@ -65,23 +65,23 @@ export async function POST(
         rawHtml,
         knownScreenKeys: allScreens.map((s) => s.screenKey),
       })
-    )();
+    );
 
     // 첫 화면의 HTML은 mockup_versions.html_content에도 넣는다.
     // 그래야 기존 조회·HTML 다운로드가 캔버스를 몰라도 그대로 동작한다.
     if (screen.sort_order === 0) {
-      db.prepare('UPDATE mockup_versions SET html_content = ? WHERE id = ?').run(
+      await db.prepare('UPDATE mockup_versions SET html_content = ? WHERE id = ?').run(
         saved.html,
         screen.mockup_version_id
       );
     }
 
-    const updated = db.prepare('SELECT * FROM screens WHERE id = ?').get(screenId);
+    const updated = await db.prepare('SELECT * FROM screens WHERE id = ?').get(screenId);
     return NextResponse.json({ screen: updated, warnings: saved.warnings });
   } catch (error) {
     console.error(error);
     const message = error instanceof Error ? error.message : '화면을 만들지 못했습니다.';
-    db.prepare("UPDATE screens SET status = 'failed', error_message = ? WHERE id = ?").run(
+    await db.prepare("UPDATE screens SET status = 'failed', error_message = ? WHERE id = ?").run(
       message,
       screenId
     );

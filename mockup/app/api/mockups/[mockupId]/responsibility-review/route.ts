@@ -21,9 +21,9 @@ export async function GET(
 ) {
   try {
     const { mockupId } = await params;
-    const db = getDb();
+    const db = await getDb();
 
-    const review = db.prepare(`
+    const review = await db.prepare(`
       SELECT * FROM responsibility_reviews
       WHERE mockup_version_id = ?
       ORDER BY created_at DESC, rowid DESC
@@ -32,7 +32,7 @@ export async function GET(
 
     if (!review) return NextResponse.json({ review: null, findings: [] });
 
-    const findings = db.prepare(FINDINGS_QUERY).all(review.id);
+    const findings = await db.prepare(FINDINGS_QUERY).all(review.id);
     return NextResponse.json({ review, findings });
   } catch (error) {
     console.error(error);
@@ -46,9 +46,9 @@ export async function POST(
   { params }: { params: Promise<{ mockupId: string }> }
 ) {
   const { mockupId } = await params;
-  const db = getDb();
+  const db = await getDb();
 
-  const mockup = db.prepare(
+  const mockup = await db.prepare(
     'SELECT id, html_content, proposal_content FROM mockup_versions WHERE id = ?'
   ).get(mockupId) as
     | { id: string; html_content: string; proposal_content: string }
@@ -57,7 +57,7 @@ export async function POST(
   if (!mockup) return NextResponse.json({ error: '목업을 찾을 수 없습니다.' }, { status: 404 });
 
   const reviewId = uuidv4();
-  db.prepare(
+  await db.prepare(
     'INSERT INTO responsibility_reviews (id, mockup_version_id, status, model) VALUES (?, ?, ?, ?)'
   ).run(reviewId, mockupId, 'RUNNING', REVIEW_MODEL);
 
@@ -68,28 +68,28 @@ export async function POST(
     // ❗ 이 검토는 여전히 **첫 화면만** 본다. mockup_versions.html_content가 sort_order 0
     // 화면으로만 채워지기 때문이다. 다화면 검토는 findings에 화면 구분이 없어
     // 스키마·프롬프트를 함께 고쳐야 하므로 별건으로 남긴다. (FR-15는 전 화면을 본다)
-    const firstScreen = db
+    const firstScreen = (await db
       .prepare(
         `SELECT id, html_content FROM screens
           WHERE mockup_version_id = ? AND html_content IS NOT NULL
           ORDER BY sort_order ASC LIMIT 1`
       )
-      .get(mockupId) as { id: string; html_content: string } | undefined;
+      .get(mockupId)) as { id: string; html_content: string } | undefined;
 
     const html = firstScreen
-      ? bakeScreenHtml(db, firstScreen.id, firstScreen.html_content)
+      ? await bakeScreenHtml(db, firstScreen.id, firstScreen.html_content)
       : mockup.html_content; // 캔버스 이전에 만들어진 목업은 screens 행이 없다
 
     const findings = await reviewResponsibility(html, mockup.proposal_content);
 
-    const insert = db.prepare(`
-      INSERT INTO responsibility_findings
-        (id, review_id, rule_id, category, severity, title, evidence, why, suggestion, needs_compliance_review)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-    const insertAll = db.transaction((items: typeof findings) => {
-      for (const f of items) {
-        insert.run(
+    await db.transaction(async (tx) => {
+      const insert = tx.prepare(`
+        INSERT INTO responsibility_findings
+          (id, review_id, rule_id, category, severity, title, evidence, why, suggestion, needs_compliance_review)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+      for (const f of findings) {
+        await insert.run(
           uuidv4(),
           reviewId,
           f.rule_id,
@@ -103,17 +103,16 @@ export async function POST(
         );
       }
     });
-    insertAll(findings);
 
-    db.prepare('UPDATE responsibility_reviews SET status = ? WHERE id = ?').run('DONE', reviewId);
+    await db.prepare('UPDATE responsibility_reviews SET status = ? WHERE id = ?').run('DONE', reviewId);
 
-    const review = db.prepare('SELECT * FROM responsibility_reviews WHERE id = ?').get(reviewId);
-    const rows = db.prepare(FINDINGS_QUERY).all(reviewId);
+    const review = await db.prepare('SELECT * FROM responsibility_reviews WHERE id = ?').get(reviewId);
+    const rows = await db.prepare(FINDINGS_QUERY).all(reviewId);
     return NextResponse.json({ review, findings: rows }, { status: 201 });
   } catch (error) {
     console.error(error);
     // 원인 문자열에 프롬프트·응답 원문이 섞이지 않도록 사용자에게는 정형 메시지만 준다
-    db.prepare('UPDATE responsibility_reviews SET status = ?, error = ? WHERE id = ?').run(
+    await db.prepare('UPDATE responsibility_reviews SET status = ?, error = ? WHERE id = ?').run(
       'FAILED',
       'REVIEW_FAILED',
       reviewId

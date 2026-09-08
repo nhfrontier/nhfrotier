@@ -1,7 +1,6 @@
-import type { Database } from 'better-sqlite3';
 import { v4 as uuidv4 } from 'uuid';
 import { processGeneratedHtml, type ElementFingerprint } from './htmlPipeline';
-import type { Screen, ScreenElement } from '../db';
+import type { Db, Screen, ScreenElement } from '../db';
 
 /** 다화면 이전에 만들어진 목업을 화면 1장으로 볼 때 쓰는 key. */
 export const LEGACY_SCREEN_KEY = 'main';
@@ -14,8 +13,8 @@ export const LEGACY_SCREEN_KEY = 'main';
  * 반환값의 html은 정제된 결과다. mockup_versions.html_content에도 이걸 넣어야
  * 저장본과 화면이 어긋나지 않는다.
  */
-export function saveScreenHtml(
-  db: Database,
+export async function saveScreenHtml(
+  db: Db,
   args: {
     mockupVersionId: string;
     screenKey: string;
@@ -25,38 +24,38 @@ export function saveScreenHtml(
     rawHtml: string;
     knownScreenKeys: string[];
   }
-): {
+): Promise<{
   screenId: string;
   html: string;
   warnings: string[];
   elementCount: number;
   /** 재생성일 때만 채워진다. 처음 만드는 화면이면 null. */
   reanchored: ReanchorResult | null;
-} {
+}> {
   const { html, elements, warnings } = processGeneratedHtml(args.rawHtml, {
     knownScreenKeys: args.knownScreenKeys,
   });
 
-  const existing = db
+  const existing = (await db
     .prepare('SELECT id FROM screens WHERE mockup_version_id = ? AND screen_key = ?')
-    .get(args.mockupVersionId, args.screenKey) as { id: string } | undefined;
+    .get(args.mockupVersionId, args.screenKey)) as { id: string } | undefined;
 
   const screenId = existing?.id ?? uuidv4();
 
   // 재생성이면 옛 요소를 먼저 붙잡아 둔다. 새 요소와 대조해 의견 앵커를 다시 잇기 위해서다.
-  const oldElements = existing ? listScreenElements(db, screenId) : [];
+  const oldElements = existing ? await listScreenElements(db, screenId) : [];
 
   if (existing) {
-    db.prepare(
+    await db.prepare(
       `UPDATE screens
           SET name = ?, role = ?, sort_order = ?, html_content = ?,
               status = 'ready', error_message = NULL, updated_at = datetime('now')
         WHERE id = ?`
     ).run(args.name, args.role ?? null, args.sortOrder ?? 0, html, screenId);
 
-    db.prepare('DELETE FROM screen_elements WHERE screen_id = ?').run(screenId);
+    await db.prepare('DELETE FROM screen_elements WHERE screen_id = ?').run(screenId);
   } else {
-    db.prepare(
+    await db.prepare(
       `INSERT INTO screens (id, mockup_version_id, screen_key, name, role, sort_order, html_content, status)
        VALUES (?, ?, ?, ?, ?, ?, ?, 'ready')`
     ).run(
@@ -75,10 +74,11 @@ export function saveScreenHtml(
      VALUES (?, ?, ?, ?, ?, ?, ?)`
   );
   for (const el of elements) {
-    insertElement.run(uuidv4(), screenId, el.nhId, el.tag, el.docOrder, el.pathSig, el.textSig);
+    await insertElement.run(uuidv4(), screenId, el.nhId, el.tag, el.docOrder, el.pathSig, el.textSig);
   }
 
-  const reanchored = oldElements.length > 0 ? reanchorComments(db, screenId, oldElements, elements) : null;
+  const reanchored =
+    oldElements.length > 0 ? await reanchorComments(db, screenId, oldElements, elements) : null;
 
   return { screenId, html, warnings, elementCount: elements.length, reanchored };
 }
@@ -95,15 +95,15 @@ export interface ReanchorResult {
  * 완벽히 안정된 id는 만들 수 없다는 것을 전제로, 목표를 다르게 잡는다:
  * 끊어진 앵커가 조용히 사라지지 않고 orphaned로 드러나 사람이 다시 붙일 수 있게 한다.
  */
-export function reanchorComments(
-  db: Database,
+export async function reanchorComments(
+  db: Db,
   screenId: string,
   oldElements: ScreenElement[],
   newElements: ElementFingerprint[]
-): ReanchorResult {
-  const anchored = db
+): Promise<ReanchorResult> {
+  const anchored = (await db
     .prepare("SELECT id, nh_id FROM comments WHERE screen_id = ? AND anchor_status = 'anchored'")
-    .all(screenId) as Array<{ id: string; nh_id: string }>;
+    .all(screenId)) as Array<{ id: string; nh_id: string }>;
 
   if (anchored.length === 0) return { anchored: 0, orphaned: 0 };
 
@@ -119,7 +119,7 @@ export function reanchorComments(
   for (const comment of anchored) {
     const before = oldById.get(comment.nh_id);
     if (!before) {
-      setOrphan.run(comment.id);
+      await setOrphan.run(comment.id);
       lost++;
       continue;
     }
@@ -143,10 +143,10 @@ export function reanchorComments(
 
     // 태그만 같은 정도(1점)로는 붙이지 않는다. 엉뚱한 곳에 붙은 메모가 사라진 메모보다 나쁘다.
     if (best && best.score >= 2) {
-      setAnchor.run(best.nhId, comment.id);
+      await setAnchor.run(best.nhId, comment.id);
       kept++;
     } else {
-      setOrphan.run(comment.id);
+      await setOrphan.run(comment.id);
       lost++;
     }
   }
@@ -159,19 +159,19 @@ export function reanchorComments(
  * 캔버스가 legacy 분기를 갖지 않도록, 읽기 시점에 조용히 정규화하는 것이 목적이다.
  * 멱등하며, 이미 화면이 있으면 그대로 반환한다.
  */
-export function ensureScreens(
-  db: Database,
+export async function ensureScreens(
+  db: Db,
   mockupVersionId: string,
   legacyHtml: string
-): Screen[] {
-  const rows = db
+): Promise<Screen[]> {
+  const rows = (await db
     .prepare('SELECT * FROM screens WHERE mockup_version_id = ? ORDER BY sort_order ASC')
-    .all(mockupVersionId) as Screen[];
+    .all(mockupVersionId)) as Screen[];
 
   if (rows.length > 0) return rows;
 
-  db.transaction(() => {
-    saveScreenHtml(db, {
+  await db.transaction(async (tx) => {
+    await saveScreenHtml(tx, {
       mockupVersionId,
       screenKey: LEGACY_SCREEN_KEY,
       name: '화면 1',
@@ -179,15 +179,15 @@ export function ensureScreens(
       rawHtml: legacyHtml,
       knownScreenKeys: [LEGACY_SCREEN_KEY],
     });
-  })();
+  });
 
-  return db
+  return (await db
     .prepare('SELECT * FROM screens WHERE mockup_version_id = ? ORDER BY sort_order ASC')
-    .all(mockupVersionId) as Screen[];
+    .all(mockupVersionId)) as Screen[];
 }
 
-export function listScreenElements(db: Database, screenId: string): ScreenElement[] {
-  return db
+export async function listScreenElements(db: Db, screenId: string): Promise<ScreenElement[]> {
+  return (await db
     .prepare('SELECT * FROM screen_elements WHERE screen_id = ? ORDER BY doc_order ASC')
-    .all(screenId) as ScreenElement[];
+    .all(screenId)) as ScreenElement[];
 }

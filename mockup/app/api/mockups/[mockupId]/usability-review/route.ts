@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDb } from '@/lib/db';
+import { getDb, type Db } from '@/lib/db';
 import { bakeScreenHtml } from '@/lib/canvas/patches';
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -27,9 +27,9 @@ export async function GET(
 ) {
   try {
     const { mockupId } = await params;
-    const db = getDb();
+    const db = await getDb();
 
-    const review = db.prepare(`
+    const review = await db.prepare(`
       SELECT * FROM usability_reviews
       WHERE mockup_version_id = ?
       ORDER BY created_at DESC, rowid DESC
@@ -38,7 +38,7 @@ export async function GET(
 
     if (!review) return NextResponse.json({ review: null, findings: [] });
 
-    const findings = db.prepare(FINDINGS_QUERY).all(review.id);
+    const findings = await db.prepare(FINDINGS_QUERY).all(review.id);
     return NextResponse.json({ review, findings });
   } catch (error) {
     console.error(error);
@@ -68,11 +68,11 @@ interface CommentRow {
  * 화면을 나눠 부르지 않고 전부 한 컨텍스트에 넣는다 — 누적을 보려면 흐름 전체가 함께 있어야 한다.
  * (화면당 분리 호출하는 lib/canvas/generateScreen.ts와 반대 방향이다.)
  */
-function collectInput(
-  db: ReturnType<typeof getDb>,
+async function collectInput(
+  db: Db,
   mockup: { id: string; html_content: string; proposal_content: string }
 ) {
-  const screenRows = db.prepare(`
+  const screenRows = await db.prepare(`
     SELECT id, screen_key, name, html_content
     FROM screens
     WHERE mockup_version_id = ? AND html_content IS NOT NULL
@@ -83,14 +83,16 @@ function collectInput(
   // 저장본이 아니라 편집을 반영한 HTML을 검토한다.
   // 저장본을 그대로 넣으면 사람이 이미 고친 것을 AI가 다시 지적한다.
   const screens: ReviewScreen[] = screenRows.length
-    ? screenRows.map((s) => ({
-        screenKey: s.screen_key,
-        name: s.name,
-        html: bakeScreenHtml(db, s.id, s.html_content ?? ''),
-      }))
+    ? await Promise.all(
+        screenRows.map(async (s) => ({
+          screenKey: s.screen_key,
+          name: s.name,
+          html: await bakeScreenHtml(db, s.id, s.html_content ?? ''),
+        }))
+      )
     : [{ screenKey: 'main', name: '화면', html: mockup.html_content }];
 
-  const commentRows = db.prepare(`
+  const commentRows = await db.prepare(`
     SELECT c.content, c.created_at, c.anchor_status, c.nh_id,
            u.name as user_name, s.screen_key
     FROM comments c
@@ -120,7 +122,7 @@ export async function POST(
   { params }: { params: Promise<{ mockupId: string }> }
 ) {
   const { mockupId } = await params;
-  const db = getDb();
+  const db = await getDb();
 
   let userId: unknown = null;
   try {
@@ -129,7 +131,7 @@ export async function POST(
     // 본문 없이 호출되면 요청자를 남기지 않는다
   }
 
-  const mockup = db.prepare(
+  const mockup = await db.prepare(
     'SELECT id, html_content, proposal_content FROM mockup_versions WHERE id = ?'
   ).get(mockupId) as
     | { id: string; html_content: string; proposal_content: string }
@@ -138,26 +140,26 @@ export async function POST(
   if (!mockup) return NextResponse.json({ error: '목업을 찾을 수 없습니다.' }, { status: 404 });
 
   const requestedBy =
-    typeof userId === 'string' && db.prepare('SELECT id FROM users WHERE id = ?').get(userId)
+    typeof userId === 'string' && await db.prepare('SELECT id FROM users WHERE id = ?').get(userId)
       ? userId
       : null;
 
   const reviewId = uuidv4();
-  db.prepare(
+  await db.prepare(
     'INSERT INTO usability_reviews (id, mockup_version_id, status, model, requested_by) VALUES (?, ?, ?, ?, ?)'
   ).run(reviewId, mockupId, 'RUNNING', USABILITY_MODEL, requestedBy);
 
   try {
-    const findings = await reviewUsability(collectInput(db, mockup));
+    const findings = await reviewUsability(await collectInput(db, mockup));
 
-    const insert = db.prepare(`
-      INSERT INTO usability_findings
-        (id, review_id, lens_id, severity, title, evidence, evidence_source, why, suggestion)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-    const insertAll = db.transaction((items: typeof findings) => {
-      for (const f of items) {
-        insert.run(
+    await db.transaction(async (tx) => {
+      const insert = tx.prepare(`
+        INSERT INTO usability_findings
+          (id, review_id, lens_id, severity, title, evidence, evidence_source, why, suggestion)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+      for (const f of findings) {
+        await insert.run(
           uuidv4(),
           reviewId,
           f.lens_id,
@@ -170,18 +172,17 @@ export async function POST(
         );
       }
     });
-    insertAll(findings);
 
-    db.prepare('UPDATE usability_reviews SET status = ? WHERE id = ?').run('DONE', reviewId);
+    await db.prepare('UPDATE usability_reviews SET status = ? WHERE id = ?').run('DONE', reviewId);
 
-    const review = db.prepare('SELECT * FROM usability_reviews WHERE id = ?').get(reviewId);
-    const rows = db.prepare(FINDINGS_QUERY).all(reviewId);
+    const review = await db.prepare('SELECT * FROM usability_reviews WHERE id = ?').get(reviewId);
+    const rows = await db.prepare(FINDINGS_QUERY).all(reviewId);
     return NextResponse.json({ review, findings: rows }, { status: 201 });
   } catch (error) {
     console.error(error);
     // 원인 문자열에 프롬프트·응답 원문이 섞이지 않도록 사용자에게는 정형 메시지만 준다
     const tooLarge = error instanceof InputTooLargeError;
-    db.prepare('UPDATE usability_reviews SET status = ?, error = ? WHERE id = ?').run(
+    await db.prepare('UPDATE usability_reviews SET status = ?, error = ? WHERE id = ?').run(
       'FAILED',
       tooLarge ? 'INPUT_TOO_LARGE' : 'REVIEW_FAILED',
       reviewId

@@ -17,16 +17,16 @@ export async function GET(
 ) {
   try {
     const { screenId } = await params;
-    const db = getDb();
+    const db = await getDb();
 
-    const screen = db.prepare('SELECT * FROM screens WHERE id = ?').get(screenId) as
+    const screen = await db.prepare('SELECT * FROM screens WHERE id = ?').get(screenId) as
       | Screen
       | undefined;
     if (!screen?.html_content) {
       return NextResponse.json({ error: '화면을 찾을 수 없습니다.' }, { status: 404 });
     }
 
-    const html = bakeScreenHtml(db, screen.id, screen.html_content);
+    const html = await bakeScreenHtml(db, screen.id, screen.html_content);
 
     return new NextResponse(html, {
       headers: {

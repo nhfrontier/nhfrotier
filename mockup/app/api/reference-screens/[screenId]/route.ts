@@ -7,8 +7,8 @@ export async function GET(
 ) {
   try {
     const { screenId } = await params;
-    const db = getDb();
-    const screen = db.prepare('SELECT image_data, mime_type FROM reference_screens WHERE id = ?').get(screenId) as
+    const db = await getDb();
+    const screen = await db.prepare('SELECT image_data, mime_type FROM reference_screens WHERE id = ?').get(screenId) as
       | { image_data: string; mime_type: string }
       | undefined;
 

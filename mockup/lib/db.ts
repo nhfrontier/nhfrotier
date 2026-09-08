@@ -1,23 +1,121 @@
-import Database from 'better-sqlite3';
+import { createClient, type Client, type InValue, type Transaction } from '@libsql/client';
 import path from 'path';
 import fs from 'fs';
 
-const DATA_DIR = path.join(process.cwd(), 'data');
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-}
+/**
+ * libSQL(Turso) 클라이언트.
+ *
+ * SQL 방언이 SQLite와 같아 **쿼리 문자열은 한 글자도 바뀌지 않았다.** 달라진 것은 호출이
+ * async가 된 것뿐이다. better-sqlite3에서 옮겨온 이유는 Vercel serverless가 파일시스템에
+ * 쓸 수 없기 때문이다. 자세한 내용은 docs/architecture/TECH_STACK.md 참고.
+ *
+ * - TURSO_DATABASE_URL이 있으면 원격(배포)
+ * - 없으면 data/mockup.db 로컬 파일(개발) — Turso 계정 없이도 개발이 돌아간다
+ */
 
+const DATA_DIR = path.join(process.cwd(), 'data');
 const DB_PATH = path.join(DATA_DIR, 'mockup.db');
 
-let db: Database.Database;
+/** better-sqlite3의 prepare().get/all/run 모양을 그대로 유지한 async 어댑터. */
+export interface Stmt {
+  get(...args: unknown[]): Promise<unknown>;
+  all(...args: unknown[]): Promise<unknown[]>;
+  run(...args: unknown[]): Promise<{ changes: number }>;
+}
 
-export function getDb(): Database.Database {
-  if (!db) {
-    db = new Database(DB_PATH);
-    db.pragma('journal_mode = WAL');
-    db.pragma('foreign_keys = ON');
-    migrate(db);
+export interface Db {
+  prepare(sql: string): Stmt;
+  exec(sql: string): Promise<void>;
+  transaction<T>(fn: (tx: Db) => Promise<T>): Promise<T>;
+}
+
+type Executor = Pick<Client, 'execute' | 'executeMultiple'>;
+
+/**
+ * better-sqlite3는 undefined와 boolean을 던지면 예외를 냈으므로 호출부에 그런 값은 없다.
+ * 그래도 넘어오면 조용히 깨지는 대신 SQLite가 쓰던 표현으로 맞춰 둔다.
+ */
+function toArgs(args: unknown[]): InValue[] {
+  return args.map((a) => {
+    if (a === undefined) return null;
+    if (typeof a === 'boolean') return a ? 1 : 0;
+    return a as InValue;
+  });
+}
+
+function makeDb(ex: Executor, client: Client | null): Db {
+  return {
+    prepare(sql: string): Stmt {
+      return {
+        async get(...args: unknown[]) {
+          return (await ex.execute({ sql, args: toArgs(args) })).rows[0];
+        },
+        async all(...args: unknown[]) {
+          return (await ex.execute({ sql, args: toArgs(args) })).rows;
+        },
+        async run(...args: unknown[]) {
+          const result = await ex.execute({ sql, args: toArgs(args) });
+          return { changes: result.rowsAffected };
+        },
+      };
+    },
+
+    async exec(sql: string) {
+      await ex.executeMultiple(sql);
+    },
+
+    async transaction<T>(fn: (tx: Db) => Promise<T>): Promise<T> {
+      if (!client) throw new Error('중첩 트랜잭션은 지원하지 않습니다.');
+      const tx: Transaction = await client.transaction('write');
+      try {
+        const result = await fn(makeDb(tx, null));
+        await tx.commit();
+        return result;
+      } catch (error) {
+        await tx.rollback();
+        throw error;
+      } finally {
+        tx.close();
+      }
+    },
+  };
+}
+
+let dbPromise: Promise<Db> | null = null;
+
+/**
+ * 최초 호출에서 접속과 마이그레이션을 끝낸다. 같은 promise를 공유하므로
+ * 동시 요청이 마이그레이션을 두 번 돌리지 않는다. 실패하면 다음 호출에서 다시 시도한다.
+ */
+export function getDb(): Promise<Db> {
+  if (!dbPromise) {
+    dbPromise = init().catch((error) => {
+      dbPromise = null;
+      throw error;
+    });
   }
+  return dbPromise;
+}
+
+async function init(): Promise<Db> {
+  const url = process.env.TURSO_DATABASE_URL;
+  let client: Client;
+
+  if (url) {
+    client = createClient({ url, authToken: process.env.TURSO_AUTH_TOKEN });
+  } else {
+    if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+    client = createClient({ url: `file:${DB_PATH}` });
+  }
+
+  // libSQL은 외래키가 기본 ON이다. 꺼져 있으면 ON DELETE CASCADE가 조용히 무시되므로 확인만 한다.
+  const fk = await client.execute('PRAGMA foreign_keys');
+  if (Number((fk.rows[0] as Record<string, unknown>)?.foreign_keys) !== 1) {
+    console.warn('[db] foreign_keys가 꺼져 있습니다. CASCADE 삭제가 동작하지 않습니다.');
+  }
+
+  const db = makeDb(client, client);
+  await migrate(client, db);
   return db;
 }
 
@@ -189,10 +287,13 @@ const SCHEMA_V2 = `
  * REFERENCES 절은 일부러 붙이지 않는다: foreign_keys=ON 상태의 ADD COLUMN에 제약이 있어
  * 관계는 코드에서 강제한다.
  */
-function addCommentAnchorColumns(db: Database.Database) {
-  const existing = new Set(
-    (db.pragma('table_info(comments)') as Array<{ name: string }>).map((c) => c.name)
-  );
+async function columnNames(db: Db, table: string): Promise<Set<string>> {
+  const rows = (await db.prepare(`PRAGMA table_info(${table})`).all()) as Array<{ name: string }>;
+  return new Set(rows.map((c) => c.name));
+}
+
+async function addCommentAnchorColumns(db: Db) {
+  const existing = await columnNames(db, 'comments');
   const columns: Array<[string, string]> = [
     ['screen_id', 'TEXT'],
     ['nh_id', 'TEXT'],
@@ -200,7 +301,7 @@ function addCommentAnchorColumns(db: Database.Database) {
     ['resolved_at', 'TEXT'],
   ];
   for (const [name, type] of columns) {
-    if (!existing.has(name)) db.exec(`ALTER TABLE comments ADD COLUMN ${name} ${type}`);
+    if (!existing.has(name)) await db.exec(`ALTER TABLE comments ADD COLUMN ${name} ${type}`);
   }
 }
 
@@ -253,12 +354,10 @@ const SCHEMA_V4 = `
  * design-systems/registry.json의 id를 담는다. 값 검증은 코드에서 한다 —
  * 레지스트리는 파일이라 DB 제약으로 묶으면 시스템을 추가할 때마다 마이그레이션이 필요해진다.
  */
-function addMockupVersionDesignSystemColumn(db: Database.Database) {
-  const existing = new Set(
-    (db.pragma('table_info(mockup_versions)') as Array<{ name: string }>).map((c) => c.name)
-  );
+async function addMockupVersionDesignSystemColumn(db: Db) {
+  const existing = await columnNames(db, 'mockup_versions');
   if (!existing.has('design_system_id')) {
-    db.exec('ALTER TABLE mockup_versions ADD COLUMN design_system_id TEXT');
+    await db.exec('ALTER TABLE mockup_versions ADD COLUMN design_system_id TEXT');
   }
 }
 
@@ -280,19 +379,15 @@ function addMockupVersionDesignSystemColumn(db: Database.Database) {
  * ADD COLUMN이라 IF NOT EXISTS가 없다. 러너가 멱등해야 하므로 직접 확인한다.
  * REFERENCES 절은 붙이지 않는다 — foreign_keys=ON 상태의 ADD COLUMN 제약.
  */
-function addThreadColumns(db: Database.Database) {
-  const commentCols = new Set(
-    (db.pragma('table_info(comments)') as Array<{ name: string }>).map((c) => c.name)
-  );
+async function addThreadColumns(db: Db) {
+  const commentCols = await columnNames(db, 'comments');
   if (!commentCols.has('parent_id')) {
-    db.exec('ALTER TABLE comments ADD COLUMN parent_id TEXT');
+    await db.exec('ALTER TABLE comments ADD COLUMN parent_id TEXT');
   }
 
-  const patchCols = new Set(
-    (db.pragma('table_info(element_patches)') as Array<{ name: string }>).map((c) => c.name)
-  );
+  const patchCols = await columnNames(db, 'element_patches');
   if (!patchCols.has('comment_id')) {
-    db.exec('ALTER TABLE element_patches ADD COLUMN comment_id TEXT');
+    await db.exec('ALTER TABLE element_patches ADD COLUMN comment_id TEXT');
   }
 }
 
@@ -300,24 +395,29 @@ function addThreadColumns(db: Database.Database) {
  * 새 단계는 반드시 **배열 끝에 덧붙인다.** 중간에 끼워 넣으면 인덱스가 밀려,
  * 이미 그 자리를 지나간 DB가 새 단계를 건너뛴 채 버전만 올라간다.
  */
-const MIGRATIONS: Array<(db: Database.Database) => void> = [
+const MIGRATIONS: Array<(db: Db) => Promise<void>> = [
   (db) => db.exec(SCHEMA_V1),
-  (db) => {
-    db.exec(SCHEMA_V2);
-    addCommentAnchorColumns(db);
+  async (db) => {
+    await db.exec(SCHEMA_V2);
+    await addCommentAnchorColumns(db);
   },
   addMockupVersionDesignSystemColumn,
   (db) => db.exec(SCHEMA_V4),
   addThreadColumns,
 ];
 
-function migrate(db: Database.Database) {
-  const current = db.pragma('user_version', { simple: true }) as number;
-  for (let v = current; v < MIGRATIONS.length; v++) {
-    db.transaction(() => {
-      MIGRATIONS[v](db);
-      db.pragma(`user_version = ${v + 1}`);
-    })();
+/**
+ * better-sqlite3 시절과 달리 각 단계를 트랜잭션으로 감싸지 않는다 —
+ * libSQL에서 여러 문장(executeMultiple)을 트랜잭션 안에서 돌리는 것이 보장되지 않기 때문이다.
+ * 대신 위 단계들은 전부 멱등이어야 한다(IF NOT EXISTS · 컬럼 존재 확인).
+ * 중간에 실패해도 user_version이 오르지 않으므로 다음 기동에서 같은 단계를 다시 실행한다.
+ */
+async function migrate(client: Client, db: Db) {
+  const row = (await db.prepare('PRAGMA user_version').get()) as { user_version: number } | undefined;
+  const current = Number(row?.user_version ?? 0);
+  for (let v = current; v < MIGRATIONS.length; v += 1) {
+    await MIGRATIONS[v](db);
+    await client.execute(`PRAGMA user_version = ${v + 1}`);
   }
 }
 
