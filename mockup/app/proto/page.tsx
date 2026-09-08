@@ -1,27 +1,17 @@
 import Link from "next/link";
 import { ProtoHeader } from "./components/ProtoHeader";
-import { Avatar } from "@/app/components/Avatar";
-import { PROJECTS_LIST, PROJECT_ID } from "./data";
-
-const STATUS_STYLE: Record<string, string> = {
-  DRAFT: "bg-slate-100 text-slate-600",
-  ACTIVE: "bg-indigo-50 text-indigo-600",
-  REVIEW: "bg-amber-50 text-amber-700",
-  COMPLETED: "bg-green-50 text-green-700",
-  ARCHIVED: "bg-slate-50 text-slate-400 border border-slate-200",
-};
+import HeroSection from "./components/HeroSection";
+import { PROJECT_ID } from "./data";
 
 export default function ProtoDashboardPage() {
   return (
     <div className="min-h-screen bg-slate-50">
       <ProtoHeader active="dashboard" />
 
-      <main className="max-w-6xl mx-auto px-8 py-8">
-        <div className="mb-7">
-          <h1 className="text-[22px] font-bold text-slate-900 mb-1">안녕하세요, 김민준님</h1>
-          <p className="text-sm text-slate-500">오늘의 업무 현황을 확인하세요.</p>
-        </div>
+      {/* 히어로가 자체 컨테이너(max-w-6xl px-8)를 갖는다. main 밖에 두어 폭이 이중으로 겹치지 않게 한다. */}
+      <HeroSection />
 
+      <main className="max-w-6xl mx-auto px-8 pb-8">
         <div className="grid grid-cols-2 gap-5 mb-6">
           <div className="bg-white border border-slate-200 rounded-xl p-5">
             <h2 className="text-sm font-bold text-slate-900 mb-3.5">나의 작업</h2>
@@ -78,38 +68,6 @@ export default function ProtoDashboardPage() {
                 <span className="text-xs font-semibold text-indigo-600 whitespace-nowrap">확인하기 →</span>
               </div>
             </div>
-          </div>
-        </div>
-
-        <div className="mb-6">
-          <div className="flex items-baseline justify-between mb-3">
-            <h2 className="text-sm font-bold text-slate-900">최근 프로젝트</h2>
-            <Link href="/proto/projects" className="text-xs font-medium text-indigo-600">전체보기 →</Link>
-          </div>
-          <div className="grid grid-cols-3 gap-4">
-            {PROJECTS_LIST.slice(0, 3).map((p) => (
-              <Link
-                key={p.id}
-                href={`/proto/projects/${PROJECT_ID}`}
-                className="bg-white border border-slate-200 rounded-xl p-[18px] hover:border-indigo-300 hover:shadow-md transition-all"
-              >
-                <div className="flex items-center gap-2 mb-2.5">
-                  <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${STATUS_STYLE[p.status]}`}>{p.status}</span>
-                  {p.pendingReview > 0 && (
-                    <span className="ml-auto text-[11px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full">검토 {p.pendingReview}건</span>
-                  )}
-                </div>
-                <h3 className="text-[15px] font-bold text-slate-900 mb-1.5">{p.name}</h3>
-                <p className="text-xs text-slate-400 mb-3.5">{p.lastActive} 활동</p>
-                <div className="flex items-center -space-x-1.5">
-                  {[p.owner].map((m, i) => (
-                    <div key={i} className="ring-2 ring-white rounded-full">
-                      <Avatar name={m.name} color={m.color} size="sm" />
-                    </div>
-                  ))}
-                </div>
-              </Link>
-            ))}
           </div>
         </div>
 

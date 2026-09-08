@@ -201,8 +201,10 @@ export default function HeroSection() {
         data-heading
         className="mt-3 max-w-[54rem] break-keep text-[32px] font-bold leading-[1.35] tracking-tight text-slate-900"
       >
-        기획안을 넣으면 화면이 나오고, 의견을 달면{" "}
-        <span className="text-indigo-600">다음 버전</span>이 나옵니다
+        {/* 줄바꿈을 고정한다. 정적 미러(mockup-site/main.html)와 줄이 갈리면 안 되고,
+            자연 줄바꿈에 맡기면 "나옵니다"만 둘째 줄에 남는다. SplitText가 <br>을 줄로 인식한다. */}
+        기획안을 넣으면 화면이 나오고,<br />
+        의견을 달면 <span className="text-indigo-600">다음 버전</span>이 나옵니다
       </h1>
 
       <p

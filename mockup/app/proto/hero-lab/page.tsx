@@ -1,6 +1,6 @@
 import { ProtoHeader } from "../components/ProtoHeader";
 import { HeroStage } from "./HeroStage";
-import HeroSection, { CURTAIN_KEY } from "./variants/HeroSection";
+import HeroSection, { CURTAIN_KEY } from "../components/HeroSection";
 import { HeroDark } from "./variants/HeroDark";
 
 /**
