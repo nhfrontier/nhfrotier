@@ -107,8 +107,13 @@
   <main style="max-width:1376px;margin:0 auto;padding:32px 32px 48px;">
     <!-- Hero -->
     <section class="hero" style="position:relative;margin:0 0 36px;">
-      <!-- 헤더(56px) + main 상단 여백(32px)까지 덮는다. 히어로 폭이 아니라 화면 폭으로 편다. -->
-      <div class="hero-curtain" style="position:absolute;top:-88px;bottom:-14px;left:50%;width:100vw;transform:translateX(-50%);z-index:20;background:#0f172a;pointer-events:none;"></div>
+      <!--
+        헤더(56px) + main 상단 여백(32px) 위까지 덮는다.
+        좌우는 100vw 를 쓰면 스크롤바 폭만큼 가로 스크롤이 생기므로 쓰지 않는다.
+        이 목업은 1440 고정폭이고 히어로 왼쪽 끝은 루트 기준 64px(main 여백 32 + padding 32)이라
+        left:-64px / width:1440px 이면 루트 전체와 정확히 겹친다.
+      -->
+      <div class="hero-curtain" style="position:absolute;top:-88px;bottom:-14px;left:-64px;width:1440px;z-index:20;background:#0f172a;pointer-events:none;"></div>
 
       <p class="hero-in hero-d1" style="font-size:11px;font-weight:600;color:#94a3b8;margin:0;">NH 위드캔버스</p>
 

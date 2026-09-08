@@ -173,94 +173,95 @@ export default function HeroSection() {
     return () => ctx.revert();
   }, []);
 
+  // 섹션은 전폭, 컨테이너는 안쪽에 둔다.
+  // 커튼이 헤더까지 덮으려면 화면 폭이어야 하는데, 100vw 는 스크롤바 폭을 포함해
+  // 가로 스크롤을 만든다. 전폭 섹션의 inset-x-0 이면 vw 없이 정확히 맞는다.
   return (
-    <section
-      ref={root}
-      className="relative mx-auto max-w-6xl px-8 pt-12 pb-10"
-    >
-      {/* 헤더(56px)까지 덮는다. 히어로 폭이 아니라 화면 폭으로 펴야 헤더 위에 사각형만 얹히지 않는다. */}
+    <section ref={root} className="relative">
       <div
         data-curtain
         aria-hidden="true"
-        className="hero-curtain pointer-events-none absolute -top-14 bottom-0 left-1/2 z-20 w-screen -translate-x-1/2 bg-slate-900"
+        className="hero-curtain pointer-events-none absolute inset-x-0 -top-14 bottom-0 z-20 bg-slate-900"
       />
 
-      <p
-        data-anim
-        data-eyebrow
-        className="text-[11px] font-semibold text-slate-400"
-      >
-        {BRAND}
-      </p>
+      <div className="mx-auto max-w-6xl px-8 pt-12 pb-10">
+        <p
+          data-anim
+          data-eyebrow
+          className="text-[11px] font-semibold text-slate-400"
+        >
+          {BRAND}
+        </p>
 
-      <h1
-        data-heading
-        className="mt-3 max-w-[54rem] break-keep text-[32px] font-bold leading-[1.35] tracking-tight text-slate-900"
-      >
-        {/* 줄바꿈을 고정한다. 정적 미러(mockup-site/main.html)와 줄이 갈리면 안 되고,
-            자연 줄바꿈에 맡기면 "나옵니다"만 둘째 줄에 남는다. SplitText가 <br>을 줄로 인식한다. */}
-        기획안을 넣으면 화면이 나오고,<br />
-        의견을 달면 <span className="text-indigo-600">다음 버전</span>이 나옵니다
-      </h1>
+        <h1
+          data-heading
+          className="mt-3 max-w-[54rem] break-keep text-[32px] font-bold leading-[1.35] tracking-tight text-slate-900"
+        >
+          {/* 줄바꿈을 고정한다. 정적 미러(mockup-site/main.html)와 줄이 갈리면 안 되고,
+              자연 줄바꿈에 맡기면 "나옵니다"만 둘째 줄에 남는다. SplitText가 <br>을 줄로 인식한다. */}
+          기획안을 넣으면 화면이 나오고,<br />
+          의견을 달면 <span className="text-indigo-600">다음 버전</span>이 나옵니다
+        </h1>
 
-      <p
-        data-anim
-        data-body
-        className="mt-4 max-w-[42rem] break-keep text-[13px] leading-relaxed text-slate-500"
-      >
-        백지에서 시작하지 않습니다. NH가 이미 가진 디자인 자산 위에서 AI가 초안을
-        만들고, 팀이 남긴 의견이 그대로 다음 버전의 근거가 됩니다.
-      </p>
+        <p
+          data-anim
+          data-body
+          className="mt-4 max-w-[42rem] break-keep text-[13px] leading-relaxed text-slate-500"
+        >
+          백지에서 시작하지 않습니다. NH가 이미 가진 디자인 자산 위에서 AI가 초안을
+          만들고, 팀이 남긴 의견이 그대로 다음 버전의 근거가 됩니다.
+        </p>
 
-      <div
-        data-anim
-        data-steps
-        className="mt-7 flex flex-wrap items-center gap-x-4 gap-y-2"
-      >
-        {STEPS.map((step, i) => (
-          <div key={step.to} className="flex items-center gap-x-4">
-            {i > 0 && (
-              <span data-arrow className="text-slate-300" aria-hidden="true">
-                <ArrowRight />
-              </span>
-            )}
-            <div data-step className="flex items-center gap-2">
-              <span
-                className="h-1.5 w-1.5 rounded-full bg-indigo-600"
-                aria-hidden="true"
-              />
-              <span className="text-[13px] text-slate-400">{step.from}</span>
-              <span className="text-slate-300" aria-hidden="true">
-                <ArrowRight />
-              </span>
-              <span className="text-[13px] font-semibold text-slate-900">
-                {step.to}
-              </span>
+        <div
+          data-anim
+          data-steps
+          className="mt-7 flex flex-wrap items-center gap-x-4 gap-y-2"
+        >
+          {STEPS.map((step, i) => (
+            <div key={step.to} className="flex items-center gap-x-4">
+              {i > 0 && (
+                <span data-arrow className="text-slate-300" aria-hidden="true">
+                  <ArrowRight />
+                </span>
+              )}
+              <div data-step className="flex items-center gap-2">
+                <span
+                  className="h-1.5 w-1.5 rounded-full bg-indigo-600"
+                  aria-hidden="true"
+                />
+                <span className="text-[13px] text-slate-400">{step.from}</span>
+                <span className="text-slate-300" aria-hidden="true">
+                  <ArrowRight />
+                </span>
+                <span className="text-[13px] font-semibold text-slate-900">
+                  {step.to}
+                </span>
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
 
-      <div
-        data-anim
-        data-cta
-        className="mt-8 flex flex-wrap items-center gap-2.5"
-      >
-        <Link
-          href="/proto/template"
-          className="group flex items-center gap-1.5 rounded-lg bg-indigo-600 px-[18px] py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-indigo-700"
+        <div
+          data-anim
+          data-cta
+          className="mt-8 flex flex-wrap items-center gap-2.5"
         >
-          화면 만들기
-          <span className="transition-transform duration-150 group-hover:translate-x-0.5">
-            <ArrowRight />
-          </span>
-        </Link>
-        <Link
-          href="/proto/assets"
-          className="rounded-lg border border-slate-200 bg-white px-[18px] py-2.5 text-[13px] font-semibold text-slate-700 transition-colors hover:bg-slate-50"
-        >
-          디자인 자산 보기
-        </Link>
+          <Link
+            href="/proto/template"
+            className="group flex items-center gap-1.5 rounded-lg bg-indigo-600 px-[18px] py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-indigo-700"
+          >
+            화면 만들기
+            <span className="transition-transform duration-150 group-hover:translate-x-0.5">
+              <ArrowRight />
+            </span>
+          </Link>
+          <Link
+            href="/proto/assets"
+            className="rounded-lg border border-slate-200 bg-white px-[18px] py-2.5 text-[13px] font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+          >
+            디자인 자산 보기
+          </Link>
+        </div>
       </div>
     </section>
   );
