@@ -251,9 +251,37 @@ curl -fsS http://localhost:\${HOST_PORT:-8080}/actuator/health
 
 두 볼륨은 함께 백업·복구해야 한다. 따로 복구하면 DB 메타데이터와 실제 파일이 어긋난다.
 
+### 파일 저장소를 NFS 등 바인드 마운트로 바꿀 때 (주의)
+
+\`docker-compose.yml\` 은 기본값으로 **이름 있는 볼륨**(\`file-storage\`)을 쓴다. 이 경우 Docker 가
+이미지의 소유권(uid 10001)을 그대로 가져가므로 별도 조치가 필요 없다.
+
+호스트 경로나 NFS 를 바인드 마운트로 바꾸면 **호스트 쪽 소유권이 그대로 적용된다.**
+컨테이너는 uid 10001(canvas)로 돌고, 앱은 기동 시 이 디렉터리를 만들려 시도하며
+**실패하면 기동 자체가 중단된다.** 반입 후 첫 기동이 원인 불명으로 죽는 전형적인 경우다.
+
+\`\`\`bash
+# 바인드 마운트를 쓸 경우, 호스트에서 미리
+sudo mkdir -p /srv/nh-canvas/storage
+sudo chown -R 10001:10001 /srv/nh-canvas/storage
+\`\`\`
+
+\`\`\`yaml
+# docker-compose.yml
+    volumes:
+      - /srv/nh-canvas/storage:/var/storage
+\`\`\`
+
+소유권을 바꿀 수 없는 NFS 라면 compose 에서 실행 uid 를 맞춘다.
+
+\`\`\`yaml
+    user: "<NFS가 허용하는 uid>:<gid>"
+\`\`\`
+
 ## 알려진 제약
 
 - \`AUTH_PROVIDER=dev\` 는 요청 헤더의 사용자 식별자를 그대로 믿는다. **운영 사용 불가.**
-- 인스턴스를 여러 개 띄우려면 \`file-storage\` 가 공유 마운트(NFS 등)여야 한다.
+- 인스턴스를 여러 개 띄우려면 \`file-storage\` 가 공유 마운트(NFS 등)여야 한다. 위 소유권 주의를 함께 볼 것.
+- 이미지는 실행 전용이다. 폐쇄망에서 재빌드할 수 없다.
 `;
 }

@@ -59,6 +59,9 @@ services:
       WORKER_ENABLED: ${WORKER_ENABLED:-true}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
     volumes:
+      # 이름 있는 볼륨은 이미지의 소유권(uid 10001 canvas)을 그대로 가져가므로 조치가 필요 없다.
+      # 호스트 경로·NFS 로 바꾸면 호스트 쪽 소유권이 적용된다. 앱이 기동 시 이 디렉터리를 만들지
+      # 못하면 기동 자체가 중단되므로, 미리 `chown -R 10001:10001` 하거나 user: 로 uid 를 맞출 것.
       - file-storage:/var/storage
     ports:
       - "${HOST_PORT:-8080}:8080"
