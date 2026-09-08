@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 
@@ -14,6 +15,11 @@ export default defineConfig({
     proxy: {
       "/api": { target: "http://localhost:8080", changeOrigin: true },
     },
+  },
+  test: {
+    // 컴포넌트 테스트에만 DOM 이 필요하다. 순수 함수 테스트는 이 환경 없이도 돈다.
+    // jsdom 대신 happy-dom 을 쓴다 — 가볍고 우리가 쓰는 범위(마운트·이벤트·속성)를 다 덮는다.
+    environment: "happy-dom",
   },
   build: {
     outDir: "dist",

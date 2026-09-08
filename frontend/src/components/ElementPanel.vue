@@ -30,7 +30,12 @@ const instruction = ref("");
  */
 const styleRejected = computed(() => styleValue.value.trim() !== "" && !isSafeStyleValue(styleValue.value));
 
-// 다른 요소를 고르면 입력칸이 이전 요소의 값을 들고 있으면 안 된다.
+/**
+ * 다른 요소를 고르면 입력칸이 이전 요소의 값을 들고 있으면 안 된다.
+ *
+ * immediate 가 필요하다 — 편집 모드를 껐다 켜면 선택이 남은 채로 이 패널이 다시 마운트되는데,
+ * 그때 watch 가 돌지 않으면 입력칸이 빈 채로 뜬다.
+ */
 watch(
   () => props.element?.nhId,
   () => {
@@ -38,7 +43,8 @@ watch(
     styleValue.value = props.element?.styles[styleProp.value] ?? "";
     attrValue.value = props.element?.attrs[attrName.value] ?? "";
     instruction.value = "";
-  }
+  },
+  { immediate: true }
 );
 
 watch(styleProp, (prop) => (styleValue.value = props.element?.styles[prop] ?? ""));
