@@ -54,7 +54,7 @@
         {
           "path": "개발문서/01_PRD.md",
           "title": "01 · PRD",
-          "note": "제품 목표 · 범위 · FR-01~13"
+          "note": "제품 목표 · 범위 · FR-01~15"
         },
         {
           "path": "개발문서/02_USER_STORIES_AC.md",
@@ -64,7 +64,7 @@
         {
           "path": "개발문서/03_IA_FUNCTION_SPEC.md",
           "title": "03 · IA & 화면",
-          "note": "화면 S01~S07 · 상태 모델"
+          "note": "화면 S01~S10 · 상태 모델"
         },
         {
           "path": "개발문서/04_SYSTEM_ARCHITECTURE.md",
@@ -181,6 +181,11 @@
           "path": "개발문서/기능명세/FR-14_책임성검토.md",
           "title": "FR-14 · 책임성 검토",
           "note": "표현 · 소비자보호 · 다크패턴 · 접근성"
+        },
+        {
+          "path": "개발문서/기능명세/FR-15_UX리스크검토.md",
+          "title": "FR-15 · UX 리스크 검토",
+          "note": "논의+화면 동시 검토 · 렌즈 6개"
         }
       ]
     },
@@ -218,6 +223,11 @@
           "path": "docs/guidelines/RESPONSIBLE_DESIGN.md",
           "title": "책임성 설계 규칙",
           "note": "RR 규칙 정본 · 판정 아닌 자문"
+        },
+        {
+          "path": "docs/guidelines/USABILITY_REVIEW.md",
+          "title": "UX 리스크 검토 렌즈",
+          "note": "UR 렌즈 정본 · 판정 아닌 질문"
         }
       ]
     }

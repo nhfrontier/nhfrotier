@@ -20,7 +20,7 @@ dev → main (외부 공유용 확정본 승격) PR 이면 아래 "확정본 승
 
 ## 문서를 바꿨다면
 
-<!-- 개발문서/ · docs/ · scripts/ · design-system/tokens/ 수정 시 -->
+<!-- 개발문서/ · docs/ · scripts/ · design-systems/ 수정 시 -->
 
 - [ ] `개발문서/기능명세/` 를 고쳤다면 `00_CHANGELOG.md` 에 **변경 내용·사유**를 적었다
       <!-- 날짜·작성자·커밋 칸은 pre-commit 훅이 채웁니다. 비워두세요. -->

@@ -1,0 +1,21 @@
+<!-- @dsCard group="Brand" viewport="700x180" name="Logo — 로고 운용" subtitle="기본 · 심볼 · 다크 배경" -->
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 0; background: var(--white); display:flex; height:180px; }
+  .cell { flex:1; display:flex; align-items:center; justify-content:center; }
+  .light { background: var(--white); }
+  .soft { background: var(--grey-50); }
+  .dark { background: var(--nh-navy-800); }
+  .b { border-right:1px solid var(--border-subtle); }
+</style>
+</head>
+<body>
+  <div class="cell light b"><img src="../assets/logo.svg" height="34" alt="logo"></div>
+  <div class="cell soft b"><img src="../assets/logo-mark.svg" height="44" alt="mark"></div>
+  <div class="cell dark"><img src="../assets/logo-white.svg" height="34" alt="logo white"></div>
+</body>
+</html>

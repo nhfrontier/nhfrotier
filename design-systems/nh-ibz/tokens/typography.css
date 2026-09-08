@@ -1,0 +1,61 @@
+/* ==========================================================================
+   NH기업뱅킹 — Typography Tokens
+   Korean-first clean sans-serif. Clear 제목 / 부제목 / 본문 hierarchy.
+   Primary face: Pretendard (substitute for NH 바른고딕 — see readme).
+   ========================================================================== */
+
+:root {
+  /* ---- Families ---- */
+  --font-sans: "Noto Sans KR", "Pretendard", -apple-system,
+    "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", "Consolas", monospace;
+
+  /* ---- Weights ---- */
+  --fw-regular: 400;  /* @kind other */
+  --fw-medium:  500;  /* @kind other */
+  --fw-semibold: 600; /* @kind other */
+  --fw-bold:    700;  /* @kind other */
+
+  /* ---- Type scale (px) ---- */
+  --fs-display: 40px; /* hero / 큰 숫자 */
+  --fs-h1: 30px;      /* 페이지 타이틀 */
+  --fs-h2: 24px;      /* 섹션 타이틀 */
+  --fs-h3: 20px;      /* 카드 타이틀 / 부제목 */
+  --fs-h4: 17px;
+  --fs-body-lg: 16px;
+  --fs-body: 15px;    /* 본문 기본 */
+  --fs-sm: 13px;      /* 보조 텍스트 */
+  --fs-xs: 12px;      /* 캡션 / 라벨 */
+
+  /* ---- Line heights ---- */
+  --lh-tight: 1.25;   /* @kind other */
+  --lh-snug: 1.4;     /* @kind other */
+  --lh-normal: 1.6;   /* @kind other */
+  --lh-relaxed: 1.75; /* @kind other */
+
+  /* ---- Letter spacing (Korean reads best slightly tightened) ---- */
+  --ls-tight: -0.02em;  /* @kind other */
+  --ls-normal: -0.01em; /* @kind other */
+  --ls-wide: 0.02em;    /* @kind other */
+
+  /* ==================== Semantic roles ==================== */
+  --type-display-size: var(--fs-display);
+  --type-display-weight: var(--fw-bold);
+  --type-display-lh: var(--lh-tight);
+
+  --type-title-size: var(--fs-h2);
+  --type-title-weight: var(--fw-bold);
+  --type-title-lh: var(--lh-snug);
+
+  --type-subtitle-size: var(--fs-h3);
+  --type-subtitle-weight: var(--fw-semibold);
+  --type-subtitle-lh: var(--lh-snug);
+
+  --type-body-size: var(--fs-body);
+  --type-body-weight: var(--fw-regular);
+  --type-body-lh: var(--lh-normal);
+
+  --type-label-size: var(--fs-sm);
+  --type-label-weight: var(--fw-medium);
+  --type-label-lh: var(--lh-snug);
+}

@@ -89,7 +89,12 @@ export type ToFramePayload =
   | { type: 'highlight'; nhIds: string[] }
   | { type: 'applyPatch'; ops: PatchOp[] }
   | { type: 'requestRects'; nhIds: string[] }
-  | { type: 'scrollTo'; nhId: string };
+  /**
+   * 요소로 스크롤하고 **고른 것으로 친다.** 프레임은 곧바로 select를 되돌려 보낸다.
+   * 메모 핀을 눌렀을 때 화면과 의견이 같이 움직이게 하는 통로다 —
+   * 부모는 요소의 meta(태그·텍스트·계산된 스타일)를 알 수 없으므로 프레임이 만들어 줘야 한다.
+   */
+  | { type: 'focusElement'; nhId: string };
 
 export type ToFrame = Envelope & ToFramePayload;
 

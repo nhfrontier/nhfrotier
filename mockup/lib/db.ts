@@ -204,12 +204,111 @@ function addCommentAnchorColumns(db: Database.Database) {
   }
 }
 
+/**
+ * UX 리스크 검토 (FR-15).
+ * responsibility_* 두 테이블과 구조가 같고 세 곳이 다르다 —
+ * 수동 트리거라 requested_by를 남기고, 근거의 출처(evidence_source)를 기록하며,
+ * 준법 축이 없으므로 needs_compliance_review와 COMPLIANCE_REQUESTED를 두지 않는다.
+ * comments 테이블은 건드리지 않는다: AI 지적을 사람 댓글 행으로 넣으면
+ * 삭제·해결 토글의 의미가 달라진다. 합치는 것은 화면에서만 한다.
+ */
+const SCHEMA_V4 = `
+    CREATE TABLE IF NOT EXISTS usability_reviews (
+      id TEXT PRIMARY KEY,
+      mockup_version_id TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'RUNNING',
+      model TEXT,
+      error TEXT,
+      requested_by TEXT,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (mockup_version_id) REFERENCES mockup_versions(id) ON DELETE CASCADE,
+      FOREIGN KEY (requested_by) REFERENCES users(id) ON DELETE SET NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS usability_findings (
+      id TEXT PRIMARY KEY,
+      review_id TEXT NOT NULL,
+      lens_id TEXT NOT NULL,
+      severity TEXT NOT NULL,
+      title TEXT NOT NULL,
+      evidence TEXT NOT NULL,
+      evidence_source TEXT NOT NULL,
+      why TEXT NOT NULL,
+      suggestion TEXT NOT NULL,
+      decision TEXT,
+      decision_by TEXT,
+      decision_reason TEXT,
+      decided_at TEXT,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (review_id) REFERENCES usability_reviews(id) ON DELETE CASCADE,
+      FOREIGN KEY (decision_by) REFERENCES users(id) ON DELETE SET NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_usability_reviews_version
+      ON usability_reviews(mockup_version_id, created_at);
+`;
+
+/**
+ * 어떤 디자인 시스템으로 만든 버전인지 남긴다 (FR-04).
+ * design-systems/registry.json의 id를 담는다. 값 검증은 코드에서 한다 —
+ * 레지스트리는 파일이라 DB 제약으로 묶으면 시스템을 추가할 때마다 마이그레이션이 필요해진다.
+ */
+function addMockupVersionDesignSystemColumn(db: Database.Database) {
+  const existing = new Set(
+    (db.pragma('table_info(mockup_versions)') as Array<{ name: string }>).map((c) => c.name)
+  );
+  if (!existing.has('design_system_id')) {
+    db.exec('ALTER TABLE mockup_versions ADD COLUMN design_system_id TEXT');
+  }
+}
+
+/**
+ * 의견 스레드와, 그 의견이 부른 편집을 잇는 두 컬럼 (FR-06).
+ *
+ * - `comments.parent_id` — 답글. 답글은 **자기 앵커를 갖지 않는다.**
+ *   스레드가 가리키는 요소는 뿌리 의견의 것이고, 핀도 뿌리에만 붙는다.
+ *   답글마다 앵커를 주면 같은 요소에 핀이 여러 개 겹친다.
+ * - `element_patches.comment_id` — 이 편집을 부른 의견.
+ *
+ * AI의 답을 `comments` 행으로 만들지 않는 이유는 ARCHITECTURE.md 12절과 같다:
+ * 사람 댓글 테이블에 AI용 필드를 붙이면 삭제·해결 토글의 의미가 달라진다.
+ * 그런데 여기서는 별도 테이블도 필요 없다 — **AI의 답이 곧 패치**다.
+ * `element_patches`에 이미 reason(요청 문구)·source·payload·reverted_at이 있으므로
+ * 어느 의견이 그것을 불렀는지만 이어주면 화면에서 스레드로 합칠 수 있다.
+ * 저장은 분리된 채로 두고 합치는 것은 화면에서만 한다.
+ *
+ * ADD COLUMN이라 IF NOT EXISTS가 없다. 러너가 멱등해야 하므로 직접 확인한다.
+ * REFERENCES 절은 붙이지 않는다 — foreign_keys=ON 상태의 ADD COLUMN 제약.
+ */
+function addThreadColumns(db: Database.Database) {
+  const commentCols = new Set(
+    (db.pragma('table_info(comments)') as Array<{ name: string }>).map((c) => c.name)
+  );
+  if (!commentCols.has('parent_id')) {
+    db.exec('ALTER TABLE comments ADD COLUMN parent_id TEXT');
+  }
+
+  const patchCols = new Set(
+    (db.pragma('table_info(element_patches)') as Array<{ name: string }>).map((c) => c.name)
+  );
+  if (!patchCols.has('comment_id')) {
+    db.exec('ALTER TABLE element_patches ADD COLUMN comment_id TEXT');
+  }
+}
+
+/**
+ * 새 단계는 반드시 **배열 끝에 덧붙인다.** 중간에 끼워 넣으면 인덱스가 밀려,
+ * 이미 그 자리를 지나간 DB가 새 단계를 건너뛴 채 버전만 올라간다.
+ */
 const MIGRATIONS: Array<(db: Database.Database) => void> = [
   (db) => db.exec(SCHEMA_V1),
   (db) => {
     db.exec(SCHEMA_V2);
     addCommentAnchorColumns(db);
   },
+  addMockupVersionDesignSystemColumn,
+  (db) => db.exec(SCHEMA_V4),
+  addThreadColumns,
 ];
 
 function migrate(db: Database.Database) {
@@ -246,6 +345,8 @@ export interface MockupVersion {
   html_content: string;
   description: string | null;
   created_at: string;
+  /** design-systems/registry.json의 id. 옛 버전 행은 null이다. */
+  design_system_id: string | null;
 }
 
 export interface User {
@@ -280,6 +381,8 @@ export interface Comment {
   nh_id: string | null;
   anchor_status: AnchorStatus;
   resolved_at: string | null;
+  /** 답글이면 뿌리 의견의 id. 답글은 자기 앵커를 갖지 않는다 — 핀은 뿌리에만 붙는다. */
+  parent_id: string | null;
   user_name?: string;
   user_color?: string;
 }
@@ -328,6 +431,8 @@ export interface ElementPatch {
   seq: number;
   reverted_at: string | null;
   created_at: string;
+  /** 이 편집을 부른 의견. 스레드 안에 결과 카드로 끼워 넣을 때 쓴다. */
+  comment_id: string | null;
   user_name?: string;
   user_color?: string;
 }
@@ -354,6 +459,40 @@ export interface ResponsibilityReview {
   model: string | null;
   error: string | null;
   created_at: string;
+}
+
+/** 반영 / 보류 / 반려 — FR-15에는 준법 검토 요청이 없다 */
+export type UsabilityDecision = 'ACCEPTED' | 'DEFERRED' | 'REJECTED';
+
+export interface UsabilityReview {
+  id: string;
+  mockup_version_id: string;
+  status: ReviewStatus;
+  model: string | null;
+  error: string | null;
+  /** 수동 트리거라 누가 불렀는지가 의미를 갖는다 */
+  requested_by: string | null;
+  created_at: string;
+}
+
+export interface UsabilityFindingRow {
+  id: string;
+  review_id: string;
+  lens_id: string;
+  severity: string;
+  title: string;
+  /** 원문 대조를 통과한 인용만 담긴다 */
+  evidence: string;
+  evidence_source: string;
+  why: string;
+  suggestion: string;
+  decision: UsabilityDecision | null;
+  decision_by: string | null;
+  decision_reason: string | null;
+  decided_at: string | null;
+  created_at: string;
+  decided_by_name?: string;
+  decided_by_color?: string;
 }
 
 export interface ResponsibilityFindingRow {

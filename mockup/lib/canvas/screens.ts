@@ -1,6 +1,6 @@
 import type { Database } from 'better-sqlite3';
 import { v4 as uuidv4 } from 'uuid';
-import { processGeneratedHtml } from './htmlPipeline';
+import { processGeneratedHtml, type ElementFingerprint } from './htmlPipeline';
 import type { Screen, ScreenElement } from '../db';
 
 /** 다화면 이전에 만들어진 목업을 화면 1장으로 볼 때 쓰는 key. */
@@ -25,7 +25,14 @@ export function saveScreenHtml(
     rawHtml: string;
     knownScreenKeys: string[];
   }
-): { screenId: string; html: string; warnings: string[]; elementCount: number } {
+): {
+  screenId: string;
+  html: string;
+  warnings: string[];
+  elementCount: number;
+  /** 재생성일 때만 채워진다. 처음 만드는 화면이면 null. */
+  reanchored: ReanchorResult | null;
+} {
   const { html, elements, warnings } = processGeneratedHtml(args.rawHtml, {
     knownScreenKeys: args.knownScreenKeys,
   });
@@ -35,6 +42,9 @@ export function saveScreenHtml(
     .get(args.mockupVersionId, args.screenKey) as { id: string } | undefined;
 
   const screenId = existing?.id ?? uuidv4();
+
+  // 재생성이면 옛 요소를 먼저 붙잡아 둔다. 새 요소와 대조해 의견 앵커를 다시 잇기 위해서다.
+  const oldElements = existing ? listScreenElements(db, screenId) : [];
 
   if (existing) {
     db.prepare(
@@ -68,7 +78,80 @@ export function saveScreenHtml(
     insertElement.run(uuidv4(), screenId, el.nhId, el.tag, el.docOrder, el.pathSig, el.textSig);
   }
 
-  return { screenId, html, warnings, elementCount: elements.length };
+  const reanchored = oldElements.length > 0 ? reanchorComments(db, screenId, oldElements, elements) : null;
+
+  return { screenId, html, warnings, elementCount: elements.length, reanchored };
+}
+
+/** 앵커를 다시 이은 결과. 화면에 "위치를 잃은 의견 N건"으로 보여준다. */
+export interface ReanchorResult {
+  anchored: number;
+  orphaned: number;
+}
+
+/**
+ * 화면을 다시 만들면 요소 id가 바뀐다. 그대로 두면 의견이 사라진 것처럼 보인다.
+ *
+ * 완벽히 안정된 id는 만들 수 없다는 것을 전제로, 목표를 다르게 잡는다:
+ * 끊어진 앵커가 조용히 사라지지 않고 orphaned로 드러나 사람이 다시 붙일 수 있게 한다.
+ */
+export function reanchorComments(
+  db: Database,
+  screenId: string,
+  oldElements: ScreenElement[],
+  newElements: ElementFingerprint[]
+): ReanchorResult {
+  const anchored = db
+    .prepare("SELECT id, nh_id FROM comments WHERE screen_id = ? AND anchor_status = 'anchored'")
+    .all(screenId) as Array<{ id: string; nh_id: string }>;
+
+  if (anchored.length === 0) return { anchored: 0, orphaned: 0 };
+
+  const oldById = new Map(oldElements.map((e) => [e.nh_id, e]));
+  const setAnchor = db.prepare(
+    "UPDATE comments SET nh_id = ?, anchor_status = 'anchored' WHERE id = ?"
+  );
+  const setOrphan = db.prepare("UPDATE comments SET anchor_status = 'orphaned' WHERE id = ?");
+
+  let kept = 0;
+  let lost = 0;
+
+  for (const comment of anchored) {
+    const before = oldById.get(comment.nh_id);
+    if (!before) {
+      setOrphan.run(comment.id);
+      lost++;
+      continue;
+    }
+
+    // id가 그대로면 텍스트도 구조도 그대로라는 뜻이다. 더 볼 것 없다.
+    if (newElements.some((n) => n.nhId === comment.nh_id)) {
+      kept++;
+      continue;
+    }
+
+    let best: { nhId: string; score: number } | null = null;
+    for (const candidate of newElements) {
+      let score = 0;
+      if (before.text_sig && candidate.textSig === before.text_sig) score += 2;
+      if (candidate.pathSig === before.path_sig) score += 1;
+      if (candidate.tag === before.tag) score += 1;
+      if (Math.abs(candidate.docOrder - before.doc_order) <= 2) score += 0.5;
+
+      if (!best || score > best.score) best = { nhId: candidate.nhId, score };
+    }
+
+    // 태그만 같은 정도(1점)로는 붙이지 않는다. 엉뚱한 곳에 붙은 메모가 사라진 메모보다 나쁘다.
+    if (best && best.score >= 2) {
+      setAnchor.run(best.nhId, comment.id);
+      kept++;
+    } else {
+      setOrphan.run(comment.id);
+      lost++;
+    }
+  }
+
+  return { anchored: kept, orphaned: lost };
 }
 
 /**

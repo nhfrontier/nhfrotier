@@ -1,0 +1,51 @@
+/* ==========================================================================
+   NH기업뱅킹 — Spacing, Radius, Shadow, Layout Tokens
+   8px base grid · generous whitespace · subtle corners & borders.
+   ========================================================================== */
+
+:root {
+  /* ---- Spacing (8px base) ---- */
+  --space-0: 0;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+
+  /* ---- Radius (slightly rounded — financial-conservative) ---- */
+  --radius-xs: 3px;
+  --radius-sm: 6px;
+  --radius-md: 10px;  /* default card radius */
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-pill: 999px;
+
+  /* ---- Border widths ---- */
+  --border-width: 1px;          /* @kind spacing */
+  --border-width-strong: 2px;   /* @kind spacing */
+
+  /* ---- Shadows (soft, low-spread; no heavy drops) ---- */
+  --shadow-xs: 0 1px 2px rgba(16, 36, 64, 0.05);
+  --shadow-sm: 0 1px 3px rgba(16, 36, 64, 0.06), 0 1px 2px rgba(16, 36, 64, 0.04);
+  --shadow-md: 0 4px 12px rgba(16, 36, 64, 0.08);
+  --shadow-lg: 0 10px 28px rgba(16, 36, 64, 0.10);
+  --shadow-focus: 0 0 0 3px rgba(0, 148, 217, 0.25);
+
+  /* ---- Layout ---- */
+  --container-max: 1200px;
+  --gnb-height: 64px;
+  --gnb-menubar-height: 52px;
+
+  /* ---- Motion ---- */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);   /* @kind other */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);       /* @kind other */
+  --dur-fast: 120ms;  /* @kind other */
+  --dur-base: 200ms;  /* @kind other */
+  --dur-slow: 320ms;  /* @kind other */
+}

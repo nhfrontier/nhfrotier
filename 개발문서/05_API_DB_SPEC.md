@@ -56,6 +56,13 @@
 `GET /api/v1/versions/{versionId}/responsibility-review`  — 최신 검토 + 지적 목록
 `PATCH /api/v1/responsibility-findings/{findingId}`  — body의 `decision`은 `ACCEPTED` / `DEFERRED` / `REJECTED` / `COMPLIANCE_REQUESTED`
 
+### Usability Review (FR-15)
+`POST /api/v1/versions/{versionId}/usability-review`  — 검토 실행. **담당자 요청 시에만** 호출된다. body의 `userId`가 `requested_by`로 기록된다. 이전 검토를 덮어쓰지 않고 새 이력을 만든다
+`GET /api/v1/versions/{versionId}/usability-review`  — 최신 검토 + 지적 목록
+`PATCH /api/v1/usability-findings/{findingId}`  — body의 `decision`은 `ACCEPTED` / `DEFERRED` / `REJECTED` (`COMPLIANCE_REQUESTED` 없음 — 준법 축은 FR-14 고유)
+
+입력이 전 화면 HTML + 의견 전문이라 요청 본문이 아닌 **서버가 DB에서 조립한다.** 총량이 상한을 넘으면 `413`으로 거부한다. 잘라내면 잘린 뒷부분의 문제를 못 봐서 결과가 조용히 틀린다.
+
 ### Version
 `GET /api/v1/projects/{projectId}/versions`
 `GET /api/v1/versions/{versionId}`
@@ -88,6 +95,8 @@ review_items
 review_decisions
 responsibility_reviews
 responsibility_findings
+usability_reviews  (2026-09-08 추가 — FR-15)
+usability_findings  (2026-09-08 추가)
 versions
 version_files
 history_events
@@ -128,6 +137,20 @@ element_patches    (2026-09-05 추가)
 
 팬아웃(화면별 호출)은 **클라이언트가 한다.** 서버가 한 요청에서 N개를 처리하면 타임아웃 위험이 커지고 부분 실패가 감춰진다.
 
+### 3-3. UX 리스크 검토 (2026-09-08)
+
+FR-14의 두 테이블과 구조가 같고 세 곳이 다르다. ([FR-15](기능명세/FR-15_UX리스크검토.md))
+
+| 테이블 | 주요 컬럼 | 목적 |
+|---|---|---|
+| `usability_reviews` | `version_id`, `status`(`RUNNING`/`DONE`/`FAILED`), `model`, `error`, `requested_by` | 검토 1회 실행. **`requested_by`가 FR-14와 다른 컬럼** — 수동 트리거라 누가 불렀는지가 의미를 갖는다 |
+| `usability_findings` | `review_id`, `lens_id`, `severity`, `title`, `evidence`, `evidence_source`, `why`, `suggestion`, `decision`, `decision_by`, `decision_reason`, `decided_at` | 지적 한 건. `lens_id`는 `UR-01`~`UR-06` |
+
+- `evidence_source`는 `PROPOSAL` / `SCREEN` / `DISCUSSION` 중 하나다. 근거가 기획안·화면·의견 중 어디서 왔는지가 담당자의 판단 재료다.
+- `evidence`에는 **원문 대조를 통과한 인용만** 저장한다. 모델이 낸 인용 조각을 기획안 + 전 화면 HTML + 전 의견 본문과 부분문자열로 대조하고, 살아남은 것이 없으면 그 지적을 저장하지 않는다.
+- `needs_compliance_review` / `COMPLIANCE_REQUESTED`는 **두지 않는다.** 준법 축은 FR-14의 몫이다.
+- **`comments` 테이블은 건드리지 않는다.** AI 지적을 사람 댓글 행으로 넣으면 근거·심각도·결정 필드를 붙여야 하고, 삭제·해결 토글의 의미가 사람 댓글과 달라져 스키마가 탁해진다. 화면에서만 시간순으로 합쳐 보여준다.
+
 ## 4. 핵심 관계
 ```text
 USER 1:N PROJECT_MEMBER N:1 PROJECT
@@ -135,6 +158,7 @@ PROJECT 1:N FILE
 PROJECT 1:N AI_JOB
 PROJECT 1:N COMMENT
 VERSION 1:N RESPONSIBILITY_REVIEW 1:N RESPONSIBILITY_FINDING
+VERSION 1:N USABILITY_REVIEW 1:N USABILITY_FINDING
 PROJECT 1:N VERSION
 PROJECT 1:N HISTORY_EVENT
 VERSION 1:N VERSION_FILE
@@ -209,3 +233,37 @@ History는 과정과 의사결정 기록이다.
 
 `BRAND_CONCEPT` Job이 완료돼도 **Version은 생성되지 않는다.** 3안은 `ai_job_outputs`에만 남는 후보다.
 사용자가 하나를 선택할 때 `versions` 1행이 생성되며 `source_type = AI_GENERATION`, `source_job_id`로 Job과 연결된다. 선택되지 않은 시안은 Version이 되지 않는다.
+
+---
+
+## 9. 디자인 시스템 선택 (FR-04)
+
+산출물이 어떤 디자인으로 만들어질지는 **생성 시점에 사용자가 고른다.** 근거: [FR-04](개발문서/기능명세/FR-04_템플릿.md)
+
+### 9-1. 운영 스펙 — 새 리소스를 만들지 않는다
+
+디자인 시스템은 `templates` 의 `template_type = BRAND_ASSET` 레코드다. 별도 테이블·엔드포인트를 두지 않는다.
+
+| Method | Path | 용도 |
+|---|---|---|
+| GET | `/api/v1/templates?type=BRAND_ASSET` | 선택 가능한 디자인 시스템 목록 |
+
+### 9-2. 추가 필드
+
+| 테이블 | 필드 | 값 | 용도 |
+|---|---|---|---|
+| `versions` | `design_system_id` | `templates.id` (`BRAND_ASSET`) 참조. NULL 허용 | **어떤 디자인 시스템으로 만든 결과물인가.** 재생성·요소 편집이 같은 시스템을 쓰도록 하고, 버전 비교 시 디자인 축을 고정한다 |
+
+- 프로젝트가 아니라 **Version에 둔다.** 같은 프로젝트에서 v1은 모바일, v2는 웹으로 만들 수 있어야 하기 때문이다.
+- NULL 은 "선택 이전에 만들어진 결과물"이다. 값이 없으면 화면에 배지를 그리지 않는다.
+- 값 검증은 애플리케이션에서 한다. FK 제약으로 묶지 않는 이유는 프로토타입 단계에서 목록 정본이 DB가 아니라 파일(`design-systems/registry.json`)이기 때문이다. 운영에서 `templates` 로 흡수되면 FK 로 전환한다.
+
+### 9-3. 프로토타입 대응
+
+| 프로토타입 (`mockup/`) | 운영 스펙 |
+|---|---|
+| `GET /api/design-systems` | `GET /api/v1/templates?type=BRAND_ASSET` |
+| `design-systems/registry.json` (파일) | `templates` 테이블 (`template_type = BRAND_ASSET`) |
+| `mockup_versions.design_system_id` | `versions.design_system_id` |
+
+프로토타입은 파일을 목록 정본으로 쓴다. 반입할 NH 실제 자산의 관리 주체가 미결이라 등록·수정 화면을 만들 근거가 없기 때문이다 — [08_DECISIONS_OPEN_ISSUES.md](개발문서/08_DECISIONS_OPEN_ISSUES.md)

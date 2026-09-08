@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb, type MockupVersion } from '@/lib/db';
 import { ensureScreens } from '@/lib/canvas/screens';
+import { listActivePatches, toPatchOps } from '@/lib/canvas/patches';
 
 export async function GET(
   _req: NextRequest,
@@ -18,7 +19,12 @@ export async function GET(
 
     // 캔버스 이전에 만들어진 목업도 화면 배열 하나의 형태로 내려간다.
     // 덕분에 클라이언트에 legacy 분기가 없다.
-    const screens = ensureScreens(db, mockupId, mockup.html_content);
+    const screens = ensureScreens(db, mockupId, mockup.html_content).map((screen) => ({
+      ...screen,
+      // 편집은 html_content를 덮어쓰지 않고 patch로 쌓인다.
+      // 클라이언트가 프레임에 postMessage로 적용하므로 여기서는 연산만 내려보낸다.
+      patches: toPatchOps(listActivePatches(db, screen.id)),
+    }));
 
     return NextResponse.json({ ...mockup, screens });
   } catch (error) {

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" aria-label="보안 / 안심">
+  <ellipse cx="60" cy="104" rx="38" ry="11" fill="#d6f1e1"></ellipse>
+  
+  <path d="M60 16 L92 28 V58 C92 80 78 94 60 102 C42 94 28 80 28 58 V28 Z" fill="#00a04e"></path>
+  <path d="M60 16 L60 102 C42 94 28 80 28 58 V28 Z" fill="#009047"></path>
+  <path d="M60 22 L86 32 V58 C86 76 75 88 60 95 C45 88 34 76 34 58 V32 Z" fill="#ecf9f1"></path>
+  
+  <path d="M48 58 L56 67 L74 46" stroke="#00a04e" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
+</svg>

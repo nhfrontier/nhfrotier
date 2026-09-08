@@ -40,6 +40,12 @@ export interface DesignCanvasProps {
   viewMode: 'desktop' | 'mobile';
   /** 프레임이 준비된 뒤 적용할 편집 패치. */
   patches?: PatchOp[];
+  /**
+   * 특정 요소로 스크롤하고 고른 상태로 만든다. 메모 핀을 눌렀을 때 쓴다.
+   * 같은 요소를 다시 눌러도 동작해야 하므로 nhId만으로는 부족하다 —
+   * token이 바뀔 때마다 한 번 보낸다.
+   */
+  focusRequest?: { nhId: string; token: number } | null;
   onSelect(nhId: string | null, meta: ElementMeta | null): void;
   onNavigate(screenKey: string): void;
   onPinClick?(commentId: string): void;
@@ -93,13 +99,16 @@ export default function DesignCanvas(props: DesignCanvasProps) {
   }
 
   // 문서가 바뀌면 키가 바뀌어 프레임이 새로 마운트된다.
-  // 덕분에 nonce·높이·선택 상태가 effect 없이 자연스럽게 초기화된다.
+  // 덕분에 높이·선택 상태가 effect 없이 자연스럽게 초기화된다.
+  const key = contentKey(screen.screenKey, screen.html);
+
   return (
     <CanvasFrame
-      key={contentKey(screen.screenKey, screen.html)}
+      key={key}
       {...props}
       screen={screen}
       html={screen.html}
+      nonce={key}
       frameWidth={frameWidth}
     />
   );
@@ -108,32 +117,33 @@ export default function DesignCanvas(props: DesignCanvasProps) {
 type CanvasFrameProps = DesignCanvasProps & {
   screen: CanvasScreen;
   html: string;
+  /**
+   * 세대 구분자. 문서 내용에서 결정적으로 파생된다.
+   *
+   * 난수를 쓰면 서버와 클라이언트의 srcDoc이 달라져 하이드레이션이 깨진다.
+   * 목적이 "srcDoc이 교체됐을 때 낡은 문서의 메시지를 버리는 것"이므로,
+   * 내용이 바뀔 때만 값이 바뀌는 해시가 오히려 정확하다.
+   * 보안 경계는 이 값이 아니라 event.source 대조다 — 예측 가능해도 무방하다.
+   */
+  nonce: string;
   frameWidth: string;
 };
 
 function CanvasFrame({
   screen,
   html,
+  nonce,
   frameWidth,
   selectedNhId,
   pins = [],
   mode,
   patches = [],
+  focusRequest = null,
   onSelect,
   onNavigate,
   onPinClick,
 }: CanvasFrameProps) {
   const frameRef = useRef<HTMLIFrameElement>(null);
-
-  /**
-   * 마운트마다 새로 발급한다. srcDoc이 교체될 때 언로드 직전의 낡은 문서가
-   * 메시지를 한 번 더 쏘는 경우를 걸러내기 위한 세대 구분자다.
-   * 보안 경계는 event.source 대조이지 이 값이 아니다.
-   */
-  const [nonce] = useState(() =>
-    typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `n${Date.now()}`
-  );
-
   const [height, setHeight] = useState(MIN_HEIGHT);
   const [ready, setReady] = useState(false);
   const [rects, setRects] = useState<Record<string, Rect>>({});
@@ -203,6 +213,16 @@ function CanvasFrame({
     if (ready && patches.length > 0) post({ type: 'applyPatch', ops: patches });
   }, [ready, patches, post]);
 
+  // token이 바뀐 순간에만 보낸다. 프레임은 select를 되돌려 보내고,
+  // 부모는 그것을 사람이 직접 누른 것과 똑같이 처리한다.
+  const focusToken = focusRequest?.token ?? null;
+  const focusNhId = focusRequest?.nhId ?? null;
+  useEffect(() => {
+    if (ready && focusNhId) post({ type: 'focusElement', nhId: focusNhId });
+    // focusNhId가 아니라 token이 방아쇠다 — 같은 요소를 다시 눌러도 동작해야 한다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, focusToken, post]);
+
   const pinIds = useMemo(() => pins.map((p) => p.nhId).join(','), [pins]);
   useEffect(() => {
     if (!ready || pinIds.length === 0) return;
@@ -217,6 +237,13 @@ function CanvasFrame({
         title={`${screen.name} 목업`}
         className="block w-full border-0"
         style={{ height }}
+        /**
+         * 준비 완료 판정을 프레임이 보내는 ready 메시지에 걸지 않는다.
+         * srcDoc 문서는 React가 message 리스너를 붙이기 전에 로드를 마칠 수 있고,
+         * 그러면 ready가 유실되어 setMode·highlight·patch가 영영 전송되지 않는다.
+         * onLoad는 엘리먼트 생성 시점에 붙으므로 놓칠 수 없다.
+         */
+        onLoad={() => setReady(true)}
         // allow-same-origin을 주지 않는다. 프레임은 불투명 오리진이 되어
         // 부모 DOM·쿠키·스토리지에 접근할 수 없고, 통신은 postMessage로만 이뤄진다.
         sandbox="allow-scripts"

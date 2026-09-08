@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" aria-label="기업 / 사옥">
+  <ellipse cx="60" cy="104" rx="44" ry="12" fill="#d6eefa"></ellipse>
+  
+  <g transform="translate(60 30)">
+    
+    <polygon points="0,0 34,18 0,36 -34,18" fill="#79c8ee"></polygon>
+    
+    <polygon points="-34,18 0,36 0,76 -34,58" fill="#007ec0"></polygon>
+    
+    <polygon points="34,18 0,36 0,76 34,58" fill="#0094d9"></polygon>
+    
+    <g fill="#d6eefa" opacity="0.9">
+      <polygon points="-26,28 -16,33 -16,41 -26,36"></polygon>
+      <polygon points="-12,35 -2,40 -2,48 -12,43"></polygon>
+      <polygon points="-26,42 -16,47 -16,55 -26,50"></polygon>
+      <polygon points="-12,49 -2,54 -2,62 -12,57"></polygon>
+    </g>
+    
+    <g fill="#bfe4f6" opacity="0.9">
+      <polygon points="26,28 16,33 16,41 26,36"></polygon>
+      <polygon points="12,35 2,40 2,48 12,43"></polygon>
+      <polygon points="26,42 16,47 16,55 26,50"></polygon>
+      <polygon points="12,49 2,54 2,62 12,57"></polygon>
+    </g>
+  </g>
+</svg>

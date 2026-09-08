@@ -1,0 +1,35 @@
+<!-- @dsCard group="기업뱅킹" viewport="1280x880" name="맞춤 상품 추천" subtitle="기업 정보 진단 → 매칭 점수 기반 상품 추천" -->
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>NH기업뱅킹 — 맞춤 상품 추천</title>
+<link rel="stylesheet" href="../../styles.css">
+<style>html,body{margin:0;background:var(--white)}#app{min-width:1200px}</style>
+</head>
+<body>
+<div id="app"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<script type="text/babel" src="Icon.jsx"></script>
+<script type="text/babel" src="Header.jsx"></script>
+<script type="text/babel" src="Footer.jsx"></script>
+<script type="text/babel" src="ProductRecommendScreen.jsx"></script>
+<script type="text/babel" data-presets="react">
+  function mount() {
+    if (!window.ProductRecommendScreen || !window.Header || !window.Footer) { setTimeout(mount, 30); return; }
+    ReactDOM.createRoot(document.getElementById("app")).render(
+      <div>
+        <Header active="맞춤상품추천" extraNav={["맞춤상품추천"]} subNav={{ root: "농협은행", items: ["예금", "대출", "펀드", "외화예금", "맞춤 상품 추천"], active: "맞춤 상품 추천" }} />
+        <ProductRecommendScreen />
+        <Footer />
+      </div>
+    );
+  }
+  mount();
+</script>
+</body>
+</html>

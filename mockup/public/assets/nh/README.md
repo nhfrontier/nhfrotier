@@ -15,7 +15,7 @@
 
 저장소 루트 전체가 GitHub Pages로 공개 서빙된다 (`.github/workflows/pages.yml` — main은 `/`, dev는 `/dev/`).
 올원뱅크·기업인터넷뱅킹 화면 캡처나 NH 로고 원본을 커밋하면 **공개 URL로 그대로 노출된다.**
-`design-system/uploads/`를 제외한 것과 같은 이유다.
+`design-systems/*/uploads/`를 제외한 것과 같은 이유다.
 
 그래서 이 폴더는 `.gitignore` 대상이고, **README.md만 추적된다.**
 파일은 각자 로컬에만 두고 커밋하지 않는다.

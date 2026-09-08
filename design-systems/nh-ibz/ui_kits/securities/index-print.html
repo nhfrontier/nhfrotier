@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NH 증권 — 투자, 누구에게나 쉽고 정직하게</title>
+<link rel="stylesheet" href="../../styles.css">
+<link rel="stylesheet" href="securities.css">
+<style>
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--white); }
+  .skip-link { position: absolute; left: -9999px; top: 0; z-index: 300; background: var(--color-primary); color: #fff; padding: 10px 18px; border-radius: 0 0 8px 0; font-weight: 600; }
+  .skip-link:focus { left: 0; }
+
+  /* ============ PRINT ============ */
+  @page { size: letter; margin: 0; }
+
+  @media print {
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+    /* freeze entrance animations at their end state */
+    *, *::before, *::after {
+      animation-delay: -99s !important; animation-duration: .001s !important;
+      animation-iteration-count: 1 !important; animation-fill-mode: both !important;
+      animation-play-state: running !important; transition-duration: 0s !important;
+      transform: none !important;
+    }
+
+    html, body { background: var(--white); }
+    body { padding: 0; }
+
+    /* drop interactive chrome */
+    .sec-gnb, .skip-link, .sec-mobile { display: none !important; }
+
+    /* hero: reflow from full-screen to a compact band, drop floating decor */
+    .hero { min-height: auto !important; padding: 64px 0 72px !important; break-inside: avoid; }
+    .hero__obj { display: none !important; }
+    .hero > div:last-child { display: none !important; } /* scroll indicator */
+
+    /* keep units whole */
+    h1, h2, h3 { break-after: avoid; }
+    section, footer { break-inside: auto; }
+    .benefit-grid > *, .features-split > * { break-inside: avoid; }
+    p, li { orphans: 3; widows: 3; }
+
+    /* start the recommend/footer-ish chapters cleanly when needed */
+    .sec-page > footer { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">본문 바로가기</a>
+<div id="app"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.js"></script>
+<script src="../../_ds_bundle.js"></script>
+
+<script type="text/babel" src="../ibz/Icon.jsx"></script>
+<script type="text/babel" src="../ibz/Header.jsx"></script>
+<script type="text/babel" src="Hero.jsx"></script>
+<script type="text/babel" src="Mission.jsx"></script>
+<script type="text/babel" src="AccountBenefits.jsx"></script>
+<script type="text/babel" src="Features.jsx"></script>
+<script type="text/babel" src="Disclaimer.jsx"></script>
+
+<script type="text/babel" data-presets="react">
+  function App() {
+    return (
+      <div className="sec-page">
+        <Header extraNav={["주식투자"]} />
+        <main id="main">
+          <SecHero />
+          <SecMission />
+          <SecAccountBenefits />
+          <SecFeatures />
+          <SecDisclaimer />
+        </main>
+        <SecFooter />
+      </div>
+    );
+  }
+
+  function revealAll() {
+    document.querySelectorAll(".reveal").forEach((el) => el.classList.add("is-in"));
+  }
+
+  function mount() {
+    if (!window.SecHero || !window.Header || !window.SecFooter) { setTimeout(mount, 30); return; }
+    ReactDOM.createRoot(document.getElementById("app")).render(<App />);
+    setTimeout(revealAll, 200);
+  }
+  mount();
+</script>
+
+<script>
+  addEventListener("load", () => {
+    (async () => {
+      // wait for Babel/React to mount the page
+      const start = Date.now();
+      while (!document.querySelector("#app .sec-page") && Date.now() - start < 8000) {
+        await new Promise((r) => setTimeout(r, 60));
+      }
+      document.querySelectorAll(".reveal").forEach((el) => el.classList.add("is-in"));
+      try { await document.fonts.ready; } catch (e) {}
+      const imgs = Array.from(document.images).filter((i) => !i.complete);
+      await Promise.race([
+        Promise.allSettled(imgs.map((i) => i.decode().catch(() => {}))),
+        new Promise((r) => setTimeout(r, 8000)),
+      ]);
+      setTimeout(() => window.print(), 600);
+    })();
+  });
+</script>
+</body>
+</html>

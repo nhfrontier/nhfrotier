@@ -1,0 +1,86 @@
+/* ==========================================================================
+   NH기업뱅킹 — Color Tokens
+   Conservative, trustworthy financial palette.
+   NH Blue primary · Navy · NH Green accent · neutral greys.
+   ========================================================================== */
+
+:root {
+  /* ---- Brand: NH Blue (primary) ---- */
+  --nh-blue-700: #00689b;
+  --nh-blue-600: #007ec0;
+  --nh-blue-deep: #1570c4; /* deeper true-blue — promo popup footers, fills */
+  --nh-blue-500: #0094d9; /* core brand blue — logo, buttons, links, accents */
+  --nh-blue-400: #36abe2;
+  --nh-blue-300: #79c8ee;
+  --nh-blue-100: #d6eefa;
+  --nh-blue-50:  #eef8fd;
+
+  /* ---- Brand: Navy (deep) ---- */
+  --nh-navy-900: #0a2540;
+  --nh-navy-800: #122f50; /* login button, footer banner background */
+  --nh-navy-700: #1d3d63;
+  --nh-navy-500: #34507a;
+
+  /* ---- Slate-blue (workhorse action buttons: 가입하기·조회) ---- */
+  --nh-slate-700: #353f5e;
+  --nh-slate-600: #3f4a68;
+  --nh-slate-500: #4a5677;
+  --nh-slate-400: #5d6a8e;
+
+  /* ---- Brand: NH Green (secondary accent) ---- */
+  --nh-green-700: #007f3d;
+  --nh-green-600: #009047;
+  --nh-green-500: #00a04e; /* NH BOX / green cards */
+  --nh-green-100: #d6f1e1;
+  --nh-green-50:  #ecf9f1;
+
+  /* ---- Neutrals ---- */
+  --grey-900: #1a1c1f;
+  --grey-800: #2b2f36;
+  --grey-700: #41464f;
+  --grey-600: #5b616b;
+  --grey-500: #767d88;
+  --grey-400: #9aa0aa;
+  --grey-300: #c4c9d0;
+  --grey-200: #e2e5ea;
+  --grey-150: #eaedf1;
+  --grey-100: #f0f2f5;
+  --grey-50:  #f5f6f8; /* page section background */
+  --white:    #ffffff;
+
+  /* ---- Semantic status ---- */
+  --status-positive: #00a04e; /* 입금 / 증가 */
+  --status-negative: #e0392b; /* 출금 / 감소 / 경고 */
+  --status-warning:  #f5a623;
+  --status-info:     #0094d9;
+
+  /* ==================== Semantic aliases ==================== */
+  --color-primary:        var(--nh-blue-500);
+  --color-primary-hover:  var(--nh-blue-600);
+  --color-primary-active: var(--nh-blue-700);
+  --color-primary-soft:   var(--nh-blue-50);
+  --color-accent:         var(--nh-green-500);
+  --color-accent-soft:    var(--nh-green-50);
+
+  /* Text */
+  --text-strong:   var(--grey-900); /* 제목 */
+  --text-body:     var(--grey-700); /* 본문 */
+  --text-muted:    var(--grey-500); /* 부가 설명 */
+  --text-disabled: var(--grey-400);
+  --text-on-fill:  var(--white);
+  --text-link:     var(--nh-blue-600);
+
+  /* Surfaces */
+  --surface-page:    var(--grey-50);
+  --surface-card:    var(--white);
+  --surface-sunken:  var(--grey-100);
+  --surface-navy:    var(--nh-navy-800);
+  --surface-inverse: var(--nh-navy-900);
+  --surface-action:  var(--nh-slate-600); /* 가입하기·조회 filled button */
+
+  /* Borders */
+  --border-subtle:  var(--grey-200);
+  --border-default: var(--grey-300);
+  --border-strong:  var(--grey-400);
+  --border-focus:   var(--nh-blue-500);
+}

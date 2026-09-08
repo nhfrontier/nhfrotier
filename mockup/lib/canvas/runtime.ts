@@ -184,6 +184,9 @@ export function buildRuntime(nonce: string, screenKey: string): string {
     if (d.type === 'setMode') {
       mode = d.mode === 'preview' ? 'preview' : 'select';
       if (mode === 'preview' && hovered) { hovered.removeAttribute(HOVER); hovered = null; }
+      // 부모가 최초 ready 메시지를 놓쳤을 수 있다. 이 기회에 높이를 다시 알린다.
+      lastHeight = docHeight();
+      send({ type: 'resize', docHeight: lastHeight });
       return;
     }
 
@@ -213,9 +216,12 @@ export function buildRuntime(nonce: string, screenKey: string): string {
       return;
     }
 
-    if (d.type === 'scrollTo') {
+    if (d.type === 'focusElement') {
       var t = document.querySelector('[data-nh-id="' + String(d.nhId).replace(/"/g, '') + '"]');
-      if (t && t.scrollIntoView) t.scrollIntoView({ block: 'center' });
+      if (!t) return;
+      if (t.scrollIntoView) t.scrollIntoView({ block: 'center' });
+      // 부모는 meta를 만들 수 없다. 사람이 직접 누른 것과 똑같은 select를 돌려준다.
+      send({ type: 'select', meta: metaOf(t) });
     }
   });
 
@@ -223,13 +229,24 @@ export function buildRuntime(nonce: string, screenKey: string): string {
     send({ type: 'error', message: String(e.message || '알 수 없는 오류') });
   });
 
-  lastHeight = docHeight();
-  send({
-    type: 'ready',
-    screenKey: CFG.screenKey,
-    docHeight: lastHeight,
-    elementCount: document.querySelectorAll('[data-nh-id]').length
-  });
+  // 부모는 React 이펙트에서 message 리스너를 붙인다. srcDoc 문서는 그보다 먼저
+  // 로드를 마칠 수 있어(특히 서버 렌더된 프레임을 하이드레이션할 때) 첫 ready가 유실된다.
+  // 그러면 부모가 준비 완료를 영영 모르고 setMode·패치를 보내지 않는다.
+  // 몇 번 더 알린다. 부모 쪽 처리는 멱등하다.
+  function announce() {
+    lastHeight = docHeight();
+    send({
+      type: 'ready',
+      screenKey: CFG.screenKey,
+      docHeight: lastHeight,
+      elementCount: document.querySelectorAll('[data-nh-id]').length
+    });
+  }
+
+  announce();
+  setTimeout(announce, 50);
+  setTimeout(announce, 250);
+  setTimeout(announce, 800);
 })();`;
 }
 

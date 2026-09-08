@@ -1,0 +1,60 @@
+/* ==========================================================================
+   NH기업뱅킹 — Webfonts
+   Noto Sans KR (open-source) as substitute for the proprietary NH 바른고딕.
+   Chosen over Pretendard for a closer match to the live site's plainer,
+   standard-gothic look. Loaded from the Fontsource CDN.
+   Latin + Korean subsets, weights 400 / 500 / 700.
+   See readme.md → font substitution note.
+   ========================================================================== */
+
+/* ---------- Latin ---------- */
+@font-face {
+  font-family: "Noto Sans KR";
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  src: url("https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-kr@latest/latin-400-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+2070-209F, U+20A0-20BF, U+2122, U+2191, U+2193, U+2197, U+2039-203A, U+2022, U+25B2;
+}
+@font-face {
+  font-family: "Noto Sans KR";
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  src: url("https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-kr@latest/latin-500-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+2070-209F, U+20A0-20BF, U+2122, U+2191, U+2193, U+2197, U+2039-203A, U+2022, U+25B2;
+}
+@font-face {
+  font-family: "Noto Sans KR";
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  src: url("https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-kr@latest/latin-700-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+2070-209F, U+20A0-20BF, U+2122, U+2191, U+2193, U+2197, U+2039-203A, U+2022, U+25B2;
+}
+
+/* ---------- Korean (Hangul) ---------- */
+@font-face {
+  font-family: "Noto Sans KR";
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  src: url("https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-kr@latest/korean-400-normal.woff2") format("woff2");
+  unicode-range: U+1100-11FF, U+3130-318F, U+A960-A97F, U+AC00-D7A3, U+D7B0-D7FF, U+3000-303F, U+FF00-FFEF;
+}
+@font-face {
+  font-family: "Noto Sans KR";
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  src: url("https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-kr@latest/korean-500-normal.woff2") format("woff2");
+  unicode-range: U+1100-11FF, U+3130-318F, U+A960-A97F, U+AC00-D7A3, U+D7B0-D7FF, U+3000-303F, U+FF00-FFEF;
+}
+@font-face {
+  font-family: "Noto Sans KR";
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  src: url("https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-kr@latest/korean-700-normal.woff2") format("woff2");
+  unicode-range: U+1100-11FF, U+3130-318F, U+A960-A97F, U+AC00-D7A3, U+D7B0-D7FF, U+3000-303F, U+FF00-FFEF;
+}

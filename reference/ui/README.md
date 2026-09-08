@@ -7,7 +7,7 @@
 
 저장소 루트 전체가 GitHub Pages로 공개 서빙된다 (`.github/workflows/pages.yml` — main은 `/`, dev는 `/dev/`).
 캡처에는 브라우저 북마크 바의 사내 프로젝트명과 계정명이 함께 찍혀 있어 **공개 URL로 노출시킬 성격이 아니다.**
-`design-system/uploads/`·`mockup/public/assets/nh/`를 제외한 것과 같은 이유다.
+`design-systems/*/uploads/`·`mockup/public/assets/nh/`를 제외한 것과 같은 이유다.
 
 그래서 이 폴더는 `.gitignore` 대상이고, **이 README.md만 추적된다.**
 이미지는 각자 로컬에만 둔다. 파일이 없어도 저장소·빌드는 그대로 동작한다.

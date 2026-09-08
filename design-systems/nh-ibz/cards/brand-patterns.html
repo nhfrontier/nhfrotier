@@ -1,0 +1,38 @@
+<!-- @dsCard group="Brand" viewport="700x200" name="Signature patterns — 카드·링크" subtitle="↗ 이동 카드 · 자세히보기 › 텍스트링크" -->
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 20px; background: var(--grey-50); display:flex; gap:16px; }
+  .card { flex:1; position:relative; background:var(--white); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:20px; box-shadow:var(--shadow-sm); }
+  .card.green { border-top:3px solid var(--nh-green-500); }
+  .arrow { position:absolute; top:16px; right:16px; width:26px; height:26px; display:flex; align-items:center; justify-content:center; border-radius:999px; background:var(--surface-sunken); color:var(--text-muted); font-size:14px; }
+  h4 { font-size:17px; margin:0 0 6px; }
+  p { font-size:13px; color:var(--text-muted); margin:0 0 16px; }
+  .link { display:inline-flex; align-items:center; gap:4px; font-size:13px; font-weight:500; color:var(--text-body); }
+  .link .g { color:var(--text-muted); }
+  .amt { font-size:22px; font-weight:700; color:var(--text-strong); }
+</style>
+</head>
+<body>
+  <div class="card">
+    <span class="arrow">↗</span>
+    <h4>기업 자금관리</h4>
+    <p>실시간 잔액과 거래내역</p>
+    <span class="link">자세히보기 <span class="g">›</span></span>
+  </div>
+  <div class="card green">
+    <span class="arrow">↗</span>
+    <h4>NH BOX</h4>
+    <p>적립 포인트</p>
+    <div class="amt">12,400 P</div>
+  </div>
+  <div class="card">
+    <h4>외환 / 수출입</h4>
+    <p>환율 조회 및 송금</p>
+    <span class="link">바로가기 <span class="g">›</span></span>
+  </div>
+</body>
+</html>
