@@ -38,38 +38,74 @@ body {
 }
 
 /*
- * 히어로 헤드라인의 SplitText 줄 마스크.
- * 단어를 yPercent:115로 줄 밖에 내려놓고 끌어올리므로, 줄 상자가 잘라주지 않으면 그대로 보인다.
- * intro가 끝나면 split.revert()가 이 래퍼를 걷어간다.
+ * JS가 활성화된 경우에만 초기 상태를 숨겨 hydration 전 flash를 막습니다.
+ * JS가 비활성화되면 .js가 붙지 않아 원문이 보이고, 기존 레이아웃이 html.no-js를
+ * 사용해도 아래 fallback이 이를 보장합니다. 런타임이 부트스트랩 뒤에 실패하면
+ * 숨김 상태가 남을 수 있다는 트레이드오프가 있습니다.
  */
-.hero-line {
-  overflow: clip;
+.proto-hero [data-hero-reveal],
+.proto-hero__title {
+  opacity: 1;
+  transform: none;
 }
 
-/*
- * 히어로 프리로더 커튼.
- * 마크업 상태로 이미 화면을 덮고 있으므로 걷는 일을 JS에 맡기면 안 된다 —
- * 번들 로드 실패나 예외 한 번에 히어로가 영영 가려진다. CSS가 걷고, GSAP은 건드리지 않는다.
- * JS가 하는 일은 재방문 시 .hero-curtain--skip 을 붙이는 것뿐이다.
- */
-.hero-curtain {
+.proto-hero {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo",
+    "Malgun Gothic", sans-serif;
+}
+
+.js .proto-hero [data-hero-reveal] {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.js .proto-hero__title {
+  opacity: 0;
+}
+
+.proto-hero__curtain {
+  display: none;
   clip-path: inset(0 0 0 0);
-  animation: hero-curtain 0.8s cubic-bezier(0.65, 0, 0.35, 1) forwards;
 }
 
-@keyframes hero-curtain {
-  to {
-    clip-path: inset(0 0 100% 0);
-    visibility: hidden;
-  }
+.js .proto-hero__curtain {
+  display: block;
 }
 
-.hero-curtain--skip {
+.js[data-proto-hero-seen="true"] .proto-hero__curtain,
+.no-js .proto-hero__curtain {
   display: none;
 }
 
+.no-js .proto-hero [data-hero-reveal],
+.no-js .proto-hero__title {
+  opacity: 1;
+  transform: none;
+}
+
+/* SplitText line mask: 한글 받침/하단 획이 overflow 경계에서 잘리지 않게 보정합니다. */
+.proto-hero-line-mask {
+  overflow: hidden !important;
+  padding-bottom: 0.12em;
+  margin-bottom: -0.12em;
+}
+
+.proto-hero-word {
+  will-change: transform;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .hero-curtain {
-    display: none;
+  .proto-hero__curtain {
+    display: none !important;
+  }
+
+  .proto-hero [data-hero-reveal],
+  .proto-hero__title,
+  .proto-hero__flow-step,
+  .proto-hero__flow-arrow,
+  .proto-hero-word {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
   }
 }
