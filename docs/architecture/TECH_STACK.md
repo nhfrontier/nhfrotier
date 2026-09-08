@@ -92,6 +92,16 @@
 - **비용**: 0. 런타임 의존성이 아니라 읽기 전용 자산이며, `fs.readFileSync` + 캐시로 끝난다.
 - **주의**: `<id>/uploads/` 는 커밋하지 않는다. 디자인 시스템을 만들 때 넣은 **실제 서비스 화면 캡처**라, 루트가 GitHub Pages로 공개 서빙되는 이 저장소에서는 그대로 공개 URL이 된다. 자산의 실체와 대체재 목록은 `design-systems/README.md`.
 
+### 농협 공식 CI 벡터 추출 (`scripts/trace-nh-ci.mjs`) — 2026-09-08 도입
+- **무엇**: 농협 공식 CI 원본 JPG(`mockup/public/assets/nh/logo/`)에서 심볼마크·워드마크의 **윤곽을 추출해 SVG path 로 바꾸는** 빌드 스크립트다. 락업 3종(`logo.svg`·`logo-white.svg`·`logo-mark.svg`)까지 조립하고, `design-systems/nh-ibz/templates/` 3장에 **인라인 SVG 로 박아 넣는다.**
+- **왜 필요**: `design-systems/nh-ibz` 의 로고가 활자 플레이스홀더라 결과물을 NH 자산이라 부를 수 없었다. 그런데 저장소에 있는 공식 자산은 **JPG 4장뿐이고 벡터 원본(AI/EPS/SVG)이 없다.** 래스터를 그대로 쓰면 다크 배경(흰 사각형)과 확대에서 무너진다.
+- **왜 손으로 그리지 않는지**: 공식 CI 를 눈대중으로 다시 그리는 것은 상표 왜곡이다. 스크립트는 산출물이 원본에서 기계적으로 유도됐음을 보이고, 만든 SVG 를 **다시 래스터로 그려 원본과 픽셀 일치율(IoU)** 을 잰다. 99% 미만이면 비정상 종료해 나쁜 산출물이 조용히 커밋되는 것을 막는다. 실측 IoU 는 심볼 99.703% / 워드마크 99.759%.
+- **왜 base64 PNG 가 아닌지**: 템플릿은 AI 화면 생성 프롬프트의 예시로 들어가고 그 예산은 60,000자다. 투명 PNG 는 96px 기준 base64 5.4KB 라 3장에 넣으면 예산을 잠식한다. 벡터 path 는 심볼 3.4KB·워드마크 1.0KB 이며 확대에도 견딘다.
+- **왜 파일 참조가 아니라 인라인인지**: 정제 파이프라인(`mockup/lib/canvas/htmlPipeline.ts`)이 상대경로 `src` 를 **속성째 잘라낸다**(허용은 `#`앵커와 `data:image/(png|jpe?g|gif|webp);base64,` 뿐). `<img src="../../assets/logo.svg">` 로 두면 모델에게는 빈 `<img>` 만 보인다. 인라인 `<svg>` 는 `DROP_TAGS` 에 없어 그대로 통과한다. `data:image/svg+xml` 은 차단되므로 이 경로도 쓸 수 없다.
+- **비용**: 0. 이미지 처리는 `mockup/` 에 이미 있는 `sharp` 를 `createRequire` 로 빌려 쓴다. **새 의존성을 추가하지 않았다.** 런타임 코드가 아니라 빌드 시점 스크립트다.
+- **주의**: 로고 path 를 손으로 고치지 말 것. 같은 path 가 락업 3개와 템플릿 3개, 총 여섯 곳에 들어 있어 한 곳만 고치면 조용히 갈라진다. 스크립트가 여섯 곳을 한 번에 갱신한다.
+- **주의 — 매니페스트 예외**: 프롬프트에 나가는 토큰 목록의 정본은 `tokens/colors.css` 가 아니라 `_ds_manifest.json` 의 `tokens[]` 다. CI 색 4개(`--nh-ci-*`)를 그 생성 파일에 **손으로 넣었다.** export 를 다시 돌리면 사라지므로 그때 다시 넣어야 한다.
+
 ---
 
 ## B. 목표 운영 스택 (행내 배포)
@@ -154,6 +164,15 @@
 - **주의**: `data-nh-id` 조회에 셀렉터 문자열을 조립하지 않는다. 값이 요청 본문에서 오므로 셀렉터 주입이 된다 —
   `getElementsByAttributeValue` 를 쓴다.
 
+### Testcontainers 1.21 (test scope) — 2026-09-08 도입
+
+- **무엇**: 테스트가 도는 동안 실제 PostgreSQL 컨테이너를 띄우는 라이브러리. `spring-boot-testcontainers` + `org.testcontainers:postgresql` + `junit-jupiter` 세 개이며 **전부 `test` scope** 다. 버전은 `spring-boot-dependencies` 의 `testcontainers-bom` 이 관리한다.
+- **왜 필요**: 인가 단일 지점인 `ProjectAccessGuard` 에 테스트가 없었다. 이 클래스의 위험은 역할 비교가 아니라 **리소스 → 프로젝트 역추적 SQL 이 틀리는 것**이다. `requireForExport` 의 `exports → versions` 조인이 어긋나면 남의 프로젝트 Export 가 통과한다. SQL 이 실제로 실행되어야만 잡히는 종류다.
+- **왜 H2 가 아닌지**: `V1__init.sql` 이 `JSONB` 를 쓰는데 H2 는 받지 못한다. 테스트용 스키마를 따로 두면 **운영과 다른 스키마를 검증**하게 된다. 초록불인데 운영에서 깨지는 전형적 경로다.
+- **왜 JdbcClient 대역(Mockito)이 아닌지**: SQL 문자열이 실행되지 않으므로 조인이 틀려도 통과한다. 정작 막으려던 것을 못 막는다. 실제로 조인을 깨는 변이를 넣어 테스트가 그것을 잡는 것을 확인했다.
+- **비용**: 반입 이미지에 들어가지 않는다. `backend/Dockerfile` 의 builder 스테이지가 `-DskipTests` 로 빌드하므로 test scope 는 최종 산출물과 무관하다. 대신 **`mvn test` 에 Docker 가 필요해진다.**
+- **주의 — Docker Engine 29 이상**: `pom.xml` 의 surefire 설정에 `api.version=1.44` 가 들어 있다. **지우면 테스트가 통째로 죽는다.** Engine 29 는 API 1.40 미만을 거절하는데(`MinAPIVersion=1.40`) docker-java 3.4.2 가 그보다 낮게 붙는다. 증상이 원인을 가린다 — `docker ps` 도 되고 컨테이너도 도는데 테스트만 `Could not find a valid Docker environment` 로 죽고, `/info` 가 본문 없는 400 만 준다. `DOCKER_API_VERSION=1.32 docker info` 로 같은 400 을 재현할 수 있다.
+
 ### PostgreSQL
 - **무엇**: 관계형 데이터베이스.
 - **왜 선택**: Version 계보(`parent_version_id` 자기참조)와 History 이벤트를 관계로 다뤄야 하고, JSON 컬럼으로 `payload_summary` 같은 가변 구조도 함께 담을 수 있다.
@@ -205,6 +224,8 @@
 | 신규 NH 디자인 시스템 구축 | UI 일관성 | 기존 NH 자산과 중복되며 유지 주체가 이원화된다 | 기존 NH 디자인 자산을 업무 맥락에 연결 |
 | JPA / Hibernate (운영 백엔드) | DB 접근 | 목록마다 집계를 함께 반환해야 하는데(05 1절 N+1 금지) 지연 로딩이 그 금지를 어기는 주된 경로다. 막으려면 결국 DTO projection 을 손으로 쓰게 되어 SQL 을 쓰는 것과 같아지고, 영속성 컨텍스트라는 개념만 추가된다. 엔티티 그래프가 얕아 얻는 것이 적다 | Spring `JdbcClient` + 명시적 SQL |
 | Gradle (운영 백엔드 빌드) | 빌드 도구 | 빌드 스크립트가 코드라 폐쇄망 반입 심사 대상이 하나 더 늘어난다. 행내 Nexus 미러 레퍼런스도 Maven 쪽이 많다 | Maven (`pom.xml` 하나) |
+| H2 (인가·SQL 테스트용 DB) | Docker 없이 도는 테스트 DB | `V1__init.sql` 의 `JSONB` 를 받지 못해 테스트용 스키마를 따로 써야 한다. 그러면 운영과 다른 스키마를 검증하게 되어, 초록불인데 운영에서 깨지는 상태가 된다 | Testcontainers + 실제 PostgreSQL |
+| Mockito 로 `JdbcClient` 대역 | 의존성 없이 가드 테스트 | SQL 이 실행되지 않아 조인이 틀려도 통과한다. `ProjectAccessGuard` 에서 정작 막으려는 위험(리소스→프로젝트 역추적 오류)을 못 막는다 | Testcontainers + 실제 PostgreSQL |
 | Redis (초기 도입) | 세션·캐시·Job 큐 | 운영 용도·운영 주체가 미결인데 먼저 넣으면 장애 영향 범위를 정의하지 못한 채 의존만 생긴다. 초기 규모에서는 DB 테이블 + `FOR UPDATE SKIP LOCKED` 로 충분하다 | `ai_jobs`·`exports` 테이블 큐 + 폴링 워커 |
 | OWASP Java HTML Sanitizer | 운영 백엔드 HTML 정제 | 정제는 강하지만 DOM 순회·재직렬화 API 가 없어 `data-nh-id` 부여와 baking 을 못 한다. 파서를 하나 더 써야 해 의존성이 둘이 된다 | jsoup |
 | node-html-parser | HTML 정제·요소 ID 부여 | 150KB로 훨씬 가볍지만 WHATWG 스펙 비준수다. 엣지케이스를 관대하게 넘기고 직렬화가 일부를 정규화해, **정제를 겸하는 용도로는 브라우저와 해석이 갈릴 위험**이 있다 | parse5 |

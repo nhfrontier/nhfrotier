@@ -19,7 +19,8 @@ The UI kit under `ui_kits/ibz/` is a faithful recreation of those three screens.
 ## ⚠️ Substitutions to confirm
 - **Font** — NH's brand face is the proprietary **NH 바른고딕**, which we cannot ship. We substitute **Noto Sans KR** (open-source, plain standard-gothic — closest match to the live site; loaded from the Fontsource CDN in `tokens/fonts.css`). Please upload NH 바른고딕 webfont files if production-grade fidelity is required. **Never substitute a different font in generated work — always `var(--font-sans)`.**
 - **Icons** — NH uses a custom icon set + bespoke isometric 3D illustrations we don't have access to. UI icons substitute **Lucide** (CDN). The isometric illustrations in `assets/illustrations/` are **clean geometric placeholders** we built in the NH palette — replace with the real brand illustration assets when available.
-- **Logo** — `assets/logo*.svg` is a typographic lockup ("NH" in a blue rounded square + 농협은행 / 기업인터넷뱅킹), **not** the official NH trademark symbol. Swap in the real CI artwork for production.
+- ~~**Logo** — `assets/logo*.svg` is a typographic lockup ("NH" in a blue rounded square + 농협은행 / 기업인터넷뱅킹), **not** the official NH trademark symbol. Swap in the real CI artwork for production.~~
+  → **RESOLVED (2026-09-08).** `assets/` now carries the **official NH CI symbol and wordmark**, vector-extracted from the official raster originals in `mockup/public/assets/nh/logo/`. Do **not** hand-edit the paths — run `node scripts/trace-nh-ci.mjs`, which regenerates all five logo files plus the inline copies in `templates/`, and fails if pixel agreement (IoU) with the original drops below 99%. Only "기업뱅킹" stays typeset, as it is a service name rather than a trademark. See the 로고 section of [`../README.md`](../README.md).
 
 ---
 
@@ -36,7 +37,7 @@ How NH기업뱅킹 writes.
 - **Emoji**: None. Status/category is conveyed by colored pill badges (법인/개인/개인사업자, 입금/출금), not emoji.
 
 ## VISUAL FOUNDATIONS
-- **Color**: NH Blue `#0094D9` is the brand accent — logo, links, active tab underlines, accent CTAs, icon glyphs. **Deep navy `#122F50`** anchors 로그인 buttons and dark banners. **Slate-navy `#3F4A68`** is the workhorse filled-button color (가입하기/조회) — distinct from the bright blue. **NH Green `#00A04E`** marks NH BOX and select service tiles. Surfaces alternate **white** cards on **light-grey `#F5F6F8`** sections. Rates/negative amounts in **red `#E0392B`**; positive/입금 in green.
+- **Color** — 두 벌이 있고 섞어 쓰지 않는다. **CI 전용색상**(`--nh-ci-blue #005CA9` · `--nh-ci-yellow #FBBA00` · `--nh-ci-green #04A64B` · `--nh-ci-light-green #A2C617`)은 PANTONE 규격값으로 **로고·브랜드 표기 전용**이다. 화면 UI 는 아래의 ibz 실측 팔레트를 쓴다 — 이름이 같아도 값이 다르다. NH Blue `#0094D9` is the brand accent — logo, links, active tab underlines, accent CTAs, icon glyphs. **Deep navy `#122F50`** anchors 로그인 buttons and dark banners. **Slate-navy `#3F4A68`** is the workhorse filled-button color (가입하기/조회) — distinct from the bright blue. **NH Green `#00A04E`** marks NH BOX and select service tiles. Surfaces alternate **white** cards on **light-grey `#F5F6F8`** sections. Rates/negative amounts in **red `#E0392B`**; positive/입금 in green.
 - **Type**: Noto Sans KR (sub for NH 바른고딕). Bold headings with tightened tracking (`-0.02em`), regular grey body. Strong, explicit 제목→부제목→본문 hierarchy. Korean reads best slightly negative-tracked; numerals are tabular.
 - **Spacing**: 8px grid, generous whitespace, 1200px max container. Sections breathe (40–64px vertical rhythm). Content aligns to a 2–4 column grid.
 - **Backgrounds**: Flat. White and `#F5F6F8` blocks define sections; dark navy for app/CTA banners. No photographic hero, no gradients to speak of — at most a faint tint (`--nh-blue-50`) on notice bars. Brand interest comes from **isometric 3D illustrations**, not textures or imagery.
@@ -81,6 +82,11 @@ Read this section before generating anything. It is the contract — everything 
 6. **No new radii.** 6 (buttons/inputs) · 10 (cards) · 14 (feature cards) · 999 (pills). Nothing else.
 7. **No slangy or jokey copy**, no exclamation stacking outside promo lines.
 8. Don't edit `_ds_bundle.js`, `_ds_manifest.json`, or `_adherence.oxlintrc.json` — they are generated.
+   **한 가지 의도적 예외가 있다** — `_ds_manifest.json` 의 `tokens[]` 에 `--nh-ci-*` 4개와
+   `cards[]` 에 `cards/colors-ci.html` 을 손으로 넣었다. 화면 생성 프롬프트에 나가는 토큰 목록의
+   정본이 `tokens/colors.css` 가 아니라 **이 파일**이기 때문이다(`mockup/lib/canvas/designSystem.ts`).
+   CSS 만 고치면 AI 는 CI 색을 보지 못한다. **export 를 다시 돌리면 이 값들이 조용히 사라지므로
+   그때 다시 넣어야 한다.**
 
 ### 무엇을 먼저 볼 것인가 (WHERE TO START)
 | 만들 것 | 먼저 열 파일 |
@@ -106,7 +112,7 @@ Copying a `templates/` entry and swapping the copy is **always** better than com
 
 **`tokens/`** — `fonts.css` (Noto Sans KR @font-face), `colors.css`, `typography.css`, `spacing.css` (spacing/radius/shadow/motion/layout), `base.css` (resets).
 
-**`assets/`** — `logo.svg`, `logo-white.svg`, `logo-mark.svg`; `illustrations/` (coins, card, security, transfer, building, document).
+**`assets/`** — `nh-symbol.svg`, `nh-wordmark.svg` (공식 CI 원본에서 추출), `logo.svg`, `logo-white.svg`, `logo-mark.svg` (그 둘로 조립한 락업); `illustrations/` (coins, card, security, transfer, building, document). 로고 5개는 전부 `scripts/trace-nh-ci.mjs` 산출물이다 — 손으로 고치지 말 것.
 
 **`components/core/`** — reusable primitives (each `.jsx` + `.d.ts` + `.prompt.md`):
 - `Button` — primary(blue) · slate(가입하기/조회) · navy(로그인) · accent(green) · outline · secondary · ghost.
@@ -117,7 +123,7 @@ Copying a `templates/` entry and swapping the copy is **always** better than com
 - `Tabs` — underline (page) / pill (in-card).
 - `core.card.html` — Components specimen card.
 
-**`cards/`** — foundation specimen cards for the Design System tab: Colors (primary, navy+green, neutrals, semantic), Type (headings, body, numerals), Spacing (scale, radius+shadow), Brand (logo, illustrations, signature patterns).
+**`cards/`** — foundation specimen cards for the Design System tab: Colors (**CI 전용색상**, primary, navy+green, neutrals, semantic), Type (headings, body, numerals), Spacing (scale, radius+shadow), Brand (logo, illustrations, signature patterns).
 
 **`ui_kits/ibz/`** — 기업인터넷뱅킹 recreation: `index.html` + `Header/Footer/Icon` + `HomeScreen/ProductListScreen/B2BScreen`. See its `README.md`.
 
