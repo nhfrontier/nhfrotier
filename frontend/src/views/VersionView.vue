@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { api, ApiError } from "@/api/client";
-import ScreenPreview from "@/components/ScreenPreview.vue";
-import type { ScreenHtml, ScreenSummary, VersionDetail } from "@/api/types";
+import DesignCanvas from "@/components/DesignCanvas.vue";
+import ElementPanel from "@/components/ElementPanel.vue";
+import CommentThread from "@/components/CommentThread.vue";
+import type { Comment, Patch, ScreenHtml, ScreenSummary, VersionDetail } from "@/api/types";
+import type { CanvasMode, EditableAttr, EditableStyleProp, ElementMeta } from "@/canvas/protocol";
 
 const props = defineProps<{ versionId: string }>();
 
@@ -15,6 +18,14 @@ const busy = ref<Set<string>>(new Set());
 const failures = ref<Record<string, string>>({});
 const selected = ref<string | null>(null);
 
+const mode = ref<CanvasMode>("view");
+const canvas = ref<InstanceType<typeof DesignCanvas> | null>(null);
+const picked = ref<ElementMeta | null>(null);
+const patches = ref<Patch[]>([]);
+const comments = ref<Comment[]>([]);
+const editing = ref(false);
+const commenting = ref(false);
+
 const screens = computed(() => detail.value?.screens ?? []);
 const current = computed(() => screens.value.find((s) => s.id === selected.value) ?? null);
 const generating = computed(() => busy.value.size > 0);
@@ -23,10 +34,135 @@ async function load() {
   try {
     detail.value = await api.get<VersionDetail>(`/versions/${props.versionId}`);
     selected.value = detail.value.screens[0]?.id ?? null;
+    await Promise.all([loadPatches(), loadComments()]);
     // 이미 만들어진 화면은 바로 보여준다.
     await Promise.all(detail.value.screens.filter((s) => s.status === "READY").map(fetchHtml));
   } catch (e) {
     error.value = e instanceof ApiError ? e.message : "버전을 불러오지 못했습니다.";
+  }
+}
+
+async function loadComments() {
+  if (!current.value) return;
+  try {
+    comments.value = await api.get<Comment[]>(`/screens/${current.value.id}/comments`);
+  } catch {
+    // 의견을 못 읽어도 캔버스는 쓸 수 있어야 한다.
+  }
+}
+
+/** 새 의견은 지금 고른 요소에 붙는다. 답글은 자기 앵커를 갖지 않는다(핀은 뿌리에만). */
+async function addComment(body: string, nhId: string | null, parentId: string | null) {
+  if (!current.value) return;
+  commenting.value = true;
+  try {
+    await api.post<Comment>(`/screens/${current.value.id}/comments`, { body, nhId, parentId });
+    await loadComments();
+  } catch (e) {
+    error.value = e instanceof ApiError ? e.message : "의견을 남기지 못했습니다.";
+  } finally {
+    commenting.value = false;
+  }
+}
+
+async function toggleResolved(comment: Comment) {
+  try {
+    await api.patch<Comment>(`/comments/${comment.id}`, { resolved: !comment.resolvedAt });
+    await loadComments();
+  } catch (e) {
+    error.value = e instanceof ApiError ? e.message : "상태를 바꾸지 못했습니다.";
+  }
+}
+
+/** 의견의 앵커를 캔버스에서 다시 짚는다. 편집 모드가 아니어도 어디를 가리키는지는 보여야 한다. */
+function focusAnchor(nhId: string) {
+  canvas.value?.select(nhId);
+}
+
+async function loadPatches() {
+  try {
+    patches.value = await api.get<Patch[]>(`/versions/${props.versionId}/patches`);
+  } catch {
+    // 편집 이력을 못 읽어도 캔버스 자체는 쓸 수 있어야 한다.
+  }
+}
+
+/**
+ * 편집을 서버에 남기고 화면에 즉시 반영한다.
+ *
+ * 저장본을 다시 받아오지 않고 프레임에만 연산을 보낸다 — 편집 한 번마다 화면 HTML을
+ * 통째로 다시 받으면 스크롤과 선택이 매번 초기화된다. 저장본과 화면이 어긋나는 것은
+ * 다음 로드에서 baked HTML 이 맞춰 준다.
+ */
+async function commit(op: string, payload: Record<string, string>, apply: () => void) {
+  if (!picked.value || !current.value) return;
+  editing.value = true;
+  try {
+    await api.post<Patch>(`/screens/${current.value.id}/patches`, {
+      nhId: picked.value.nhId,
+      op,
+      payload,
+    });
+    apply();
+    await loadPatches();
+  } catch (e) {
+    error.value = e instanceof ApiError ? e.message : "편집을 저장하지 못했습니다.";
+  } finally {
+    editing.value = false;
+  }
+}
+
+function setText(value: string) {
+  const nhId = picked.value!.nhId;
+  commit("setText", { value }, () => canvas.value?.apply([{ kind: "text", nhId, value }]));
+}
+
+function setStyle(prop: EditableStyleProp, value: string) {
+  const nhId = picked.value!.nhId;
+  commit("setStyle", { prop, value }, () => canvas.value?.apply([{ kind: "style", nhId, prop, value }]));
+}
+
+function setAttr(name: EditableAttr, value: string) {
+  const nhId = picked.value!.nhId;
+  commit("setAttr", { name, value }, () => canvas.value?.apply([{ kind: "attr", nhId, name, value }]));
+}
+
+/** AI 편집만은 결과 HTML 을 서버가 만들므로, 반영된 화면을 다시 받아야 한다. */
+async function aiEdit(instruction: string) {
+  if (!picked.value || !current.value) return;
+  editing.value = true;
+  error.value = null;
+  try {
+    await api.post<Patch>(`/screens/${current.value.id}/ai-edit`, {
+      nhId: picked.value.nhId,
+      instruction,
+    });
+    await fetchHtml(current.value);
+    await loadPatches();
+    picked.value = null;
+  } catch (e) {
+    error.value = e instanceof ApiError ? e.message : "AI 편집에 실패했습니다.";
+  } finally {
+    editing.value = false;
+  }
+}
+
+async function revert(patch: Patch) {
+  try {
+    await api.delete(`/patches/${patch.id}`);
+    await loadPatches();
+    if (current.value) await fetchHtml(current.value);
+  } catch (e) {
+    error.value = e instanceof ApiError ? e.message : "되돌리지 못했습니다.";
+  }
+}
+
+/** 프레임 안에서 data-goto 를 누르면 그 화면으로 옮긴다. 이동 판단은 부모가 한다. */
+function goToScreen(screenKey: string) {
+  const target = screens.value.find((s) => s.screenKey === screenKey);
+  if (target) {
+    selected.value = target.id;
+    picked.value = null;
   }
 }
 
@@ -77,6 +213,12 @@ function label(status: ScreenSummary["status"]): string {
   return { PLANNED: "대기", GENERATING: "생성 중", READY: "완료", FAILED: "실패" }[status] ?? status;
 }
 
+// 화면을 바꾸면 의견도 그 화면 것으로 바꾼다.
+watch(selected, () => {
+  comments.value = [];
+  loadComments();
+});
+
 onMounted(load);
 </script>
 
@@ -100,7 +242,7 @@ onMounted(load);
     <div class="split">
       <ul class="list">
         <li v-for="s in screens" :key="s.id">
-          <button class="screen" :class="{ on: s.id === selected }" @click="selected = s.id">
+          <button class="screen" :class="{ on: s.id === selected }" @click="selected = s.id; picked = null">
             <span class="name">{{ s.name }}</span>
             <span class="badge" :class="s.status.toLowerCase()">{{ label(s.status) }}</span>
             <span v-if="s.role" class="muted role">{{ s.role }}</span>
@@ -111,12 +253,59 @@ onMounted(load);
       <section v-if="current">
         <div class="bar">
           <strong>{{ current.name }}</strong>
+          <button :class="{ primary: mode === 'edit' }" :disabled="!html[current.id]" @click="mode = mode === 'edit' ? 'view' : 'edit'">
+            {{ mode === "edit" ? "편집 끝내기" : "편집하기" }}
+          </button>
           <button :disabled="busy.has(current.id)" @click="generate(current)">
             {{ busy.has(current.id) ? "만드는 중…" : html[current.id] ? "다시 만들기" : "만들기" }}
           </button>
         </div>
         <p v-if="failures[current.id]" class="error">{{ failures[current.id] }}</p>
-        <ScreenPreview :html="html[current.id] ?? null" :name="current.name" />
+
+        <div class="stage" :class="{ editing: mode === 'edit' }">
+          <DesignCanvas
+            ref="canvas"
+            :html="html[current.id] ?? null"
+            :mode="mode"
+            :name="current.name"
+            @select="picked = $event"
+            @navigate="goToScreen"
+          />
+          <ElementPanel
+            v-if="mode === 'edit'"
+            :element="picked"
+            :busy="editing"
+            @set-text="setText"
+            @set-style="setStyle"
+            @set-attr="setAttr"
+            @ai-edit="aiEdit"
+          />
+        </div>
+
+        <CommentThread
+          class="comments"
+          :comments="comments"
+          :anchor-nh-id="picked?.nhId ?? null"
+          :busy="commenting"
+          @create="addComment"
+          @toggle-resolved="toggleResolved"
+          @focus-anchor="focusAnchor"
+        />
+
+        <section v-if="patches.length" class="card history">
+          <h2>편집 이력</h2>
+          <ul class="list">
+            <li v-for="p in patches" :key="p.id" :class="{ reverted: p.revertedAt }">
+              <span class="badge">{{ p.op }}</span>
+              <span class="muted mono">{{ p.nhId }}</span>
+              <span v-if="p.screenKey" class="muted">· {{ p.screenKey }}</span>
+              <span class="muted">· {{ p.userName ?? "" }}</span>
+              <span v-if="p.source === 'AI'" class="badge">AI</span>
+              <button v-if="!p.revertedAt" class="tiny" @click="revert(p)">되돌리기</button>
+              <span v-else class="muted">되돌림</span>
+            </li>
+          </ul>
+        </section>
       </section>
     </div>
   </template>
@@ -135,7 +324,20 @@ onMounted(load);
 .bar { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
 .bar button { margin-left: auto; }
 .badge.ready { border-color: var(--nh-green); color: var(--nh-green); }
+.stage { display: grid; gap: 12px; }
+.stage.editing { grid-template-columns: 1fr 300px; }
+.comments { margin-top: 14px; }
+.history { margin-top: 14px; }
+.history h2 { font-size: 14px; margin: 0 0 10px; }
+.history li { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 13px; }
+.history li.reverted { opacity: 0.5; }
+.mono { font-family: ui-monospace, monospace; font-size: 12px; }
+.tiny { padding: 2px 8px; font-size: 12px; margin-left: auto; }
 .badge.failed { border-color: #fca5a5; color: #991b1b; }
+
+@media (max-width: 1100px) {
+  .stage.editing { grid-template-columns: 1fr; }
+}
 
 @media (max-width: 720px) {
   .split { grid-template-columns: 1fr; }

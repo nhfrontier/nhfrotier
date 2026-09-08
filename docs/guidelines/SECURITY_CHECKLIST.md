@@ -177,6 +177,25 @@ CSP는 `srcDoc` 조립 시 `<meta http-equiv="Content-Security-Policy">`로 넣�
 
 편집 값(`element_patches.payload`)은 사용자·AI가 넣은 값이며 저장 시점에는 화이트리스트 검사만 받는다. **저장된 값을 신뢰하지 않는다**는 것이 이 두 대응의 전제다.
 
+### 운영 프론트엔드에도 같은 조합을 적용 (2026-09-08)
+
+`frontend/` 의 협업 캔버스가 프로토타입과 같은 결정을 따른다. 구현 위치는
+`frontend/src/canvas/protocol.ts`(계약·신뢰 판정), `frontend/src/canvas/runtime.ts`(프레임 안 스크립트),
+`frontend/src/components/DesignCanvas.vue`(프레임 호스트)다.
+
+| 항목 | 확인한 값 |
+|---|---|
+| `sandbox` | `["allow-scripts"]` 뿐. `allow-same-origin` 없음 |
+| 부모의 프레임 DOM 접근 | `iframe.contentDocument` 가 `null` — 불투명 오리진 확인 |
+| 프레임 → 부모 신뢰 판정 | `event.source === iframe.contentWindow` 대조만. **origin 은 항상 `"null"` 이라 검증에 못 쓴다** |
+| 부모 → 프레임 | `targetOrigin` 이 `'*'` 로 강제됨. 그래서 이 방향에 **사용자 식별자·세션·토큰을 싣지 않는다** |
+| 저장본 | `<script` 없음. 런타임은 `srcdoc` 조립 시점에만 주입하고 DB 에 넣지 않는다 |
+
+- **미리보기 전용 화면은 `sandbox=""`(모든 제약)로 둔다.** 요소 선택이 필요 없으면 스크립트 권한도 필요 없다.
+  캔버스만 `allow-scripts` 를 받는다 — 필요 없는 권한을 기본값으로 만들지 않기 위해서다.
+- 편집 화이트리스트(`EDITABLE_STYLE_PROPS`·`EDITABLE_ATTRS`)의 정본은 `backend/.../EditProtocol.java` 다.
+  프론트의 사본은 편의일 뿐 통제가 아니며, 서버가 저장·반영 양쪽에서 다시 검사한다.
+
 ### 상태
 **부분 확정** — 위 샌드박스 조합과 정제 파이프라인, baking 대응은 프로토타입에 적용 완료. 운영 적용 시 행내 보안 검토를 거쳐 확정한다.
 

@@ -135,3 +135,46 @@ export interface ScreenHtml {
   html: string;
   warnings: string[];
 }
+
+// ---------------------------------------------------------------- 협업 캔버스
+
+/** 편집 하나. payload 는 서버가 JSON 문자열로 내려준다(목록에서는 빠질 수 있다). */
+export interface Patch {
+  id: string;
+  screenId: string;
+  screenKey: string | null;
+  nhId: string;
+  userId: string;
+  userName: string | null;
+  op: "setText" | "setStyle" | "setAttr" | "aiRewrite";
+  payload: string | null;
+  reason: string | null;
+  source: string;
+  seq: number;
+  commentId: string | null;
+  createdAt: string;
+  /** 되돌린 편집은 이 값이 채워진다. 행은 지우지 않는다(soft revert). */
+  revertedAt: string | null;
+}
+
+// ---------------------------------------------------------------- 의견
+
+/** 앵커 상태. 화면을 다시 만들면 요소 id 가 바뀌어 orphaned 가 될 수 있다. */
+export type AnchorStatus = "none" | "anchored" | "orphaned";
+
+export interface Comment {
+  id: string;
+  projectId: string;
+  versionId: string | null;
+  screenId: string | null;
+  /** 답글이면 뿌리 의견의 id. 답글은 자기 앵커를 갖지 않는다. */
+  parentId: string | null;
+  nhId: string | null;
+  anchorStatus: AnchorStatus;
+  body: string;
+  authorId: string;
+  authorName: string | null;
+  createdAt: string;
+  updatedAt: string | null;
+  resolvedAt: string | null;
+}
