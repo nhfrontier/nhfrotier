@@ -156,7 +156,10 @@
       </div>
 
       <div style="flex:1;overflow:auto;padding:14px;">
-        <h2 style="font-size:12.5px;font-weight:700;color:#0f172a;margin:0 0 10px;">댓글 (원 의견)</h2>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 10px;">
+          <h2 style="font-size:12.5px;font-weight:700;color:#0f172a;margin:0;">댓글 (원 의견)</h2>
+          <span style="flex-shrink:0;font-size:11px;font-weight:500;color:#475569;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;">AI에게 검토 요청</span>
+        </div>
         <div style="display:flex;flex-direction:column;gap:12px;">
           <div style="display:flex;gap:8px;">
             <div style="width:22px;height:22px;border-radius:50%;background:#ec4899;color:#fff;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;">이</div>
@@ -167,6 +170,25 @@
                 <span style="font-size:10px;color:#94a3b8;margin-left:auto;">14:20</span>
               </div>
               <p style="font-size:11.5px;color:#334155;background:#f8fafc;border-radius:8px;padding:7px 9px;margin:0;line-height:1.5;">포인트 영역이 다른 카드에 묻혀서 잘 안 보여요.</p>
+            </div>
+          </div>
+          <!-- FR-15 UX 리스크 검토 — 사람 댓글 사이 시간순 자리에 놓인다. 핀 번호(①③)는 사람 댓글만 센다 -->
+          <div style="border:1px solid #e2e8f0;border-left:3px solid #2dd4bf;border-radius:8px;padding:10px 12px;background:#fff;">
+            <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-bottom:6px;">
+              <span style="font-size:9px;color:#64748b;">AI</span>
+              <span style="font-size:10px;font-weight:500;background:#f0fdfa;color:#0f766e;border-radius:4px;padding:1px 6px;">누적과 반복</span>
+              <span style="font-size:10px;font-weight:500;background:#fee2e2;color:#b91c1c;border-radius:4px;padding:1px 6px;">높음</span>
+              <span style="font-size:9px;color:#cbd5e1;margin-left:auto;">UR-01</span>
+            </div>
+            <p style="font-size:11.5px;font-weight:600;color:#1e293b;margin:0 0 6px;">한 흐름에서 팝업을 세 번 닫아야 한다</p>
+            <p style="font-size:9px;color:#94a3b8;margin:0 0 2px;">의견에서</p>
+            <p style="font-size:11px;color:#475569;background:#f8fafc;border:1px solid #f1f5f9;border-radius:4px;padding:6px 8px;margin:0 0 6px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;line-height:1.6;">가입 완료되면 안내 팝업 띄워주세요<br>약관 변경 있으면 진입 시 모달로 알려야 합니다</p>
+            <p style="font-size:11px;color:#64748b;margin:0 0 4px;line-height:1.5;">각 팝업은 서로 다른 이유로 타당하지만 사용자는 총합을 한 번에 겪는다.</p>
+            <p style="font-size:11px;color:#334155;margin:0 0 8px;line-height:1.5;"><span style="color:#94a3b8;">제안 </span>완료 화면 안의 배너로 합치거나 평가 요청은 3회차 방문 이후로 미룬다.</p>
+            <div style="display:flex;gap:4px;flex-wrap:wrap;">
+              <span style="font-size:11px;font-weight:600;color:#15803d;border:1px solid #bbf7d0;border-radius:6px;padding:3px 8px;">반영</span>
+              <span style="font-size:11px;font-weight:600;color:#b45309;border:1px solid #fde68a;border-radius:6px;padding:3px 8px;">보류</span>
+              <span style="font-size:11px;font-weight:600;color:#b91c1c;border:1px solid #fecaca;border-radius:6px;padding:3px 8px;">반려</span>
             </div>
           </div>
           <div style="display:flex;gap:8px;">

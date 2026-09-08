@@ -37,9 +37,10 @@
 | 파일 저장 | DB와 분리된 File Storage. DB에는 메타데이터만 | 결정 |
 | 로그 | 원문·민감정보 기본 미저장. 접근·감사 로그 **1년 이상** 보존 | 결정 |
 | AI 입력 자료 | 사용자가 대상 자료를 **명시적으로 선택** | 결정 |
+| AI 입력 자료의 범위 (FR-15) | UX 리스크 검토는 **사람이 작성한 의견 원문**을 함께 보낸다. FR-14까지는 목업 HTML과 기획안뿐이었다 | **미결** — 아래 참고 |
 | 전송 구간 | HTTPS. 공개 접점은 DMZ 배치 | 결정 |
 | Prompt·Response 저장 | 저장 허용 범위 협의 필요 | **미결** |
-| AI 입력 민감정보 처리 기준 | 어떤 자료를 AI에 넣을 수 있는지 기준 필요 | **미결** |
+| AI 입력 민감정보 처리 기준 | 어떤 자료를 AI에 넣을 수 있는지 기준 필요. **FR-15(UX 리스크 검토)가 의견 원문을 입력에 포함시키면서 범위가 넓어졌다** — 의견에는 사내 정보·개인정보가 섞일 수 있다 | **미결** |
 | HTML preview 보안 정책 | 아래 4절 참고 | **미결** |
 | 파일 반출(Export) 정책 | 반출 허용 범위·승인 절차 | **미결** |
 
@@ -137,8 +138,35 @@
 - 생성 HTML에 `<script>`·인라인 이벤트 핸들러(`onclick` 등)·외부 리소스 로드가 포함되지 않도록 저장 전 정제한다. (현재 프롬프트가 "Do NOT use JavaScript"를 지시하지만, **프롬프트 지시는 보안 통제가 아니다.** 서버 측 정제가 필요하다.)
 - CSP 헤더로 외부 스크립트·네트워크 요청을 차단한다.
 
+### 샌드박스 조합 결정 — `allow-scripts` 단독 (2026-09-05)
+
+~~프로토타입은 `sandbox="allow-same-origin"`(스크립트 없음)으로 렌더링한다.~~
+→ **`sandbox="allow-scripts"`로 전환한다. `allow-same-origin`은 부여하지 않는다.**
+
+- **왜 바꿨나**: 협업 디자인 캔버스가 목업 안의 요소를 클릭해 고르고 화면 사이를 이동시켜야 한다. 두 기능 다 프레임 안에서 스크립트가 돌아야 가능하다.
+- **왜 규칙 위반이 아닌가**: 금지 대상은 두 값의 **동시** 부여다. `allow-scripts`만 주면 프레임은 불투명(opaque) 오리진이 되어 부모 DOM·쿠키·`localStorage`에 접근할 수 없고, 프레임이 자기 `sandbox` 속성을 지워 샌드박스를 무력화하는 경로도 막힌다. 위험한 쪽은 `allow-same-origin`이며, 그것을 뺀 것이다.
+- **실측 확인**: 부모에서 `iframe.contentDocument`가 `null`이고, 부모가 받는 `event.origin`은 항상 문자열 `"null"`이다. 따라서 **origin 검증은 성립하지 않으며**, 신뢰 판정은 `event.source === iframe.contentWindow` 대조로만 한다. 이 값은 브라우저가 채우므로 위조할 수 없다.
+- **반대 방향의 제약**: 불투명 오리진에는 `targetOrigin`을 지정할 수 없어 부모→프레임 전송은 `'*'`가 강제된다. 그러므로 **이 방향의 페이로드에 사용자 식별자·세션·토큰·타 프로젝트 정보를 절대 넣지 않는다.** 화면에 그리기 위한 표현 데이터만 보낸다.
+- **런타임 스크립트의 출처**: 프레임 안에서 도는 스크립트는 AI 생성물이 아니라 저장소가 통제하는 `mockup/lib/canvas/runtime.ts`다. DB에 저장하지 않고 `srcDoc` 조립 시점에만 주입하므로, **저장본은 script-free로 유지**되고 HTML 다운로드도 안전하다.
+
+### 서버 측 정제 도입 (2026-09-05)
+
+`mockup/lib/canvas/htmlPipeline.ts`가 생성 HTML을 **저장 전에** parse5로 한 번 파싱하며 아래를 수행한다.
+
+| 처리 | 내용 |
+|---|---|
+| 노드 제거 | `script`·`iframe`·`object`·`embed`·`base`·`link`·`noscript`·`template`·`foreignObject`, `meta[http-equiv]`, 주석 전부 |
+| 속성 제거 | `on*` 전부, `srcdoc`·`ping`·`formaction`·`xlink:href`, AI가 붙인 `data-nh-id` |
+| URL 속성 | `href`/`src`/`action`/`poster` 등은 `#앵커`와 `data:image/(png\|jpeg\|gif\|webp)`만 허용. **`data:image/svg+xml`도 차단**(SVG는 스크립트 운반 가능) |
+| CSS | `@import`·`expression(`·`javascript:` 제거, 외부 `url()`은 `none`으로 무력화 |
+| 화면 링크 | `data-goto`가 존재하지 않는 화면을 가리키면 제거 |
+
+CSP는 `srcDoc` 조립 시 `<meta http-equiv="Content-Security-Policy">`로 넣는다:
+`default-src 'none'; style-src 'unsafe-inline'; img-src data:; font-src data:; script-src 'unsafe-inline'; form-action 'none'; base-uri 'none'`
+정제가 뚫렸을 때의 2차 방어선이며, `img-src data:`로 묶여 프레임이 바깥으로 요청을 낼 수 없다.
+
 ### 상태
-**미결** — 최종 정책은 행내 보안 검토 후 확정한다. 확정 전까지 위 필수 항목을 기본값으로 적용한다.
+**부분 확정** — 위 샌드박스 조합과 정제 파이프라인은 프로토타입에 적용 완료. 운영 적용 시 행내 보안 검토를 거쳐 확정한다.
 
 ---
 
@@ -172,4 +200,5 @@
 | 인가 없음 | 프로젝트 멤버십 검증 없이 조회·수정이 가능하다 (IDOR 노출) |
 | 감사 로그 없음 | 접근·변경 이력을 남기지 않는다 |
 | 외부 LLM 직접 호출 | 행내 승인 LLM이 아닌 외부 Anthropic API를 호출한다 |
-| HTML preview 부분 적용 | `app/projects/[id]/page.tsx:523`에서 `<iframe srcDoc sandbox="allow-same-origin">`으로 렌더링한다. `allow-scripts`가 없어 스크립트는 실행되지 않는다. 다만 저장 전 서버 측 정제와 CSP는 없다 |
+| 의견 원문의 외부 전송 | FR-15 UX 리스크 검토가 **사람이 작성한 의견 원문**을 외부 Anthropic API로 보낸다. 프로토타입에는 의견 내용에 대한 필터·마스킹이 없다. 운영에서는 승인 LLM 경유가 전제이며 허용 범위는 1절의 미결 항목이다 |
+| ~~HTML preview 부분 적용~~ | ~~`app/projects/[id]/page.tsx:523`에서 `<iframe srcDoc sandbox="allow-same-origin">`으로 렌더링한다. `allow-scripts`가 없어 스크립트는 실행되지 않는다. 다만 저장 전 서버 측 정제와 CSP는 없다~~ → **해소(2026-09-05).** `app/components/canvas/DesignCanvas.tsx`가 `sandbox="allow-scripts"`(불투명 오리진)로 렌더링하고, `lib/canvas/htmlPipeline.ts`가 저장 전 정제하며, `srcDoc`에 CSP meta를 주입한다. 4절 참고 |

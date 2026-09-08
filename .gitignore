@@ -2,18 +2,21 @@
 # it was previously committed as a broken submodule reference and broke GitHub Pages checkout.
 mockup/claude_test/
 
-# 디자인 시스템 원본 압축본 — design-system/ 에 풀어서 커밋하므로 중복이다.
+# 디자인 시스템 원본 압축본 — design-systems/<id>/ 에 풀어서 커밋하므로 중복이다.
 올원뱅크 Design System.zip
+NH기업뱅킹 Design System.zip
 
 # 농협 공식 CI 원본 아카이브(심볼마크·워드마크·전용색상·그래픽모티브).
 # 루트가 GitHub Pages 로 공개 서빙되므로 zip 도 공개 URL 로 그대로 받아진다.
 # 반입 절차는 mockup/public/assets/nh/README.md 참고 — 각자 로컬에만 둔다.
 reference/농협CI 이미지 아카이브.zip
 
-# 디자인 시스템에 첨부된 참고 캡처(올원뱅크 앱 화면).
-# 이 저장소의 tj 브랜치 루트는 GitHub Pages 로 공개 서빙되므로 커밋하지 않는다.
-# 빌드는 design-system/tokens/ 만 사용하므로 없어도 동작한다.
-design-system/uploads/
+# 디자인 시스템에 첨부된 참고 캡처.
+#   naru-bank/uploads — 올원뱅크 앱 화면 캡처
+#   nh-ibz/uploads    — ibz.nonghyup.com 실제 화면 캡처(4.5MB)
+# 저장소 루트가 GitHub Pages 로 공개 서빙되므로 커밋하지 않는다.
+# 빌드는 design-systems/<id>/_ds_manifest.json 만 읽으므로 없어도 동작한다.
+design-systems/*/uploads/
 
 # 디자인 자산 갤러리에 넣는 실물 이미지(올원뱅크·기업뱅킹·NH 로고/화면).
 # 위와 같은 이유 — main/dev 루트가 GitHub Pages 로 공개 서빙되므로 커밋하지 않는다.

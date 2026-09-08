@@ -1,0 +1,72 @@
+<!-- @dsCard group="기업뱅킹" viewport="1280x880" name="기업인터넷뱅킹 (ibz.nonghyup.com)" subtitle="메인·금융상품·B2B전자결제 — 클릭 가능한 재현" -->
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NH기업뱅킹 — UI Kit</title>
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  html, body { margin: 0; background: var(--white); }
+  #app { min-width: 1200px; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.js"></script>
+<script src="../../_ds_bundle.js"></script>
+
+<script type="text/babel" src="Icon.jsx"></script>
+<script type="text/babel" src="Header.jsx"></script>
+<script type="text/babel" src="Footer.jsx"></script>
+<script type="text/babel" src="ProductListScreen.jsx"></script>
+<script type="text/babel" src="ProductRecommendScreen.jsx"></script>
+<script type="text/babel" src="B2BScreen.jsx"></script>
+<script type="text/babel" src="HomeScreen.jsx"></script>
+
+<script type="text/babel" data-presets="react">
+  function App() {
+    const [nav, setNav] = React.useState("홈");
+    let screen, subNav = null;
+    if (nav === "금융상품") {
+      screen = <ProductListScreen />;
+      subNav = { root: "농협은행", items: ["예금", "대출", "펀드", "외화예금", "외화대출"], active: "예금" };
+    } else if (nav === "맞춤상품추천") {
+      screen = <ProductRecommendScreen />;
+      subNav = { root: "농협은행", items: ["예금", "대출", "펀드", "외화예금", "맞춤 상품 추천"], active: "맞춤 상품 추천" };
+    } else if (nav === "B2B전자결제") {
+      screen = <B2BScreen />;
+    } else {
+      screen = <HomeScreen />;
+    }
+    const active = nav === "홈" ? "" : nav;
+    return (
+      <div>
+        <Header active={active} subNav={subNav} onNav={setNav} extraNav={["맞춤상품추천"]} />
+        {screen}
+        <Footer />
+      </div>
+    );
+  }
+  function mount() {
+    if (!window.HomeScreen || !window.Header || !window.ProductRecommendScreen) { setTimeout(mount, 30); return; }
+    const root = ReactDOM.createRoot(document.getElementById("app"));
+    if (!window.NHDesignSystem_5d992c) {
+      root.render(
+        <div style={{ maxWidth: 560, margin: "120px auto", textAlign: "center", fontFamily: "var(--font-sans)", color: "var(--text-body)" }}>
+          <div style={{ fontSize: 18, fontWeight: 700, color: "var(--text-strong)" }}>디자인 시스템 번들을 준비 중입니다</div>
+          <p style={{ marginTop: 10, fontSize: 14, color: "var(--text-muted)" }}>컴포넌트 번들(_ds_bundle.js)이 컴파일된 후 화면이 표시됩니다. 잠시 후 새로고침 해주세요.</p>
+        </div>
+      );
+      return;
+    }
+    root.render(<App />);
+  }
+  mount();
+</script>
+</body>
+</html>

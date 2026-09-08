@@ -47,7 +47,7 @@ npm run lint         # ESLint
 `/proto/assets`(S10 디자인 자산 갤러리)가 읽는 실물 이미지 위치다.
 
 - **커밋하지 않는다.** `.gitignore`에 `mockup/public/assets/nh/*`가 등록되어 있고 `README.md`만 추적된다.
-- **이유**: `.github/workflows/pages.yml`이 저장소 루트 전체를 GitHub Pages로 공개 서빙한다(main → `/`, dev → `/dev/`). 올원뱅크·기업인터넷뱅킹 화면 캡처나 NH 로고 원본을 커밋하면 공개 URL로 노출된다. `design-system/uploads/`를 제외한 것과 같은 이유다.
+- **이유**: `.github/workflows/pages.yml`이 저장소 루트 전체를 GitHub Pages로 공개 서빙한다(main → `/`, dev → `/dev/`). 올원뱅크·기업인터넷뱅킹 화면 캡처나 NH 로고 원본을 커밋하면 공개 URL로 노출된다. `design-systems/*/uploads/`를 제외한 것과 같은 이유다.
 - 파일이 없어도 화면은 동작한다. `AssetThumb`이 대체본을 그리고 배지로 구분한다.
 - 파일명 규칙과 폴더 구조는 `mockup/public/assets/nh/README.md` 참고.
 
@@ -58,6 +58,20 @@ npm run lint         # ESLint
 - **커밋하지 않는다.** `.gitignore`에 `reference/ui/**`가 등록되어 있고 `README.md`만 추적된다.
 - **이유**: 위와 같다. 루트가 공개 서빙되는데 캡처에 사내 프로젝트명·계정명이 함께 찍혀 있다.
 - 파일이 없어도 저장소·빌드는 그대로 동작한다. 자세한 내용은 `reference/ui/README.md` 참고.
+
+### 디자인 시스템 (`design-systems/`)
+
+화면 생성 시 고르는 디자인 시스템 자산이다. 폴더 하나가 시스템 하나이며, 선택지 정본은 `design-systems/registry.json`이다.
+`mockup/lib/canvas/designSystem.ts`가 `process.cwd()/../design-systems`를 읽으므로 **`mockup/`을 다른 위치로 옮기면 이 경로가 끊긴다.**
+
+- 본체는 **커밋한다.** 토큰·컴포넌트·템플릿은 공개돼도 무방한 대체재다.
+- **`design-systems/*/uploads/` 는 커밋하지 않는다.** `.gitignore`에 등록되어 있다.
+  - `naru-bank/uploads/` — 올원뱅크 앱 화면 캡처 10장
+  - `nh-ibz/uploads/` — `ibz.nonghyup.com` 실제 화면 캡처 4.5MB
+  - **이유**: 위와 같다. 루트가 공개 서빙되므로 실제 서비스 화면이 그대로 공개 URL이 된다.
+- 원본 export zip(`올원뱅크 Design System.zip` · `NH기업뱅킹 Design System.zip`)도 같은 이유로 제외한다. 풀어서 커밋하므로 중복이기도 하다.
+- 파일이 없어도 화면 생성은 그대로 동작한다. 프롬프트에서 디자인 토큰 절만 빠진다.
+- 자산의 실체(무엇이 실제 NH이고 무엇이 대체재인지)는 `design-systems/README.md` 참고.
 
 ---
 

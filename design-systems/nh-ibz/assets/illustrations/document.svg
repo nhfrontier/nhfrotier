@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" aria-label="서류 / 신청">
+  <ellipse cx="60" cy="104" rx="38" ry="11" fill="#d6eefa"></ellipse>
+  
+  <g transform="translate(60 26)">
+    
+    <polygon points="4,2 40,23 4,44 -32,23" fill="#bfe4f6"></polygon>
+    
+    <polygon points="0,-4 34,16 0,36 -34,16" fill="#ffffff"></polygon>
+    
+    <polygon points="-34,16 0,36 0,62 -34,42" fill="#e2e5ea"></polygon>
+    
+    <polygon points="34,16 0,36 0,62 34,42" fill="#f0f2f5"></polygon>
+    
+    <g stroke-linecap="round">
+      <path d="M-20,12 L-4,21" stroke="#0094d9" stroke-width="2.6"></path>
+      <path d="M-20,19 L-4,28" stroke="#c4c9d0" stroke-width="2.6"></path>
+      <path d="M-20,26 L-10,32" stroke="#c4c9d0" stroke-width="2.6"></path>
+      
+      <circle cx="14" cy="20" r="8" fill="#00a04e"></circle>
+      <path d="M10,20 L13,23 L19,17" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
+    </g>
+  </g>
+</svg>

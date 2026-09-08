@@ -1,0 +1,30 @@
+<!-- @dsCard group="Spacing" viewport="700x150" name="Radius & Shadow" subtitle="모서리 라운드 · 그림자 단계" -->
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 20px 24px; background: var(--grey-50); display:flex; gap:22px; align-items:center; }
+  .grp { display:flex; gap:14px; align-items:center; }
+  .box { width:60px; height:60px; background:var(--white); border:1px solid var(--border-subtle); display:flex; align-items:flex-end; justify-content:center; padding-bottom:5px; }
+  .t { font-size:10px; color:var(--text-muted); font-family:var(--font-mono); }
+  .sep { width:1px; height:70px; background:var(--border-subtle); }
+</style>
+</head>
+<body>
+  <div class="grp">
+    <div class="box" style="border-radius:var(--radius-sm)"><span class="t">sm 6</span></div>
+    <div class="box" style="border-radius:var(--radius-md)"><span class="t">md 10</span></div>
+    <div class="box" style="border-radius:var(--radius-lg)"><span class="t">lg 14</span></div>
+    <div class="box" style="border-radius:var(--radius-pill)"><span class="t">pill</span></div>
+  </div>
+  <div class="sep"></div>
+  <div class="grp">
+    <div class="box" style="border-radius:var(--radius-md);box-shadow:var(--shadow-xs);border:none"><span class="t">xs</span></div>
+    <div class="box" style="border-radius:var(--radius-md);box-shadow:var(--shadow-sm);border:none"><span class="t">sm</span></div>
+    <div class="box" style="border-radius:var(--radius-md);box-shadow:var(--shadow-md);border:none"><span class="t">md</span></div>
+    <div class="box" style="border-radius:var(--radius-md);box-shadow:var(--shadow-lg);border:none"><span class="t">lg</span></div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none" role="img" aria-label="법인 카드">
+  <ellipse cx="60" cy="98" rx="42" ry="13" fill="#d6eefa"></ellipse>
+  
+  <g transform="translate(60 60)">
+    <polygon points="0,-26 46,0 0,26 -46,0" fill="#0094d9"></polygon>
+    <polygon points="-46,0 0,26 0,40 -46,14" fill="#00689b"></polygon>
+    <polygon points="46,0 0,26 0,40 46,14" fill="#007ec0"></polygon>
+    
+    <polygon points="-26,-6 -14,0 -22,4 -34,-2" fill="#f5a623"></polygon>
+    
+    <polygon points="2,8 30,-6 36,-3 8,11" fill="#79c8ee"></polygon>
+    <polygon points="6,13 24,4 28,6 10,15" fill="#d6eefa"></polygon>
+  </g>
+</svg>

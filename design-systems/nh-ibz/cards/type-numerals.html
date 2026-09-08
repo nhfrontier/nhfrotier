@@ -1,0 +1,28 @@
+<!-- @dsCard group="Type" viewport="700x150" name="Numerals — 금액 표기" subtitle="큰 숫자 강조 · 통화 단위 · tabular" -->
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 20px 24px; background: var(--white); display:flex; gap:40px; align-items:center; font-variant-numeric: tabular-nums; }
+  .lab { font-size:12px; color:var(--text-muted); margin-bottom:6px; }
+  .amt { font-size:34px; font-weight:700; color:var(--text-strong); letter-spacing:-0.02em; }
+  .unit { font-size:18px; font-weight:500; color:var(--text-body); margin-left:3px; }
+  .pos { color: var(--status-positive); }
+  .neg { color: var(--status-negative); }
+</style>
+</head>
+<body>
+  <div>
+    <div class="lab">총 잔액</div>
+    <div class="amt">1,284,500,000<span class="unit">원</span></div>
+  </div>
+  <div>
+    <div class="lab">입금</div>
+    <div class="amt pos" style="font-size:24px">+ 32,000,000</div>
+    <div class="lab" style="margin:10px 0 0">출금</div>
+    <div class="amt neg" style="font-size:24px">- 8,450,000</div>
+  </div>
+</body>
+</html>

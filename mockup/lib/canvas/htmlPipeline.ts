@@ -1,5 +1,5 @@
 import { createHash } from 'crypto';
-import { parse, serialize, type DefaultTreeAdapterTypes } from 'parse5';
+import { parse, parseFragment, serialize, serializeOuter, type DefaultTreeAdapterTypes } from 'parse5';
 
 type Element = DefaultTreeAdapterTypes.Element;
 type ChildNode = DefaultTreeAdapterTypes.ChildNode;
@@ -263,4 +263,44 @@ export function processGeneratedHtml(raw: string, opts: PipelineOptions): Pipeli
   assignIds(doc, elements);
 
   return { html: serialize(doc), elements, warnings: [...new Set(warnings)] };
+}
+
+/** 저장된 화면에서 요소 하나의 outerHTML을 꺼낸다. AI에게 "이걸 고쳐라"고 줄 때 쓴다. */
+export function extractOuterHtml(html: string, nhId: string): string | null {
+  const doc = parse(html);
+  let found: Element | null = null;
+
+  const walk = (node: ParentNode) => {
+    for (const child of childrenOf(node)) {
+      if (found) return;
+      if (!isElement(child)) continue;
+      if (getAttr(child, 'data-nh-id') === nhId) {
+        found = child;
+        return;
+      }
+      walk(child);
+    }
+  };
+  walk(doc);
+
+  return found ? serializeOuter(found) : null;
+}
+
+/**
+ * AI가 돌려준 요소 조각을 정제한다.
+ *
+ * 전체 문서와 같은 규칙을 적용하되 문서 골격을 만들지 않는다.
+ * data-nh-id는 여기서도 전부 지운다 — 교체된 요소의 식별자는 부모가 다시 붙인다.
+ */
+export function sanitizeFragment(
+  raw: string,
+  opts: PipelineOptions
+): { html: string; warnings: string[] } {
+  const warnings: string[] = [];
+  const fragment = parseFragment(raw);
+
+  sanitize(fragment, warnings);
+  normalizeGoto(fragment, opts.knownScreenKeys, warnings);
+
+  return { html: serialize(fragment), warnings: [...new Set(warnings)] };
 }

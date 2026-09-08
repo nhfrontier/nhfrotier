@@ -1,0 +1,21 @@
+{
+  "default": "naru-bank",
+  "systems": [
+    {
+      "id": "naru-bank",
+      "dir": "naru-bank",
+      "label": "올원뱅크 (모바일 앱)",
+      "surface": "mobile",
+      "canvas": "360x780",
+      "note": "모바일 뱅킹 앱 화면. 상단 앱바 · 하단 5칸 내비 · 바텀시트를 전제로 한다."
+    },
+    {
+      "id": "nh-ibz",
+      "dir": "nh-ibz",
+      "label": "NH 기업인터넷뱅킹 (웹)",
+      "surface": "web",
+      "canvas": "1200",
+      "note": "기업 웹뱅킹 포털. 1200px 중앙 정렬 · GNB · 흰 카드/회색 섹션 교차를 전제로 한다."
+    }
+  ]
+}

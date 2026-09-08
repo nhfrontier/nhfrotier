@@ -1,0 +1,107 @@
+/* ==========================================================================
+   증권 브랜드 랜딩 — layout, responsive, scroll-reveal, GNB states.
+   Local stylesheet for ui_kits/securities/ (not part of the DS token closure).
+   Built on NH design-system tokens (styles.css).
+   ========================================================================== */
+
+.sec-page { font-family: var(--font-sans); color: var(--text-body); }
+
+/* ---------- container ---------- */
+.sec-container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+/* ---------- GNB ---------- */
+.sec-gnb {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+}
+.sec-gnb__inner {
+  max-width: 1200px; margin: 0 auto; padding: 0 24px; height: 72px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.sec-gnb__logo { height: 30px; display: block; }
+.sec-gnb__menu { display: flex; gap: 38px; }
+.sec-gnb__hamburger { display: none; background: none; border: none; cursor: pointer; padding: 4px; }
+/* transparent (over hero) */
+.sec-gnb[data-scrolled="false"] { background: transparent; }
+.sec-gnb[data-scrolled="false"] .sec-gnb__link { color: rgba(255,255,255,0.92); }
+.sec-gnb[data-scrolled="false"] .sec-gnb__hamburger { color: #fff; }
+/* opaque (scrolled) */
+.sec-gnb[data-scrolled="true"] { background: var(--white); box-shadow: 0 1px 0 var(--border-subtle), var(--shadow-sm); }
+.sec-gnb[data-scrolled="true"] .sec-gnb__link { color: var(--text-strong); }
+.sec-gnb[data-scrolled="true"] .sec-gnb__hamburger { color: var(--text-strong); }
+
+.sec-gnb__item { position: relative; }
+.sec-gnb__link {
+  display: inline-flex; align-items: center; gap: 4px; height: 72px;
+  font-size: 16px; font-weight: 600; letter-spacing: -0.02em;
+  background: none; border: none; cursor: pointer; padding: 0;
+  transition: color var(--dur-fast);
+}
+.sec-gnb__item:hover .sec-gnb__link { color: var(--color-primary) !important; }
+
+/* dropdown */
+.sec-dd {
+  position: absolute; top: 64px; left: 50%; transform: translateX(-50%) translateY(8px);
+  min-width: 168px; background: var(--white); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md); box-shadow: var(--shadow-lg); padding: 8px;
+  opacity: 0; visibility: hidden; transition: opacity var(--dur-fast), transform var(--dur-fast);
+}
+.sec-gnb__item:hover .sec-dd { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
+.sec-dd a {
+  display: block; padding: 9px 14px; border-radius: var(--radius-sm);
+  font-size: 14px; font-weight: 500; color: var(--text-body); text-decoration: none; white-space: nowrap;
+}
+.sec-dd a:hover { background: var(--nh-blue-50); color: var(--color-primary); }
+
+/* mobile overlay */
+.sec-mobile { display: none; }
+
+/* ---------- reveal animation ----------
+   Transform-only entrance so content is NEVER hidden (opacity stays 1). If the
+   animation can't run (frozen/static render), content is simply at rest. */
+@keyframes revealIn { from { transform: translateY(24px); } to { transform: none; } }
+.reveal { opacity: 1; }
+.reveal.is-in { animation: revealIn 0.7s var(--ease-out) both; }
+.reveal-d1.is-in { animation-delay: 0.08s; }
+.reveal-d2.is-in { animation-delay: 0.16s; }
+.reveal-d3.is-in { animation-delay: 0.24s; }
+
+/* ---------- hero ---------- */
+.hero { position: relative; display: flex; align-items: center; overflow: hidden;
+  background: linear-gradient(118deg, #ffffff 0%, #ffffff 48%, #fdeef1 100%); }
+.hero__title { font-size: 50px; line-height: 1.22; font-weight: 800; letter-spacing: -0.03em; color: var(--text-strong); }
+.hero__capsule { display: inline-block; background: var(--color-primary); color: #fff; border-radius: 14px; padding: 0 16px; }
+.hero__obj { position: absolute; pointer-events: none; }
+
+/* ---------- grids ---------- */
+.benefit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.features-split { display: grid; grid-template-columns: 42% 1fr; gap: 36px; align-items: stretch; }
+
+/* ---------- feature crossfade (freeze-safe: never fully hidden) ---------- */
+.fade-swap { animation: fadeSwap 0.4s var(--ease-out); }
+@keyframes fadeSwap { from { opacity: 0.5; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* ==================== Tablet ==================== */
+@media (max-width: 1023px) {
+  .hero__title { font-size: 40px; }
+  .hero__grid { grid-template-columns: 1fr !important; gap: 8px !important; padding: 44px 0 !important; }
+  .hero__visual { height: 300px !important; order: -1; }
+  .features-split { grid-template-columns: 1fr; gap: 24px; }
+}
+
+/* ==================== Mobile ==================== */
+@media (max-width: 767px) {
+  .sec-container { padding: 0 18px; }
+  .sec-gnb__inner { height: 60px; padding: 0 18px; }
+  .sec-gnb__menu { display: none; }
+  .sec-gnb__hamburger { display: inline-flex; }
+  .benefit-grid { grid-template-columns: 1fr; }
+  .hero__title { font-size: 30px; }
+  .hero__visual { height: 240px !important; }
+  .sec-mobile.is-open { display: block; }
+}
+
+/* reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+  .reveal, .reveal.is-in { transform: none !important; animation: none !important; }
+  .fade-swap { animation: none; }
+}

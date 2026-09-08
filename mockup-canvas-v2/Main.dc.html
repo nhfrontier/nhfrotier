@@ -1,0 +1,173 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #4E58BB; text-decoration: none; }
+    a:hover { color: #3B4299; }
+    * { box-sizing: border-box; }
+  </style>
+</helmet>
+
+<div style="width:1440px;height:900px;background:#f8fafc;display:flex;flex-direction:column;overflow:hidden">
+
+  <!-- 헤더 56 -->
+  <div style="height:56px;flex-shrink:0;background:#ffffff;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;gap:10px;padding:0 24px">
+    <div style="width:26px;height:26px;background:#4E58BB;border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></div>
+    <div style="font-size:13px;color:#94a3b8">대시보드</div>
+    <div style="font-size:13px;color:#cbd5e1">/</div>
+    <div style="font-size:13px;color:#94a3b8">프로젝트</div>
+    <div style="font-size:13px;color:#cbd5e1">/</div>
+    <div style="font-size:13px;font-weight:600;color:#0f172a">고객 포털 리뉴얼</div>
+    <div style="font-size:11px;font-weight:600;color:#4E58BB;background:#EEF0F8;padding:3px 8px;border-radius:999px">ACTIVE</div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+      <div style="display:flex;align-items:center;gap:6px;padding:7px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:12.5px;font-weight:500;color:#475569;background:#ffffff"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7l8-4 8 4-8 4-8-4zm0 5l8 4 8-4M4 12l8 4 8-4"/></svg>Version</div>
+      <div style="display:flex;align-items:center;gap:6px;padding:7px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:12.5px;font-weight:500;color:#475569;background:#ffffff"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0"/></svg>History</div>
+      <div style="display:flex;align-items:center;gap:6px;padding:7px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:12.5px;font-weight:500;color:#475569;background:#ffffff"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>Export</div>
+      <div style="width:1px;height:20px;background:#e2e8f0;margin:0 2px"></div>
+      <div style="width:28px;height:28px;border-radius:50%;background:#4E58BB;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:600;flex-shrink:0">김</div>
+    </div>
+  </div>
+
+  <!-- 프로젝트 탭 44 -->
+  <div style="height:44px;flex-shrink:0;background:#ffffff;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;padding:0 24px;gap:8px">
+    <div style="padding:12px 16px;font-size:13px;font-weight:600;color:#4E58BB;border-bottom:2px solid #4E58BB">작업공간</div><div style="padding:12px 16px;font-size:13px;font-weight:600;color:#94a3b8;border-bottom:2px solid transparent">AI Chat</div><div style="padding:12px 16px;font-size:13px;font-weight:600;color:#94a3b8;border-bottom:2px solid transparent">결과/리뷰</div><div style="padding:12px 16px;font-size:13px;font-weight:600;color:#94a3b8;border-bottom:2px solid transparent">Version</div><div style="padding:12px 16px;font-size:13px;font-weight:600;color:#94a3b8;border-bottom:2px solid transparent">History</div>
+  </div>
+
+  <!-- 캔버스 툴바 40 -->
+  <div style="height:40px;flex-shrink:0;background:#ffffff;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;gap:10px;padding:0 16px">
+    <div style="font-size:11px;font-weight:700;color:#4E58BB;background:#EEF0F8;padding:3px 8px;border-radius:999px">v3</div>
+    <div style="font-size:12.5px;font-weight:500;color:#475569">전체계좌조회 개편</div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+      <div style="display:flex;gap:2px;background:#f1f5f9;border-radius:8px;padding:3px"><div style="padding:4px 11px;border-radius:6px;font-size:12px;font-weight:600;background:#ffffff;color:#0f172a;box-shadow:0 1px 2px rgba(15,23,42,.06)">선택</div><div style="padding:4px 11px;border-radius:6px;font-size:12px;font-weight:500;color:#64748b">미리보기</div></div>
+      <div style="display:flex;gap:2px;background:#f1f5f9;border-radius:8px;padding:3px"><div style="padding:4px 11px;border-radius:6px;font-size:12px;font-weight:600;background:#ffffff;color:#0f172a;box-shadow:0 1px 2px rgba(15,23,42,.06)">데스크톱</div><div style="padding:4px 11px;border-radius:6px;font-size:12px;font-weight:500;color:#64748b">모바일</div></div>
+      <div style="display:flex;align-items:center;gap:6px;padding:7px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:12.5px;font-weight:500;color:#475569;background:#ffffff"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>HTML</div>
+      <div style="display:flex;align-items:center;gap:6px;padding:7px 12px;border:1px solid #CED2EA;border-radius:8px;font-size:12.5px;font-weight:600;color:#4E58BB;background:#EEF0F8"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 01-11.5 7.2L4 21l1.8-5.1A8 8 0 1121 12z"/></svg>패널 닫기</div>
+    </div>
+  </div>
+
+  <div style="flex:1;display:flex;min-height:0">
+
+    <!-- 좌: 사이드바 240 -->
+    <div style="width:240px;flex-shrink:0;background:#ffffff;border-right:1px solid #e2e8f0;display:flex;flex-direction:column;min-height:0">
+      <div style="display:flex;border-bottom:1px solid #f1f5f9;flex-shrink:0">
+        <div style="flex:1;text-align:center;padding:10px 0;font-size:12px;font-weight:600;color:#94a3b8;border-bottom:2px solid transparent">파일</div><div style="flex:1;text-align:center;padding:10px 0;font-size:12px;font-weight:600;color:#4E58BB;border-bottom:2px solid #4E58BB">화면</div><div style="flex:1;text-align:center;padding:10px 0;font-size:12px;font-weight:600;color:#94a3b8;border-bottom:2px solid transparent">멤버</div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;padding:14px;gap:8px;min-height:0">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="font-size:11.5px;font-weight:600;color:#64748b">화면 4</div>
+          <div style="font-size:11.5px;font-weight:600;color:#4E58BB">+ 화면 추가</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:9px;padding:8px;border-radius:8px;background:#EEF0F8;border:1px solid #CED2EA"><div style="width:38px;height:52px;border-radius:6px;background:#EEF0F8;border:1px solid #CED2EA;padding:4px;display:flex;flex-direction:column;gap:3px;flex-shrink:0"><div style="height:5px;width:60%;border-radius:2px;background:#CED2EA"></div><div style="flex:1;display:grid;grid-template-columns:repeat(2,1fr);gap:3px"><div style="background:#ffffff;border-radius:3px"></div><div style="background:#ffffff;border-radius:3px"></div><div style="background:#ffffff;border-radius:3px"></div><div style="background:#ffffff;border-radius:3px"></div></div><div style="height:6px;border-radius:2px;background:#ffffff"></div></div><div style="min-width:0;flex:1"><div style="font-size:12px;font-weight:700;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">전체계좌조회</div><div style="margin-top:5px;display:flex;align-items:center;gap:6px"><span style="font-size:10px;font-weight:600;color:#15803d;background:#f0fdf4;padding:2px 7px;border-radius:999px">완료</span></div></div></div>
+        <div style="display:flex;align-items:center;gap:9px;padding:8px;border-radius:8px;background:#f8fafc;border:1px solid transparent"><div style="width:38px;height:52px;border-radius:6px;background:#f1f5f9;border:1px solid #e2e8f0;padding:4px;display:flex;flex-direction:column;gap:3px;flex-shrink:0"><div style="height:5px;width:60%;border-radius:2px;background:#cbd5e1"></div><div style="flex:1;display:grid;grid-template-columns:repeat(2,1fr);gap:3px"><div style="background:#ffffff;border-radius:3px"></div><div style="background:#ffffff;border-radius:3px"></div><div style="background:#ffffff;border-radius:3px"></div><div style="background:#ffffff;border-radius:3px"></div></div><div style="height:6px;border-radius:2px;background:#ffffff"></div></div><div style="min-width:0;flex:1"><div style="font-size:12px;font-weight:500;color:#334155;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">계좌 상세</div><div style="margin-top:5px;display:flex;align-items:center;gap:6px"><span style="font-size:10px;font-weight:600;color:#15803d;background:#f0fdf4;padding:2px 7px;border-radius:999px">완료</span></div></div></div>
+        <div style="display:flex;align-items:center;gap:9px;padding:8px;border-radius:8px;background:#f8fafc;border:1px solid transparent"><div style="width:38px;height:52px;border-radius:6px;background:#f1f5f9;border:1px solid #e2e8f0;padding:4px;display:flex;flex-direction:column;gap:3px;flex-shrink:0"><div style="height:5px;width:60%;border-radius:2px;background:#cbd5e1"></div><div style="flex:1;display:grid;grid-template-columns:repeat(2,1fr);gap:3px"><div style="background:#ffffff;border-radius:3px"></div><div style="background:#ffffff;border-radius:3px"></div><div style="background:#ffffff;border-radius:3px"></div><div style="background:#ffffff;border-radius:3px"></div></div><div style="height:6px;border-radius:2px;background:#ffffff"></div></div><div style="min-width:0;flex:1"><div style="font-size:12px;font-weight:500;color:#334155;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">이체하기</div><div style="margin-top:5px;display:flex;align-items:center;gap:6px"><span style="font-size:10px;font-weight:600;color:#b45309;background:#fffbeb;padding:2px 7px;border-radius:999px">생성중</span></div></div></div>
+        <div style="display:flex;align-items:center;gap:9px;padding:8px;border-radius:8px;background:#f8fafc;border:1px solid transparent"><div style="width:38px;height:52px;border-radius:6px;background:#f1f5f9;border:1px solid #e2e8f0;padding:4px;display:flex;flex-direction:column;gap:3px;flex-shrink:0"><div style="height:5px;width:60%;border-radius:2px;background:#cbd5e1"></div><div style="flex:1;display:grid;grid-template-columns:repeat(2,1fr);gap:3px"><div style="background:#ffffff;border-radius:3px"></div><div style="background:#ffffff;border-radius:3px"></div><div style="background:#ffffff;border-radius:3px"></div><div style="background:#ffffff;border-radius:3px"></div></div><div style="height:6px;border-radius:2px;background:#ffffff"></div></div><div style="min-width:0;flex:1"><div style="font-size:12px;font-weight:500;color:#334155;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">이체 완료</div><div style="margin-top:5px;display:flex;align-items:center;gap:6px"><span style="font-size:10px;font-weight:600;color:#be123c;background:#fff1f2;padding:2px 7px;border-radius:999px">실패</span><span style="font-size:10px;font-weight:600;color:#4E58BB">다시 시도</span></div></div></div>
+        <div style="flex:1"></div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:6px;height:36px;border:1px solid #e2e8f0;border-radius:8px;font-size:12.5px;font-weight:500;color:#475569;background:#ffffff"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h6M14 6h6M4 18h6M14 18h6M10 6v12M14 6v12"/></svg>흐름 보기</div>
+      </div>
+    </div>
+
+    <!-- 중앙: 캔버스 -->
+    <div style="flex:1;min-width:0;background:#f8fafc;display:flex;align-items:flex-start;justify-content:center;padding:24px;overflow:hidden">
+      <div style="position:relative;width:640px;background:#ffffff;border-radius:12px;border:1px solid #e2e8f0;box-shadow:0 4px 16px rgba(78,88,187,.10)"><div style="height:46px;display:flex;align-items:center;gap:10px;padding:0 20px;border-bottom:1px solid #f1f5f9"><div style="width:22px;height:22px;border-radius:6px;background:#04A64B;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;letter-spacing:-.02em">NH</div><div style="font-size:13.5px;font-weight:700;color:#0f172a">전체계좌조회</div><div style="margin-left:auto;display:flex;gap:14px;color:#cbd5e1"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M13.7 21a2 2 0 01-3.4 0"/></svg><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></div></div><div style="padding:22px 20px 18px"><div style="font-size:11.5px;color:#94a3b8;letter-spacing:.02em">총 보유자산</div><div style="margin-top:5px;font-size:30px;font-weight:800;color:#0f172a;letter-spacing:-.02em;font-variant-numeric:tabular-nums">12,480,300<span style="font-size:16px;font-weight:600;color:#64748b;margin-left:4px">원</span></div><div style="display:flex;gap:9px;margin-top:16px"><div style="width:150px;height:42px;border-radius:8px;background:#f1f5f9;border:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#64748b;outline:2px solid #4E58BB;outline-offset:2px">이체하기</div><div style="width:130px;height:42px;border-radius:8px;background:#ffffff;border:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;color:#64748b">상세보기</div></div></div><div style="display:flex;align-items:center;gap:12px;padding:13px 20px;border-top:1px solid #f1f5f9"><div style="width:34px;height:34px;border-radius:9px;background:#F0F8F3;display:flex;align-items:center;justify-content:center;color:#04A64B;flex-shrink:0"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10h18M5 10V7a2 2 0 012-2h10a2 2 0 012 2v3M4 10h16v9a2 2 0 01-2 2H6a2 2 0 01-2-2v-9z"/></svg></div><div style="min-width:0;flex:1"><div style="font-size:10.5px;color:#94a3b8;letter-spacing:.02em">입출금</div><div style="font-size:13px;font-weight:600;color:#0f172a;margin-top:1px">NH주거래우대통장</div><div style="font-size:10.5px;color:#94a3b8;font-variant-numeric:tabular-nums;margin-top:1px">352-0000-1234-56</div></div><div style="font-size:14px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums">8,240,100원</div></div><div style="display:flex;align-items:center;gap:12px;padding:13px 20px;border-top:1px solid #f1f5f9"><div style="width:34px;height:34px;border-radius:9px;background:#F0F8F3;display:flex;align-items:center;justify-content:center;color:#04A64B;flex-shrink:0"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10h18M5 10V7a2 2 0 012-2h10a2 2 0 012 2v3M4 10h16v9a2 2 0 01-2 2H6a2 2 0 01-2-2v-9z"/></svg></div><div style="min-width:0;flex:1"><div style="font-size:10.5px;color:#94a3b8;letter-spacing:.02em">적금</div><div style="font-size:13px;font-weight:600;color:#0f172a;margin-top:1px">NH올원e적금</div><div style="font-size:10.5px;color:#94a3b8;font-variant-numeric:tabular-nums;margin-top:1px">301-0000-5678-01</div></div><div style="font-size:14px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums">3,120,000원</div></div><div style="display:flex;align-items:center;gap:12px;padding:13px 20px;border-top:1px solid #f1f5f9;opacity:.55"><div style="width:34px;height:34px;border-radius:9px;background:#F0F8F3;display:flex;align-items:center;justify-content:center;color:#04A64B;flex-shrink:0"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10h18M5 10V7a2 2 0 012-2h10a2 2 0 012 2v3M4 10h16v9a2 2 0 01-2 2H6a2 2 0 01-2-2v-9z"/></svg></div><div style="min-width:0;flex:1"><div style="font-size:10.5px;color:#94a3b8;letter-spacing:.02em">청약</div><div style="font-size:13px;font-weight:600;color:#0f172a;margin-top:1px">주택청약종합저축</div><div style="font-size:10.5px;color:#94a3b8;font-variant-numeric:tabular-nums;margin-top:1px">302-0000-9012-33</div></div><div style="font-size:14px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums">1,120,200원</div></div><div style="position:absolute;left:152px;top:200px;transform:translate(-50%,-50%);width:24px;height:24px;border-radius:999px;border:2px solid #fff;background:#4E58BB;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;box-shadow:0 1px 3px rgba(15,23,42,.25)">1</div><div style="position:absolute;left:250px;top:120px;transform:translate(-50%,-50%);width:24px;height:24px;border-radius:999px;border:2px solid #fff;background:#4E58BB;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;box-shadow:0 1px 3px rgba(15,23,42,.25)">2</div><div style="position:absolute;left:616px;top:396px;transform:translate(-50%,-50%);width:24px;height:24px;border-radius:999px;border:2px solid #fff;background:#9ca3af;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;box-shadow:0 1px 3px rgba(15,23,42,.25)">3</div></div>
+    </div>
+
+    <!-- 우: 패널 320 -->
+    <div style="width:320px;flex-shrink:0;background:#ffffff;border-left:1px solid #e2e8f0;display:flex;flex-direction:column;min-height:0">
+
+      <div style="display:flex;border-bottom:1px solid #f1f5f9;flex-shrink:0">
+        <div style="flex:1;text-align:center;padding:10px 0;font-size:12px;font-weight:600;color:#94a3b8;border-bottom:2px solid transparent">속성</div><div style="flex:1;text-align:center;padding:10px 0;font-size:12px;font-weight:600;color:#4E58BB;border-bottom:2px solid #4E58BB">의견 3</div><div style="flex:1;text-align:center;padding:10px 0;font-size:12px;font-weight:600;color:#94a3b8;border-bottom:2px solid transparent">AI 검토 2</div><div style="flex:1;text-align:center;padding:10px 0;font-size:12px;font-weight:600;color:#94a3b8;border-bottom:2px solid transparent">채팅</div>
+      </div>
+
+      <!-- 앵커 컨텍스트 -->
+      <div style="flex-shrink:0;display:flex;align-items:center;gap:7px;padding:9px 12px;border-bottom:1px solid #f1f5f9;background:#EEF0F8">
+        <div style="font-size:9.5px;font-weight:700;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;padding:2px 6px;border-radius:4px;background:#4E58BB;color:#fff;flex-shrink:0">&lt;button&gt;</div>
+        <div style="font-size:11px;font-weight:500;color:#3B4299;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'이체하기'에 달린 의견</div>
+        <div style="margin-left:auto;font-size:10.5px;font-weight:600;color:#4E58BB;opacity:.8;flex-shrink:0">전체 의견으로</div>
+      </div>
+
+      <!-- 스레드 -->
+      <div style="flex:1;min-height:0;overflow:hidden;padding:12px;display:flex;flex-direction:column;gap:12px">
+
+        <div style="display:flex;gap:9px">
+          <div style="width:24px;height:24px;border-radius:50%;background:#e11d48;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:600;flex-shrink:0">이</div>
+          <div style="min-width:0;flex:1">
+            <div style="display:flex;align-items:center;gap:6px">
+              <div style="font-size:12px;font-weight:600;color:#0f172a">이서연</div>
+              <div style="min-width:16px;height:16px;padding:0 4px;border-radius:999px;background:#4E58BB;color:#fff;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700">1</div>
+              <div style="margin-left:auto;font-size:10px;color:#94a3b8">14:02</div>
+            </div>
+            <div style="margin-top:5px;font-size:11.5px;line-height:1.6;color:#334155;background:#f8fafc;border-radius:8px;padding:8px 11px">이 버튼이 눈에 안 띄어요. 화면에서 가장 중요한 동작인데 회색이라 그냥 지나칩니다.</div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:9px;padding-left:22px">
+          <div style="width:22px;height:22px;border-radius:50%;background:#3678AC;color:#fff;display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:600;flex-shrink:0">박</div>
+          <div style="min-width:0;flex:1">
+            <div style="display:flex;align-items:center;gap:6px">
+              <div style="font-size:11.5px;font-weight:600;color:#0f172a">박준혁</div>
+              <div style="margin-left:auto;font-size:10px;color:#94a3b8">14:05</div>
+            </div>
+            <div style="margin-top:5px;font-size:11.5px;line-height:1.6;color:#334155;background:#f8fafc;border-radius:8px;padding:8px 11px">동의합니다. 폭도 좁아서 옆 버튼이랑 무게가 같아 보여요.</div>
+          </div>
+        </div>
+
+        <div style="border-radius:8px;background:#EEF0F8;border:1px solid #CED2EA;padding:10px 11px;display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:center;gap:6px;color:#3B4299">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.6L19.5 10l-5.6 1.9L12 17l-1.9-5.1L4.5 10l5.6-1.4L12 3z"/></svg>
+            <div style="font-size:11px;font-weight:700">AI가 반영했습니다</div>
+            <div style="margin-left:auto;font-size:10px;font-weight:500;opacity:.75">14:06</div>
+          </div>
+          <div style="font-size:11.5px;line-height:1.6;color:#3B4299">배경을 브랜드 주색으로 바꾸고 폭을 100%로 넓혔습니다. '상세보기'는 테두리만 남긴 보조 버튼으로 낮췄습니다.</div>
+          <div style="display:flex;gap:6px">
+            <div style="padding:6px 11px;border-radius:6px;background:#4E58BB;color:#fff;font-size:11.5px;font-weight:600">변경 보기</div>
+            <div style="display:flex;align-items:center;gap:5px;padding:6px 11px;border-radius:6px;border:1px solid #e2e8f0;background:#ffffff;color:#475569;font-size:11.5px;font-weight:500"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5M4 9h11a5 5 0 010 10h-3"/></svg>되돌리기</div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:9px;opacity:.6">
+          <div style="width:24px;height:24px;border-radius:50%;background:#7c3aed;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:600;flex-shrink:0">최</div>
+          <div style="min-width:0;flex:1">
+            <div style="display:flex;align-items:center;gap:6px">
+              <div style="font-size:12px;font-weight:600;color:#475569">최유진</div>
+              <div style="min-width:16px;height:16px;padding:0 4px;border-radius:999px;background:#9ca3af;color:#fff;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700">3</div>
+              <span style="font-size:10px;font-weight:600;color:#475569;background:#f1f5f9;padding:2px 7px;border-radius:999px">해결됨</span>
+              <div style="margin-left:auto;font-size:10px;color:#94a3b8">13:48</div>
+            </div>
+            <div style="margin-top:5px;font-size:11.5px;line-height:1.6;color:#94a3b8;background:#f8fafc;border-radius:8px;padding:8px 11px;text-decoration:line-through">적금 계좌는 이 목록에서 빼는 게 맞습니다.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 작성 -->
+      <div style="flex-shrink:0;border-top:1px solid #f1f5f9;padding:12px;display:flex;flex-direction:column;gap:8px">
+        <div style="height:54px;border-radius:8px;border:1px solid #e2e8f0;background:#ffffff;padding:9px 11px;font-size:11.5px;color:#94a3b8;line-height:1.5">고쳤으면 하는 점을 적으세요…</div>
+        <div style="display:flex;gap:6px">
+          <div style="flex:1;height:34px;border-radius:8px;background:#4E58BB;color:#fff;display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;font-weight:600"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.6L19.5 10l-5.6 1.9L12 17l-1.9-5.1L4.5 10l5.6-1.4L12 3z"/></svg>AI에게 보내기</div>
+          <div style="height:34px;padding:0 14px;border-radius:8px;border:1px solid #e2e8f0;background:#ffffff;color:#475569;display:flex;align-items:center;font-size:12px;font-weight:500">의견만</div>
+        </div>
+      </div>
+
+      <!-- 편집 이력 -->
+      <div style="flex-shrink:0;border-top:1px solid #f1f5f9;padding:11px 12px 13px">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">
+          <div style="font-size:11.5px;font-weight:600;color:#64748b">편집 이력 3</div>
+          <div style="margin-left:auto;font-size:10.5px;font-weight:500;color:#94a3b8">모두 보기</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 0"><div style="width:5px;height:5px;border-radius:999px;background:#4E58BB;flex-shrink:0"></div><div style="min-width:0;flex:1"><div style="font-size:11.5px;color:#334155;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'이체하기' 버튼 재생성</div><div style="font-size:9.5px;color:#94a3b8;margin-top:1px">AI · 방금</div></div><div style="font-size:10.5px;font-weight:600;color:#4E58BB;flex-shrink:0">되돌리기</div></div>
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 0"><div style="width:5px;height:5px;border-radius:999px;background:#4E58BB;flex-shrink:0"></div><div style="min-width:0;flex:1"><div style="font-size:11.5px;color:#334155;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">잔액 글자 20px → 30px</div><div style="font-size:9.5px;color:#94a3b8;margin-top:1px">김민준 · 4분 전</div></div><div style="font-size:10.5px;font-weight:600;color:#4E58BB;flex-shrink:0">되돌리기</div></div>
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 0"><div style="width:5px;height:5px;border-radius:999px;background:#cbd5e1;flex-shrink:0"></div><div style="min-width:0;flex:1"><div style="font-size:11.5px;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-decoration:line-through">카드 여백 24px → 32px</div><div style="font-size:9.5px;color:#94a3b8;margin-top:1px">김민준 · 11분 전</div></div><div style="font-size:10.5px;font-weight:600;color:#94a3b8;flex-shrink:0">되돌림</div></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

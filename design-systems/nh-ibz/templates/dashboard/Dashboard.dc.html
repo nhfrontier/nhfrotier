@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="메인 대시보드" description="로그인 후 기업 메인 — 계좌 요약, 빠른 이체, 자금 현황, 결제 예정, 알림" -->
+<helmet><script src="./ds-base.js"></script></helmet>
+<div style="min-height:100vh;min-width:1200px;background:var(--grey-50);font-family:var(--font-sans)">
+<header style="background:var(--white);border-bottom:1px solid var(--border-subtle)">
+<div style="max-width:1200px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:72px">
+<img src="../../assets/logo.svg" alt="NH기업뱅킹" style="height:32px">
+<div style="display:flex;align-items:center;gap:14px;font-size:13px;color:var(--text-muted)">
+<span style="color:var(--text-body)"><strong style="color:var(--text-strong);font-weight:700">㈜농협테크</strong> 고객님</span>
+<span style="color:var(--grey-300)">|</span>
+<span style="font-variant-numeric:tabular-nums">남은시간 09:47</span>
+<button style="height:32px;flex:none;white-space:nowrap;padding:0 14px;border:1px solid var(--border-default);border-radius:999px;background:var(--white);font-family:inherit;font-size:12.5px;font-weight:600;color:var(--text-body);cursor:pointer" style-hover="border-color:var(--nh-blue-500);color:var(--nh-blue-600)">로그아웃</button>
+</div>
+</div>
+</header>
+<div style="background:var(--white);border-top:2px solid var(--nh-navy-800);border-bottom:1px solid var(--border-subtle)">
+<div style="max-width:1200px;margin:0 auto;padding:0 20px;height:54px;display:flex;align-items:center;gap:40px;font-size:15px;font-weight:600;color:var(--text-strong)">
+<a href="#" style="color:var(--nh-blue-600);text-decoration:none">조회/이체</a>
+<a href="#" style="color:var(--text-strong);text-decoration:none">뱅킹업무</a>
+<a href="#" style="color:var(--text-strong);text-decoration:none">B2B전자결제</a>
+<a href="#" style="color:var(--text-strong);text-decoration:none">부가서비스</a>
+<a href="#" style="color:var(--text-strong);text-decoration:none">경영지원</a>
+<a href="#" style="color:var(--text-strong);text-decoration:none">금융상품</a>
+</div>
+</div>
+<main style="max-width:1200px;margin:0 auto;padding:28px 20px 80px;box-sizing:border-box;display:flex;flex-direction:column;gap:20px">
+<div style="display:grid;grid-template-columns:1fr 336px;gap:20px;align-items:start">
+<section style="background:var(--white);border:1px solid var(--border-subtle);border-radius:14px;box-shadow:var(--shadow-sm);padding:28px 32px">
+<div style="display:flex;align-items:center;justify-content:space-between">
+<h2 style="margin:0;font-size:19px;font-weight:800;letter-spacing:-0.03em;color:var(--text-strong)">총 보유자산</h2>
+<a href="#" style="font-size:13.5px;font-weight:600;color:var(--nh-blue-600);text-decoration:none">전체계좌 조회 ›</a>
+</div>
+<div style="display:flex;align-items:baseline;gap:10px;margin-top:12px">
+<span style="font-size:40px;font-weight:800;letter-spacing:-0.045em;color:var(--text-strong);font-variant-numeric:tabular-nums;line-height:1">1,284,500,000</span>
+<span style="font-size:20px;font-weight:700;color:var(--text-body)">원</span>
+</div>
+<div style="font-size:12.5px;color:var(--text-disabled);margin-top:8px;font-variant-numeric:tabular-nums">2026.06.27 09:12 기준 · 4개 계좌</div>
+<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:22px">
+<div style="border:1px solid var(--border-subtle);border-radius:10px;padding:18px 20px;display:flex;flex-direction:column;gap:6px;transition:box-shadow 160ms ease,border-color 160ms ease;cursor:pointer" style-hover="box-shadow:var(--shadow-md);border-color:var(--nh-blue-300)">
+<div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:13.5px;font-weight:700;color:var(--text-strong)">기업자유예금</span><span style="font-size:11.5px;color:var(--text-muted);font-variant-numeric:tabular-nums">301-0000-1234-11</span></div>
+<div style="font-size:22px;font-weight:800;color:var(--text-strong);letter-spacing:-0.03em;font-variant-numeric:tabular-nums">842,300,000원</div>
+</div>
+<div style="border:1px solid var(--border-subtle);border-radius:10px;padding:18px 20px;display:flex;flex-direction:column;gap:6px;transition:box-shadow 160ms ease,border-color 160ms ease;cursor:pointer" style-hover="box-shadow:var(--shadow-md);border-color:var(--nh-blue-300)">
+<div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:13.5px;font-weight:700;color:var(--text-strong)">정기예금</span><span style="font-size:11.5px;color:var(--text-muted);font-variant-numeric:tabular-nums">301-0000-5678-22</span></div>
+<div style="font-size:22px;font-weight:800;color:var(--text-strong);letter-spacing:-0.03em;font-variant-numeric:tabular-nums">400,000,000원</div>
+</div>
+<div style="border:1px solid var(--border-subtle);border-radius:10px;padding:18px 20px;display:flex;flex-direction:column;gap:6px;transition:box-shadow 160ms ease,border-color 160ms ease;cursor:pointer" style-hover="box-shadow:var(--shadow-md);border-color:var(--nh-blue-300)">
+<div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:13.5px;font-weight:700;color:var(--text-strong)">외화예금 (USD)</span><span style="font-size:11.5px;color:var(--text-muted);font-variant-numeric:tabular-nums">301-0000-9012-33</span></div>
+<div style="font-size:22px;font-weight:800;color:var(--text-strong);letter-spacing:-0.03em;font-variant-numeric:tabular-nums">31,200,000원</div>
+</div>
+<div style="border:1px solid var(--border-subtle);border-radius:10px;padding:18px 20px;display:flex;flex-direction:column;gap:6px;transition:box-shadow 160ms ease,border-color 160ms ease;cursor:pointer" style-hover="box-shadow:var(--shadow-md);border-color:var(--nh-blue-300)">
+<div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:13.5px;font-weight:700;color:var(--text-strong)">기업당좌예금</span><span style="font-size:11.5px;color:var(--text-muted);font-variant-numeric:tabular-nums">301-0000-3456-44</span></div>
+<div style="font-size:22px;font-weight:800;color:var(--text-strong);letter-spacing:-0.03em;font-variant-numeric:tabular-nums">11,000,000원</div>
+</div>
+</div>
+</section>
+<aside style="display:flex;flex-direction:column;gap:14px">
+<div style="background:var(--nh-navy-800);border-radius:14px;padding:24px;display:flex;flex-direction:column;gap:14px">
+<div style="font-size:16px;font-weight:800;color:var(--white);letter-spacing:-0.03em">빠른 업무</div>
+<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
+<button style="height:60px;border:1px solid rgba(255,255,255,0.16);border-radius:8px;background:rgba(255,255,255,0.08);color:var(--white);font-family:inherit;font-size:13.5px;font-weight:600;letter-spacing:-0.02em;cursor:pointer;transition:background 160ms ease" style-hover="background:rgba(255,255,255,0.16)">즉시이체</button>
+<button style="height:60px;border:1px solid rgba(255,255,255,0.16);border-radius:8px;background:rgba(255,255,255,0.08);color:var(--white);font-family:inherit;font-size:13.5px;font-weight:600;letter-spacing:-0.02em;cursor:pointer;transition:background 160ms ease" style-hover="background:rgba(255,255,255,0.16)">대량이체</button>
+<button style="height:60px;border:1px solid rgba(255,255,255,0.16);border-radius:8px;background:rgba(255,255,255,0.08);color:var(--white);font-family:inherit;font-size:13.5px;font-weight:600;letter-spacing:-0.02em;cursor:pointer;transition:background 160ms ease" style-hover="background:rgba(255,255,255,0.16)">거래내역조회</button>
+<button style="height:60px;border:1px solid rgba(255,255,255,0.16);border-radius:8px;background:rgba(255,255,255,0.08);color:var(--white);font-family:inherit;font-size:13.5px;font-weight:600;letter-spacing:-0.02em;cursor:pointer;transition:background 160ms ease" style-hover="background:rgba(255,255,255,0.16)">이체결과조회</button>
+</div>
+</div>
+<div style="background:var(--white);border:1px solid var(--border-subtle);border-radius:10px;box-shadow:var(--shadow-sm);padding:22px 24px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;justify-content:space-between">
+<span style="font-size:15px;font-weight:800;color:var(--text-strong);letter-spacing:-0.03em">결재 대기</span>
+<span style="height:22px;min-width:22px;padding:0 7px;border-radius:999px;background:var(--status-negative);color:var(--white);font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums">3</span>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;justify-content:space-between;align-items:center;font-size:13.5px"><span style="color:var(--text-body)">이체 결재</span><span style="color:var(--text-strong);font-weight:700;font-variant-numeric:tabular-nums">2건</span></div>
+<div style="display:flex;justify-content:space-between;align-items:center;font-size:13.5px"><span style="color:var(--text-body)">B2B 결제 승인</span><span style="color:var(--text-strong);font-weight:700;font-variant-numeric:tabular-nums">1건</span></div>
+</div>
+<a href="#" style="font-size:13.5px;font-weight:600;color:var(--nh-blue-600);text-decoration:none;margin-top:2px">결재함 바로가기 ›</a>
+</div>
+</aside>
+</div>
+<div style="display:grid;grid-template-columns:1fr 336px;gap:20px;align-items:start">
+<section style="background:var(--white);border:1px solid var(--border-subtle);border-radius:10px;box-shadow:var(--shadow-sm);padding:24px 32px 28px">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+<h2 style="margin:0;font-size:17px;font-weight:800;letter-spacing:-0.03em;color:var(--text-strong)">최근 거래내역</h2>
+<a href="#" style="font-size:13.5px;font-weight:600;color:var(--nh-blue-600);text-decoration:none">전체보기 ›</a>
+</div>
+<div style="border-top:2px solid var(--nh-navy-800)"></div>
+<div style="display:grid;grid-template-columns:96px 1fr 110px 150px;font-size:13.5px">
+<div style="padding:11px 8px;font-size:12.5px;font-weight:700;color:var(--text-muted);border-bottom:1px solid var(--border-subtle);background:var(--grey-50)">거래일</div>
+<div style="padding:11px 12px;font-size:12.5px;font-weight:700;color:var(--text-muted);border-bottom:1px solid var(--border-subtle);background:var(--grey-50)">적요</div>
+<div style="padding:11px 8px;font-size:12.5px;font-weight:700;color:var(--text-muted);border-bottom:1px solid var(--border-subtle);background:var(--grey-50);text-align:center">구분</div>
+<div style="padding:11px 8px;font-size:12.5px;font-weight:700;color:var(--text-muted);border-bottom:1px solid var(--border-subtle);background:var(--grey-50);text-align:right">거래금액</div>
+<div style="padding:14px 8px;color:var(--text-muted);border-bottom:1px solid var(--border-subtle);font-variant-numeric:tabular-nums">06.27</div>
+<div style="padding:14px 12px;color:var(--text-strong);border-bottom:1px solid var(--border-subtle);font-weight:600">㈜대한물산 납품대금</div>
+<div style="padding:14px 8px;border-bottom:1px solid var(--border-subtle);text-align:center"><span style="height:22px;padding:0 9px;border-radius:999px;background:var(--nh-green-50);color:var(--nh-green-700);font-size:12px;font-weight:700;display:inline-flex;align-items:center">입금</span></div>
+<div style="padding:14px 8px;border-bottom:1px solid var(--border-subtle);text-align:right;font-weight:700;color:var(--status-positive);font-variant-numeric:tabular-nums">+48,500,000원</div>
+<div style="padding:14px 8px;color:var(--text-muted);border-bottom:1px solid var(--border-subtle);font-variant-numeric:tabular-nums">06.26</div>
+<div style="padding:14px 12px;color:var(--text-strong);border-bottom:1px solid var(--border-subtle);font-weight:600">6월 급여이체</div>
+<div style="padding:14px 8px;border-bottom:1px solid var(--border-subtle);text-align:center"><span style="height:22px;padding:0 9px;border-radius:999px;background:#fdecea;color:var(--status-negative);font-size:12px;font-weight:700;display:inline-flex;align-items:center">출금</span></div>
+<div style="padding:14px 8px;border-bottom:1px solid var(--border-subtle);text-align:right;font-weight:700;color:var(--status-negative);font-variant-numeric:tabular-nums">-122,400,000원</div>
+<div style="padding:14px 8px;color:var(--text-muted);border-bottom:1px solid var(--border-subtle);font-variant-numeric:tabular-nums">06.25</div>
+<div style="padding:14px 12px;color:var(--text-strong);border-bottom:1px solid var(--border-subtle);font-weight:600">전기요금 자동납부</div>
+<div style="padding:14px 8px;border-bottom:1px solid var(--border-subtle);text-align:center"><span style="height:22px;padding:0 9px;border-radius:999px;background:#fdecea;color:var(--status-negative);font-size:12px;font-weight:700;display:inline-flex;align-items:center">출금</span></div>
+<div style="padding:14px 8px;border-bottom:1px solid var(--border-subtle);text-align:right;font-weight:700;color:var(--status-negative);font-variant-numeric:tabular-nums">-3,180,000원</div>
+<div style="padding:14px 8px;color:var(--text-muted);border-bottom:1px solid var(--border-subtle);font-variant-numeric:tabular-nums">06.24</div>
+<div style="padding:14px 12px;color:var(--text-strong);border-bottom:1px solid var(--border-subtle);font-weight:600">B2B 구매대금 정산</div>
+<div style="padding:14px 8px;border-bottom:1px solid var(--border-subtle);text-align:center"><span style="height:22px;padding:0 9px;border-radius:999px;background:var(--nh-green-50);color:var(--nh-green-700);font-size:12px;font-weight:700;display:inline-flex;align-items:center">입금</span></div>
+<div style="padding:14px 8px;border-bottom:1px solid var(--border-subtle);text-align:right;font-weight:700;color:var(--status-positive);font-variant-numeric:tabular-nums">+16,900,000원</div>
+</div>
+</section>
+<aside style="display:flex;flex-direction:column;gap:14px">
+<div style="background:var(--white);border:1px solid var(--border-subtle);border-top:3px solid var(--nh-green-500);border-radius:10px;box-shadow:var(--shadow-sm);padding:22px 24px;display:flex;flex-direction:column;gap:8px">
+<div style="font-size:15px;font-weight:800;color:var(--text-strong);letter-spacing:-0.03em">NH BOX</div>
+<p style="margin:0;font-size:13.5px;line-height:1.6;color:var(--text-body);letter-spacing:-0.01em">이번 달 적립 포인트를 확인하고 우대금리를 챙기세요.</p>
+<div style="font-size:24px;font-weight:800;color:var(--nh-green-600);letter-spacing:-0.03em;font-variant-numeric:tabular-nums">12,480 P</div>
+<a href="#" style="font-size:13.5px;font-weight:600;color:var(--nh-blue-600);text-decoration:none">자세히보기 ›</a>
+</div>
+<div style="background:var(--white);border:1px solid var(--border-subtle);border-radius:10px;box-shadow:var(--shadow-sm);padding:22px 24px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;justify-content:space-between">
+<span style="font-size:15px;font-weight:800;color:var(--text-strong);letter-spacing:-0.03em">공지사항</span>
+<a href="#" style="font-size:12.5px;color:var(--text-muted);text-decoration:none">더보기 ›</a>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px;font-size:13.5px">
+<div style="display:flex;justify-content:space-between;gap:10px"><span style="color:var(--text-body);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">전자금융 이용약관 개정 안내</span><span style="color:var(--text-disabled);font-size:12px;flex:none;font-variant-numeric:tabular-nums">06.20</span></div>
+<div style="display:flex;justify-content:space-between;gap:10px"><span style="color:var(--text-body);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">시스템 정기점검 (6/29 00:00~04:00)</span><span style="color:var(--text-disabled);font-size:12px;flex:none;font-variant-numeric:tabular-nums">06.18</span></div>
+<div style="display:flex;justify-content:space-between;gap:10px"><span style="color:var(--text-body);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">보안카드 이용 중단 및 OTP 전환 안내</span><span style="color:var(--text-disabled);font-size:12px;flex:none;font-variant-numeric:tabular-nums">06.11</span></div>
+</div>
+</div>
+</aside>
+</div>
+</main>
+</div>
+
+</x-dc>
+</body>
+</html>

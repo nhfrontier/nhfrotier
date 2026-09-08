@@ -19,7 +19,7 @@ export async function GET(
     ).all(id);
 
     const mockups = db.prepare(
-      'SELECT id, project_id, version, proposal_content, description, created_at FROM mockup_versions WHERE project_id = ? ORDER BY version DESC'
+      'SELECT id, project_id, version, proposal_content, description, created_at, design_system_id FROM mockup_versions WHERE project_id = ? ORDER BY version DESC'
     ).all(id);
 
     return NextResponse.json({ project, refScreens, mockups });

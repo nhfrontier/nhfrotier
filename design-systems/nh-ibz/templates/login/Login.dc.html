@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="로그인" description="NH기업뱅킹 로그인 화면 — 인증수단 탭, 네이비 폼 카드, 보안 안내" -->
+<helmet><script src="./ds-base.js"></script></helmet>
+<div style="min-height:100vh;min-width:1200px;background:var(--grey-50);font-family:var(--font-sans);display:flex;flex-direction:column">
+<header style="background:var(--white);border-bottom:1px solid var(--border-subtle)">
+<div style="max-width:1200px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:74px">
+<img src="../../assets/logo.svg" alt="NH기업뱅킹" style="height:32px">
+<nav style="display:flex;gap:22px;font-size:13.5px;font-weight:600;color:var(--text-body)">
+<a href="#" style="color:var(--text-body);text-decoration:none">인증센터</a>
+<a href="#" style="color:var(--text-body);text-decoration:none">보안센터</a>
+<a href="#" style="color:var(--text-body);text-decoration:none">고객센터</a>
+</nav>
+</div>
+</header>
+<div style="border-top:2px solid var(--nh-navy-800)"></div>
+<main style="flex:1;max-width:1200px;width:100%;margin:0 auto;padding:56px 20px 80px;box-sizing:border-box">
+<div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+<h1 style="margin:0;font-size:30px;font-weight:800;letter-spacing:-0.035em;color:var(--text-strong)">로그인</h1>
+<p style="margin:0;font-size:14.5px;color:var(--text-muted);letter-spacing:-0.01em">기업인터넷뱅킹 이용을 위해 인증수단을 선택해 주세요.</p>
+</div>
+<div style="display:grid;grid-template-columns:1fr 340px;gap:24px;max-width:940px;margin:40px auto 0;align-items:start">
+<section style="background:var(--white);border:1px solid var(--border-subtle);border-radius:10px;box-shadow:var(--shadow-sm);overflow:hidden">
+<div style="display:flex;border-bottom:1px solid var(--border-subtle)">
+<button style="flex:1;height:52px;border:none;background:var(--white);font-family:inherit;font-size:15px;font-weight:700;letter-spacing:-0.02em;color:var(--nh-blue-600);box-shadow:inset 0 -2px 0 var(--nh-blue-500);cursor:pointer">공동인증서</button>
+<button style="flex:1;height:52px;border:none;background:var(--white);font-family:inherit;font-size:15px;font-weight:600;letter-spacing:-0.02em;color:var(--text-muted);cursor:pointer" style-hover="color:var(--text-body)">금융인증서</button>
+<button style="flex:1;height:52px;border:none;background:var(--white);font-family:inherit;font-size:15px;font-weight:600;letter-spacing:-0.02em;color:var(--text-muted);cursor:pointer" style-hover="color:var(--text-body)">아이디</button>
+</div>
+<div style="padding:32px 36px 36px;display:flex;flex-direction:column;gap:18px">
+<div style="display:flex;flex-direction:column;gap:7px">
+<label style="font-size:13px;font-weight:600;color:var(--text-body);letter-spacing:-0.01em">사업자등록번호</label>
+<input placeholder="'-' 없이 10자리 입력" style="height:46px;padding:0 14px;border:1px solid var(--border-default);border-radius:6px;font-family:inherit;font-size:14.5px;color:var(--text-strong);background:var(--white);outline:none;box-sizing:border-box;font-variant-numeric:tabular-nums" style-focus="border-color:var(--border-focus);box-shadow:0 0 0 3px var(--nh-blue-50)">
+</div>
+<div style="display:flex;flex-direction:column;gap:7px">
+<label style="font-size:13px;font-weight:600;color:var(--text-body);letter-spacing:-0.01em">인증서 비밀번호</label>
+<input type="password" placeholder="비밀번호를 입력하세요" style="height:46px;padding:0 14px;border:1px solid var(--border-default);border-radius:6px;font-family:inherit;font-size:14.5px;color:var(--text-strong);background:var(--white);outline:none;box-sizing:border-box" style-focus="border-color:var(--border-focus);box-shadow:0 0 0 3px var(--nh-blue-50)">
+</div>
+<label style="display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--text-body);cursor:pointer;user-select:none">
+<input type="checkbox" style="width:16px;height:16px;accent-color:var(--nh-blue-500);margin:0">사업자등록번호 저장
+</label>
+<button style="height:52px;margin-top:6px;border:none;border-radius:6px;background:var(--nh-navy-800);color:var(--white);font-family:inherit;font-size:16px;font-weight:700;letter-spacing:-0.02em;cursor:pointer;transition:filter 160ms ease" style-hover="filter:brightness(1.14)">로그인</button>
+<div style="display:flex;justify-content:center;gap:14px;font-size:13px;color:var(--text-muted);padding-top:4px">
+<a href="#" style="color:var(--text-muted);text-decoration:none">인증서 발급/재발급</a>
+<span style="color:var(--grey-300)">|</span>
+<a href="#" style="color:var(--text-muted);text-decoration:none">아이디 찾기</a>
+<span style="color:var(--grey-300)">|</span>
+<a href="#" style="color:var(--text-muted);text-decoration:none">이용 신청</a>
+</div>
+</div>
+</section>
+<aside style="display:flex;flex-direction:column;gap:14px">
+<div style="background:var(--nh-blue-50);border:1px solid var(--nh-blue-100);border-radius:10px;padding:20px 22px;display:flex;flex-direction:column;gap:8px">
+<div style="font-size:14.5px;font-weight:700;color:var(--nh-blue-700);letter-spacing:-0.02em">처음 이용하시나요?</div>
+<p style="margin:0;font-size:13.5px;line-height:1.6;color:var(--text-body);letter-spacing:-0.01em">영업점 방문 없이 기업인터넷뱅킹을 신청하실 수 있습니다.</p>
+<a href="#" style="font-size:13.5px;font-weight:600;color:var(--nh-blue-600);text-decoration:none;margin-top:2px">이용 신청 바로가기 ›</a>
+</div>
+<div style="background:var(--white);border:1px solid var(--border-subtle);border-radius:10px;padding:20px 22px;display:flex;flex-direction:column;gap:10px">
+<div style="font-size:14.5px;font-weight:700;color:var(--text-strong);letter-spacing:-0.02em">보안 안내</div>
+<div style="display:flex;flex-direction:column;gap:7px;font-size:13px;line-height:1.6;color:var(--text-muted);letter-spacing:-0.01em">
+<div>· 농협은행은 어떠한 경우에도 보안카드 전체 번호를 요구하지 않습니다.</div>
+<div>· 공용 PC에서는 이용 후 반드시 로그아웃해 주세요.</div>
+<div>· 출처가 불분명한 프로그램은 설치하지 마세요.</div>
+</div>
+<a href="#" style="font-size:13.5px;font-weight:600;color:var(--nh-blue-600);text-decoration:none">보안센터 자세히보기 ›</a>
+</div>
+<div style="background:var(--white);border:1px solid var(--border-subtle);border-radius:10px;padding:20px 22px;display:flex;flex-direction:column;gap:6px">
+<div style="font-size:14.5px;font-weight:700;color:var(--text-strong);letter-spacing:-0.02em">도움이 필요하신가요?</div>
+<div style="font-size:22px;font-weight:800;color:var(--nh-navy-800);letter-spacing:-0.03em;font-variant-numeric:tabular-nums">1661-3000</div>
+<div style="font-size:12.5px;color:var(--text-muted)">평일 09:00 ~ 18:00</div>
+</div>
+</aside>
+</div>
+</main>
+<footer style="background:var(--grey-100);border-top:1px solid var(--border-subtle);padding:28px 20px">
+<div style="max-width:1200px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap">
+<div style="display:flex;gap:16px;font-size:12.5px;color:var(--text-muted)">
+<a href="#" style="color:var(--text-body);font-weight:600;text-decoration:none">개인정보처리방침</a>
+<a href="#" style="color:var(--text-muted);text-decoration:none">이용약관</a>
+<a href="#" style="color:var(--text-muted);text-decoration:none">서비스이용안내</a>
+</div>
+<div style="font-size:12px;color:var(--text-disabled)">© NH Bank. All rights reserved.</div>
+</div>
+</footer>
+</div>
+
+</x-dc>
+</body>
+</html>

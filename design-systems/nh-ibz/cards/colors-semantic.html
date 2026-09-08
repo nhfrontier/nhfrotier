@@ -1,0 +1,22 @@
+<!-- @dsCard group="Colors" viewport="700x150" name="Semantic — 입출금·상태" subtitle="입금(그린)·출금(레드)·경고·안내" -->
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 18px; background: var(--white); display:flex; gap:12px; align-items:center; }
+  .item { flex:1; display:flex; flex-direction:column; gap:8px; align-items:center; }
+  .dot { width: 100%; height: 48px; border-radius: var(--radius-sm); }
+  .lab { font-size: 12px; font-weight: 600; color: var(--text-strong); }
+  .use { font-size: 11px; color: var(--text-muted); }
+  .hex { font-size: 10px; color: var(--text-muted); font-family: var(--font-mono); }
+</style>
+</head>
+<body>
+  <div class="item"><div class="dot" style="background:var(--status-positive)"></div><div class="lab">positive</div><div class="use">입금 · 증가</div><div class="hex">#00A04E</div></div>
+  <div class="item"><div class="dot" style="background:var(--status-negative)"></div><div class="lab">negative</div><div class="use">출금 · 경고</div><div class="hex">#E0392B</div></div>
+  <div class="item"><div class="dot" style="background:var(--status-warning)"></div><div class="lab">warning</div><div class="use">주의 · 만료</div><div class="hex">#F5A623</div></div>
+  <div class="item"><div class="dot" style="background:var(--status-info)"></div><div class="lab">info</div><div class="use">안내 · 신규</div><div class="hex">#0094D9</div></div>
+</body>
+</html>

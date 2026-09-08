@@ -25,7 +25,7 @@ fi
 
 # ── 문서 페이지 재생성 ──
 CHANGED=$(printf '%s\n' "$STAGED" |
-  grep -E '^(개발문서/|docs/|scripts/|design-system/tokens/|MockupGen_기능명세서\.md$)' || true)
+  grep -E '^(개발문서/|docs/|scripts/|design-systems/|MockupGen_기능명세서\.md$)' || true)
 
 [ -z "$CHANGED" ] && exit 0
 
