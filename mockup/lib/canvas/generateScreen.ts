@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import type { ReferenceScreen } from '../db';
 import { buildGuardrailSection } from '../responsibility-rules';
-import { buildDesignTokenSection } from './designSystem';
+import { buildDesignTokenSection, buildExampleScreensSection } from './designSystem';
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -51,7 +51,7 @@ ${list}
 
 의미가 분명한 주요 요소에는 \`data-nh-key="primary-cta"\`처럼 짧은 영문 이름표를 달아도 좋다.
 협업자가 그 요소에 남긴 메모가 화면을 다시 만들어도 붙어 있게 하는 데 쓰인다. 없어도 무방하다.
-${buildDesignTokenSection(designSystemId)}${buildGuardrailSection()}`;
+${buildDesignTokenSection(designSystemId)}${buildExampleScreensSection(designSystemId)}${buildGuardrailSection()}`;
 }
 
 /**

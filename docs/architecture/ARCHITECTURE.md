@@ -136,7 +136,41 @@
 
 ---
 
-## 13. 미결 사항
+## 13. 구현 상태 (2026-09-08)
+
+목표 운영 스택의 **Backend 가 `backend/` 에 구현되었다.** 위 결정 1~12가 코드에 어떻게 내려앉았는지만 적는다.
+상세는 [backend/README.md](../../backend/README.md).
+
+| 결정 | 구현 위치 | 비고 |
+|---|---|---|
+| 2·3 LLM 호출 위치 / Orchestrator | `ai/LlmClient` · `ai/AiOrchestrator` | 도메인은 인터페이스만 안다. endpoint 미확정이라 기본은 대역 |
+| 4 비동기 Job | `ai/AiJobService` · `ai/AiJobWorker` | **Redis 없이 DB 테이블을 큐로 쓴다** — 아래 참고 |
+| 5 Version / History 분리 | `version/` · `history/` | 서로 다른 테이블·서비스 |
+| 6 댓글 → Review → Decision → Version | `comment/` · `review/` | `review_decisions.resulting_version_id` 로 이음 |
+| 7 파일 저장 분리 | `file/FileStorage` | 로컬 디스크 구현. DB 에는 메타데이터만 |
+| 8 REST + `/api/v1` | 전 컨트롤러 | 목록은 커서 기반 + 집계 동봉 |
+| 9 에러 정규화 | `common/error/` | `ErrorCode` → HTTP. 내부 정보 비노출 |
+| 10 도메인 단위 폴더 | `com.nh.canvas.*` | 타입별로 나누지 않았다 |
+| 11 책임성 검토 | `responsibility/` | 규칙에서 프롬프트를 생성. 근거 없으면 저장 안 함 |
+| 12 UX 리스크 검토 | `usability/` | 입력을 서버가 조립, 상한 초과는 413 |
+
+### 왜 Redis 를 두지 않았는가 (4절의 구현 선택)
+
+비동기 Job 을 두기로 한 결정은 그대로지만 **큐를 별도 컴포넌트로 두지 않았다.**
+`ai_jobs` · `exports` 를 `FOR UPDATE SKIP LOCKED` 로 집으므로 stateless 컨테이너를 늘려도
+한 작업이 두 번 실행되지 않는다. Redis 의 운영 용도·운영 주체가 미결인 상태에서 먼저 넣으면
+장애 시 영향 범위를 정의하지 못한 채 의존만 생긴다. 큐를 밖으로 빼야 하면
+`AiJobWorker` · `ExportWorker` 두 클래스만 바꾸면 된다.
+
+### 아직 코드로 풀리지 않은 것
+
+- **인증**: 인가(프로젝트 멤버십·역할)는 구현했으나 인증은 개발용 헤더 스텁이다. SSO 방식이 확정되어야 한다.
+- **LLM**: 호출 경로·오류 정규화·재시도는 있으나 endpoint 가 없어 결과 품질은 확인되지 않았다.
+- **Frontend**: Vue 3 는 아직 없다.
+
+---
+
+## 14. 미결 사항
 
 아래는 아직 결정되지 않았고, 확정 시 이 문서에 결정 형식으로 추가한다. 전체 목록은 [08_DECISIONS_OPEN_ISSUES.md](../../개발문서/08_DECISIONS_OPEN_ISSUES.md) 참고.
 

@@ -29,7 +29,6 @@
   .ds-hint { font-size:12px;font-weight:600;color:#94a3b8;margin:12px 0 0; }
   .ds-card:hover .ds-hint { color:#4f46e5; }
   .sw { width:20px;height:20px;border-radius:5px;border:1px solid rgba(15,23,42,.08); }
-  .grp-title { font-size:13px;font-weight:600;color:#64748b;margin:0 0 10px; }
 
   .sec-title { font-size:15px;font-weight:700;color:#0f172a;margin:0 0 2px; }
   .sec-desc { font-size:12.5px;color:#94a3b8;margin:0 0 14px; }
@@ -73,7 +72,7 @@
     <!-- ── 디자인 시스템 선택 ── -->
     <section style="margin-bottom:28px;">
       <h2 class="sec-title">디자인 시스템</h2>
-      <p class="sec-desc">고르면 그 시스템의 컬러 토큰·컴포넌트 규칙을 가진 채 화면 만들기로 들어갑니다.</p>
+      <p class="sec-desc">고르면 그 시스템의 컬러 토큰·컴포넌트 규칙과 완성 화면 예시를 가진 채 화면 만들기로 들어갑니다. 참고할 화면을 따로 고를 필요는 없습니다.</p>
 
       <div style="display:flex;gap:14px;">
         <a class="ds-card" href="screen-brief.html?ds=allone-bank">
@@ -87,7 +86,7 @@
             <div class="sw" style="background:#FF8A3D;"></div>
             <div class="sw" style="background:#0E1414;"></div>
           </div>
-          <p style="font-size:11.5px;color:#94a3b8;margin:0;line-height:1.6;">상단 앱바 · 하단 5칸 내비 · 바텀시트 전제. 360×780 폰 화면으로 생성됩니다.<br>토큰 189개 · 컴포넌트 23개</p>
+          <p style="font-size:11.5px;color:#94a3b8;margin:0;line-height:1.6;">상단 앱바 · 하단 5칸 내비 · 바텀시트 전제. 360×780 폰 화면으로 생성됩니다.<br>토큰 189개 · 컴포넌트 23개 · 예시 화면 1장</p>
           <p class="ds-hint">이 디자인으로 시작 →</p>
         </a>
 
@@ -102,117 +101,9 @@
             <div class="sw" style="background:#3F4A68;"></div>
             <div class="sw" style="background:#00A04E;"></div>
           </div>
-          <p style="font-size:11.5px;color:#94a3b8;margin:0;line-height:1.6;">1200px 중앙 정렬 · GNB · 흰 카드/회색 섹션 교차 전제. 데스크톱 화면으로 생성됩니다.<br>토큰 129개 · 컴포넌트 6개</p>
+          <p style="font-size:11.5px;color:#94a3b8;margin:0;line-height:1.6;">1200px 중앙 정렬 · GNB · 흰 카드/회색 섹션 교차 전제. 데스크톱 화면으로 생성됩니다.<br>토큰 129개 · 컴포넌트 6개 · 예시 화면 4장</p>
           <p class="ds-hint">이 디자인으로 시작 →</p>
         </a>
-      </div>
-    </section>
-
-    <!-- ── 화면 템플릿 (디자인 시스템별) ── -->
-    <section style="margin-bottom:28px;">
-      <h2 class="sec-title">화면 템플릿</h2>
-      <p class="sec-desc">백지에서 시작하지 않습니다. 완성된 화면을 복사해 내용만 바꾸세요.</p>
-
-      <h3 class="grp-title">올원뱅크</h3>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px;">
-
-        <div class="tpl-card">
-          <div class="th" style="background:#E7F5F2;align-items:center;justify-content:center;">
-            <div style="width:62px;height:86px;background:#fff;border:1px solid #93D6C8;border-radius:8px;padding:6px;display:flex;flex-direction:column;gap:4px;">
-              <div class="th-bar" style="height:6px;width:70%;background:#C4E8E1;"></div>
-              <div class="th-bar" style="flex:1;background:#F1F8F6;"></div>
-              <div class="th-bar" style="height:8px;background:#0B8478;"></div>
-            </div>
-          </div>
-          <div class="tpl-body">
-            <div style="margin-bottom:6px;"><span class="tpl-tag" style="color:#0B8478;background:#E7F5F2;">앱 화면</span></div>
-            <h3>모바일 앱 화면</h3>
-            <p>앱바 + 계좌 카드 + 하단 내비 셸</p>
-            <a class="tpl-start" href="screen-brief.html?ds=allone-bank&amp;tpl=app-screen">이 Template로 시작</a>
-          </div>
-        </div>
-      </div>
-
-      <h3 class="grp-title">NH 기업인터넷뱅킹</h3>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;">
-        <div class="tpl-card">
-          <div class="th" style="background:#122F50;align-items:center;justify-content:center;">
-            <div style="width:76%;background:#fff;border-radius:6px;padding:8px;display:flex;flex-direction:column;gap:5px;">
-              <div class="th-bar" style="height:6px;width:45%;background:#122F50;"></div>
-              <div class="th-bar" style="height:12px;background:#F0F2F5;"></div>
-              <div class="th-bar" style="height:12px;background:#F0F2F5;"></div>
-              <div class="th-bar" style="height:10px;width:50%;background:#122F50;"></div>
-            </div>
-          </div>
-          <div class="tpl-body">
-            <div style="margin-bottom:6px;"><span class="tpl-tag" style="color:#00689b;background:#eef8fd;">화면</span></div>
-            <h3>로그인</h3>
-            <p>인증서·아이디 탭 + 네이비 로그인 버튼</p>
-            <a class="tpl-start" href="screen-brief.html?ds=nh-ibz&amp;tpl=login">이 Template로 시작</a>
-          </div>
-        </div>
-
-        <div class="tpl-card">
-          <div class="th" style="background:#F5F6F8;">
-            <div class="th-bar" style="height:8px;width:100%;background:#0094D9;"></div>
-            <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:6px;">
-              <div style="background:#fff;border:1px solid #E2E5EA;border-radius:4px;"></div>
-              <div style="background:#fff;border:1px solid #E2E5EA;border-radius:4px;"></div>
-              <div style="background:#fff;border:1px solid #E2E5EA;border-radius:4px;"></div>
-              <div style="background:#fff;border-top:3px solid #00A04E;border-right:1px solid #E2E5EA;border-bottom:1px solid #E2E5EA;border-left:1px solid #E2E5EA;border-radius:4px;"></div>
-            </div>
-          </div>
-          <div class="tpl-body">
-            <div style="margin-bottom:6px;"><span class="tpl-tag" style="color:#00689b;background:#eef8fd;">화면</span></div>
-            <h3>메인 대시보드</h3>
-            <p>GNB + 잔액 요약 + 서비스 타일 그리드</p>
-            <a class="tpl-start" href="screen-brief.html?ds=nh-ibz&amp;tpl=dashboard">이 Template로 시작</a>
-          </div>
-        </div>
-
-        <div class="tpl-card">
-          <div class="th" style="background:#F5F6F8;">
-            <div class="th-bar" style="height:3px;width:100%;background:#1a1c1f;"></div>
-            <div style="flex:1;background:#fff;border:1px solid #E2E5EA;border-radius:4px;padding:8px;display:flex;flex-direction:column;gap:5px;">
-              <div class="th-bar" style="height:7px;width:55%;background:#41464f;"></div>
-              <div class="th-bar" style="height:5px;width:80%;background:#E2E5EA;"></div>
-              <div style="margin-top:auto;display:flex;gap:5px;align-items:center;">
-                <div class="th-bar" style="height:9px;width:34%;background:#E0392B;"></div>
-                <div class="th-bar" style="height:11px;width:26%;background:#3F4A68;border-radius:999px;margin-left:auto;"></div>
-              </div>
-            </div>
-          </div>
-          <div class="tpl-body">
-            <div style="margin-bottom:6px;"><span class="tpl-tag" style="color:#00689b;background:#eef8fd;">화면</span></div>
-            <h3>상품 상세</h3>
-            <p>금리 표기 + 가입대상 + 가입하기 CTA</p>
-            <a class="tpl-start" href="screen-brief.html?ds=nh-ibz&amp;tpl=product-detail">이 Template로 시작</a>
-          </div>
-        </div>
-
-        <div class="tpl-card">
-          <div class="th" style="background:#fff;justify-content:center;">
-            <div style="display:flex;align-items:center;gap:6px;">
-              <div style="width:22px;height:22px;border-radius:50%;background:#0094D9;"></div>
-              <div class="th-bar" style="height:2px;flex:1;background:#C4C9D0;"></div>
-              <div style="width:22px;height:22px;border-radius:50%;background:#D6EEFA;"></div>
-              <div class="th-bar" style="height:2px;flex:1;background:#C4C9D0;"></div>
-              <div style="width:22px;height:22px;border-radius:50%;background:#D6EEFA;"></div>
-            </div>
-            <div style="display:flex;gap:6px;margin-top:8px;">
-              <div class="th-bar" style="height:5px;flex:1;background:#EAEDF1;"></div>
-              <div class="th-bar" style="height:5px;flex:1;background:#EAEDF1;"></div>
-              <div class="th-bar" style="height:5px;flex:1;background:#EAEDF1;"></div>
-            </div>
-          </div>
-          <div class="tpl-body">
-            <div style="margin-bottom:6px;"><span class="tpl-tag" style="color:#00689b;background:#eef8fd;">섹션</span></div>
-            <h3>프로세스 섹션</h3>
-            <p>신청 절차 3~4단계 안내 블록</p>
-            <a class="tpl-start" href="screen-brief.html?ds=nh-ibz&amp;tpl=process-section">이 Template로 시작</a>
-          </div>
-        </div>
-
       </div>
     </section>
 

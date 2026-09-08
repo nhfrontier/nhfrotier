@@ -40,3 +40,18 @@ reference/ui/**
 # OS
 Thumbs.db
 .DS_Store
+
+# docker compose 설정. DB_PASSWORD·LLM_API_CREDENTIAL 이 들어가므로 절대 커밋하지 않는다.
+.env
+.env.*
+!.env.example
+
+# 폐쇄망 반입 번들 산출물 (scripts/build-release.mjs). 이미지 tar 가 수백 MB 다.
+dist/
+
+# Maven 빌드 산출물
+target/
+
+# 운영 백엔드의 로컬 파일 저장소(FILE_STORAGE_PATH 기본값). 업로드 원본과 Export 산출물이 쌓인다.
+# 실물은 File Storage 의 몫이고 DB 에는 메타데이터만 있으므로 저장소에 넣지 않는다.
+backend/var/
