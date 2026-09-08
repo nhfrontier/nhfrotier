@@ -6,13 +6,20 @@
 - 사용자 인증은 사내 SSO 연계
 - 서버 간 AI 호출은 내부 credential을 사용
 - 장시간 작업은 Job 리소스로 비동기 처리
+- 목록 API는 커서 기반 페이지네이션을 기본으로 한다 (`?cursor=&limit=`, limit 기본 20 · 최대 100). 무한 증가하는 리소스(history 등)의 전체 반환 금지 (2026-09-06 추가)
+- 목록 화면에 필요한 집계는 목록 응답에 포함한다 — 프론트가 행마다 추가 호출하는 N+1 금지 (2026-09-06 추가)
+- 비동기 Job 상태는 폴링으로 조회한다 (권장 주기 2~3초 — [04_SYSTEM_ARCHITECTURE.md](04_SYSTEM_ARCHITECTURE.md) 4절)
+- 파일 다운로드는 Backend 경유 스트리밍이며 모든 다운로드는 감사 대상 이벤트다 (2026-09-06 추가)
 
 ## 2. 주요 API
 ### Auth
 `GET /api/v1/me`
 
+### Dashboard
+`GET /api/v1/dashboard`  — S01 대시보드 집계를 1회 호출로 반환 (최근 프로젝트 · 나의 작업 · 검토 대기 · 최근 Version · 최근 활동). 화면 1개당 API 다중 호출 방지 (2026-09-06 추가)
+
 ### Project
-`GET /api/v1/projects`
+`GET /api/v1/projects`  — 응답에 S02 목록 표시용 집계 포함 (멤버 수 · 미처리 검토 건수 · 마지막 활동)
 `POST /api/v1/projects`
 `GET /api/v1/projects/{projectId}`
 `PATCH /api/v1/projects/{projectId}`
@@ -21,6 +28,7 @@
 ### Files
 `POST /api/v1/projects/{projectId}/files`
 `GET /api/v1/projects/{projectId}/files`
+`GET /api/v1/projects/{projectId}/files/{fileId}/content`  — 원본 다운로드, 스트리밍 (2026-09-06 추가)
 `DELETE /api/v1/projects/{projectId}/files/{fileId}`
 
 ### Template
@@ -31,6 +39,7 @@
 `POST /api/v1/projects/{projectId}/ai/jobs`  — body의 `job_type`으로 산출물 종류를 구분 (8절)
 `GET /api/v1/ai/jobs/{jobId}`  — `BRAND_CONCEPT` Job은 출력 3건을 함께 반환
 `POST /api/v1/ai/jobs/{jobId}/retry`
+`POST /api/v1/ai/jobs/{jobId}/cancel`  — `REQUESTED`/`PROCESSING`에서만 허용 → `CANCELLED` (03 상태 모델 대응, 2026-09-06 추가)
 
 ### Collaboration
 `GET /api/v1/projects/{projectId}/comments`
@@ -50,14 +59,16 @@
 ### Version
 `GET /api/v1/projects/{projectId}/versions`
 `GET /api/v1/versions/{versionId}`
-`GET /api/v1/versions/{versionId}/compare?baseVersionId=...`
+`GET /api/v1/versions/{versionId}/files/{fileId}/content`  — Version 산출물 다운로드 (2026-09-06 추가)
+`GET /api/v1/versions/{versionId}/compare?baseVersionId=...`  — 비교는 화면(`screens`)·파일(`version_files`) 단위로 전/후를 짝지어 반환
 
 ### History
 `GET /api/v1/projects/{projectId}/history`
 
 ### Export
 `POST /api/v1/versions/{versionId}/exports`
-`GET /api/v1/exports/{exportId}`
+`GET /api/v1/exports/{exportId}`  — 상태·메타데이터 조회
+`GET /api/v1/exports/{exportId}/download`  — 완료된 결과 파일 다운로드, 감사 대상 (2026-09-06 추가)
 
 ## 3. 주요 DB
 ```text
@@ -82,7 +93,40 @@ version_files
 history_events
 exports
 audit_logs
+screens            (2026-09-05 추가 — 협업 디자인 캔버스)
+screen_elements    (2026-09-05 추가)
+element_patches    (2026-09-05 추가)
 ```
+
+### 3-1. 협업 디자인 캔버스 (2026-09-05)
+
+한 Version이 화면 여러 장을 갖고, 화면 안의 요소 단위로 메모·수정이 붙는다.
+([03_IA_FUNCTION_SPEC.md](03_IA_FUNCTION_SPEC.md) S03)
+
+| 테이블 | 주요 컬럼 | 목적 |
+|---|---|---|
+| `screens` | `version_id`, `screen_key`, `name`, `role`, `sort_order`, `html_content`, `status`, `error_message` | Version에 속한 화면 한 장. `status`로 화면별 생성 성공/실패를 따로 다뤄 실패한 화면만 재시도한다 |
+| `screen_elements` | `screen_id`, `nh_id`, `tag`, `doc_order`, `path_sig`, `text_sig` | 요소 지문. 화면을 다시 만든 뒤 메모를 원래 자리에 다시 잇는 데 쓴다 |
+| `element_patches` | `screen_id`, `nh_id`, `user_id`, `op`, `payload`, `reason`, `source`, `seq`, `reverted_at` | 요소 편집 이력. `op`은 `setText`/`setStyle`/`setAttr`/`aiRewrite`. **원본 HTML을 덮어쓰지 않는다** |
+
+`comments` 확장: `screen_id`, `nh_id`, `anchor_status`(`none`/`anchored`/`orphaned`), `resolved_at`.
+`anchor_status='none'`이 일반 의견이고, 요소를 지목한 의견은 `anchored`다. 재생성으로 앵커가 끊기면 삭제하지 않고 `orphaned`로 남겨 사람이 다시 붙일 수 있게 한다. ([FR-06](기능명세/FR-06_협업의견.md)의 "일반 의견과 특정 영역/요소에 대한 의견을 구분해 등록한다"가 여기서 실체를 얻는다)
+
+**화면 간 이동 관계는 테이블로 두지 않는다.** 생성 HTML의 `data-goto="화면key"` 속성이 유일한 출처이며, 저장 시 존재하지 않는 화면을 가리키는 값은 제거된다. 별도 테이블을 두면 HTML과 어긋날 수 있고, 어긋나면 "눌러도 반응 없는 버튼"이 된다.
+
+### 3-2. 캔버스 API (2026-09-05)
+
+화면 생성은 **2단계**다. 한 번에 여러 화면의 HTML을 만들면 토큰 한도와 타임아웃에 걸리고, 어느 화면이 실패했는지도 보이지 않는다.
+
+| 메서드 | 경로 | 설명 |
+|---|---|---|
+| POST | `/projects/{projectId}/plan-screens` | 1단계. 화면 목록·역할·전환 관계만 만든다. HTML은 만들지 않는다 |
+| POST | `/screens/{screenId}/generate` | 2단계. 화면 한 장. 다시 호출하면 그대로 재시도 |
+| POST | `/screens/{screenId}/patches` · DELETE `/patches/{patchId}` | 요소 편집 기록 / 되돌리기(soft revert) |
+| POST | `/screens/{screenId}/ai-edit` | 선택한 요소만 AI가 재생성. 요소의 outerHTML만 보낸다 |
+| GET/POST | `/screens/{screenId}/comments` | 요소 앵커 의견 |
+
+팬아웃(화면별 호출)은 **클라이언트가 한다.** 서버가 한 요청에서 N개를 처리하면 타임아웃 위험이 커지고 부분 실패가 감춰진다.
 
 ## 4. 핵심 관계
 ```text

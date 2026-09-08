@@ -46,7 +46,7 @@
 
 ## 4. 긴 AI 작업: 비동기 Job 리소스
 
-- **무엇**: 문서 분석/생성/Export처럼 오래 걸리는 작업은 `POST /api/v1/projects/{projectId}/ai/jobs`로 Job을 만들고, `GET /api/v1/ai/jobs/{jobId}`로 상태를 조회한다. 실패 시 `POST /api/v1/ai/jobs/{jobId}/retry`.
+- **무엇**: 문서 분석/생성/Export처럼 오래 걸리는 작업은 `POST /api/v1/projects/{projectId}/ai/jobs`로 Job을 만들고, `GET /api/v1/ai/jobs/{jobId}`로 상태를 조회한다. 실패 시 `POST /api/v1/ai/jobs/{jobId}/retry`, 취소는 `POST /api/v1/ai/jobs/{jobId}/cancel`(REQUESTED/PROCESSING에서만). 상태 전달은 폴링(권장 2~3초)으로 한다 — 초기 규모에서 SSE/WebSocket은 운영 비용이 이득보다 크고, 규모 확대 시 재검토한다.
 - **왜 선택**: LLM 응답 시간이 길고 편차가 크다. 동기 요청으로 묶으면 HTTP timeout과 사용자 대기 문제가 동시에 발생하고, 실패한 작업을 재시도할 수단도 없다. Job으로 만들면 상태(REQUESTED/RUNNING/DONE/FAILED)가 남아 재시도와 감사가 가능하다.
 - **왜 동기 응답이 아닌지**: LLM 장애 시 요청이 그대로 유실되어 사용자가 처음부터 다시 입력해야 한다.
 - **중복 제출 대응**: 동일 Job 중복 요청에 대한 idempotency 처리가 필요하다. (미결 — [08_DECISIONS_OPEN_ISSUES.md](../../개발문서/08_DECISIONS_OPEN_ISSUES.md))
@@ -72,6 +72,7 @@
 - **왜 선택**: 대용량 바이너리를 DB에 넣으면 백업/복구 시간과 커넥션 점유가 급격히 늘어난다. 저장소 종류가 아직 미정이라 메타데이터와 분리해 두면 이후 교체가 쉽다.
 - **왜 DB BLOB이 아닌지**: 위와 같음. 단, DB와 파일 저장소 간 불일치가 생길 수 있으므로 복구 절차가 필요하다.
 - **접근 제어**: 파일 조회 시 프로젝트 멤버십을 반드시 확인한다. IDOR 방지는 [SECURITY_CHECKLIST.md](../guidelines/SECURITY_CHECKLIST.md) 참고.
+- **전송 방식**: 업로드/다운로드는 Backend 경유 스트리밍으로 처리한다. 권한 검증과 감사 로그를 한 지점에서 강제하기 위해서다. presigned URL 방식은 저장소 종류 확정 후 재검토한다.
 
 ## 8. API 설계: REST + `/api/v1`
 
@@ -79,6 +80,7 @@
 - **왜 선택**: 리소스 구조(Project / File / Version / Comment / Job)가 명확하고 팀이 익숙하다. 행내 Reverse Proxy·WAF 정책도 경로 기반 REST에서 다루기 쉽다.
 - **왜 GraphQL이 아닌지**: 단일 endpoint로 들어오는 임의 쿼리는 경로 기반 접근 통제·감사 로그와 맞지 않고, 초기 규모에서 스키마 운영 비용이 이득보다 크다.
 - **왜 경로 버전(`/v1`)인지**: 헤더 버전보다 프록시·로그·문서에서 식별이 쉽다.
+- **목록 페이지네이션**: 모든 목록 API는 커서 기반(`?cursor=&limit=`)을 기본으로 한다. `history_events`처럼 무한 증가하는 리소스를 전체 반환하면 가장 먼저 느려지는 지점이 되기 때문이다. 목록 화면용 집계(멤버 수·미처리 검토 건수 등)는 목록 응답에 포함해 N+1 호출을 막는다.
 
 ## 9. 에러 처리 전략
 

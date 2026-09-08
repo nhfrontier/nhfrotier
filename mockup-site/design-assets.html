@@ -12,8 +12,8 @@
   .nav-link { padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 500; color: #64748b; }
   .nav-link:hover { background: #f1f5f9; color: #0f172a; }
   .nav-link.active { color: #4f46e5; background: #eef2ff; }
-  .asset-row { display: flex; gap: 14px; margin-bottom: 32px; overflow-x: auto; padding-bottom: 4px; }
-  .asset-card { width: 212px; flex-shrink: 0; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; position: relative; transition: box-shadow .15s; }
+  .asset-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(196px, 1fr)); gap: 14px; margin-bottom: 32px; }
+  .asset-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; position: relative; transition: box-shadow .15s; }
   .asset-card:hover { box-shadow: 0 2px 4px rgba(15,23,42,.05), 0 8px 24px rgba(15,23,42,.07); }
   .asset-card.picked { border: 2px solid #4f46e5; }
   .asset-hover { position: absolute; left: 0; right: 0; bottom: 0; padding: 10px; display: flex; gap: 6px; opacity: 0; transition: opacity .15s; background: linear-gradient(to top, #fff 55%, rgba(255,255,255,0)); }
@@ -204,7 +204,7 @@
         </div>
       </div>
 
-      <div style="width:212px;flex-shrink:0;border:1px dashed #cbd5e1;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#94a3b8;">
+      <div style="border:1px dashed #cbd5e1;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#94a3b8;">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v16m8-8H4"/></svg>
         <span style="font-size:12px;">실물 파일 올리기</span>
       </div>

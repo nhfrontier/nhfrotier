@@ -11,6 +11,11 @@
 
 - 사용자 요청 + 선택한 참고자료([FR-03](개발문서/기능명세/FR-03_참고자료.md)) + Template([FR-04](개발문서/기능명세/FR-04_템플릿.md))으로 AI 작업(Job)을 생성한다.
 - 산출물 종류는 `ai_jobs.job_type`으로 구분한다: `DOC_DRAFT` / `SCREEN_MOCKUP` / `BRAND_CONCEPT`. 카드·홍보물 컨셉 시안(`BRAND_CONCEPT`)은 본 Job 구조를 그대로 재사용하며 별도 파이프라인을 두지 않는다 → [FR-13](개발문서/기능명세/FR-13_브랜드시안제작.md)
+- **(2026-09-05) 화면 목업은 단일 산출물이 아니다.** `SCREEN_MOCKUP`은 서로 연결된 화면 여러 장을 만들 수 있고, 생성은 2단계로 나뉜다.
+  1. **화면 흐름 설계** — 기획안을 읽고 화면 목록·역할·전환 관계만 만든다. HTML을 만들지 않으므로 짧고 빠르다.
+  2. **화면별 생성** — 화면마다 따로 호출해 HTML을 만든다. 토큰 한도에 걸리지 않고, **실패한 화면만 재시도**할 수 있다.
+  화면 간 이동은 생성 HTML의 `data-goto` 속성으로 표현하며 별도 테이블을 두지 않는다 → [05_API_DB_SPEC.md](../05_API_DB_SPEC.md) 3-1절
+- **(2026-09-05) 요소 단위 재생성** — 결과물 전체가 아니라 사용자가 지목한 요소 하나만 다시 만들 수 있다. 그 요소의 outerHTML만 모델에 보내고, 결과는 정제 후 편집 패치로 쌓는다(원본 HTML 미변경).
 - 장시간 작업은 **비동기 Job**으로 처리한다. 상태 전이: `REQUESTED → PROCESSING → COMPLETED / FAILED / CANCELLED` (03 상태 모델)
 - 실패한 작업은 원인 요약과 재시도 옵션을 제공한다(retry API). LLM 오류는 502/504로 정규화된다.
 - 중복 제출을 방지한다. (❓ idempotency 처리 방식 미결 — [결정/미결](개발문서/08_DECISIONS_OPEN_ISSUES.md))
@@ -35,6 +40,7 @@
 | POST | `/api/v1/projects/{projectId}/ai/jobs` | Job 생성 |
 | GET | `/api/v1/ai/jobs/{jobId}` | 상태 조회 |
 | POST | `/api/v1/ai/jobs/{jobId}/retry` | 재시도 |
+| POST | `/api/v1/ai/jobs/{jobId}/cancel` | 취소 — `REQUESTED`/`PROCESSING`에서만, `CANCELLED`로 전이 |
 
 오류: 429(호출 제한), 502/504(LLM 연계). 정본: [05_API_DB_SPEC.md](개발문서/05_API_DB_SPEC.md)
 
