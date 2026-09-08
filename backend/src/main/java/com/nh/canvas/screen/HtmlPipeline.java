@@ -170,6 +170,9 @@ public class HtmlPipeline {
                 case PatchOp.Replace replace -> replaceWithFragment(element, replace.html(), warnings);
             }
         }
+        // 교체 조각의 자손은 식별자가 없다. 붙여 주지 않으면 그 요소들은 다시 고를 수 없고,
+        // 편집 요청은 받아 놓고 여기서 조용히 건너뛰게 된다. 걷는 순서가 고정이라 매번 같은 값이 나온다
+        assignIds(doc, new ArrayList<>());
         return new FragmentResult(doc.html(), dedupe(warnings));
     }
 
@@ -227,6 +230,11 @@ public class HtmlPipeline {
         if (incoming.isEmpty()) {
             element.remove();
             return;
+        }
+        // 조각의 첫 요소가 원래 식별자를 잇는다. 그래야 같은 요소에 편집·AI 수정·의견을 이어 갈 수 있다
+        Element root = fragment.body().children().first();
+        if (root != null) {
+            root.attr("data-nh-id", element.attr("data-nh-id"));
         }
         for (Node node : incoming) {
             node.remove();
@@ -340,8 +348,15 @@ public class HtmlPipeline {
     }
 
     /** 3단계: 안정적인 식별자를 부여하고 지문을 수집한다. */
+    /**
+     * 식별자가 없는 요소에만 붙인다. 생성 직후에는 정제가 AI 의 것을 다 지워 전부 대상이고,
+     * baking 뒤에는 교체 조각의 자손만 대상이다. 이미 있는 값은 먼저 예약해 새 값과 겹치지 않게 한다.
+     */
     private void assignIds(Document doc, List<ElementFingerprint> elements) {
         Set<String> used = new LinkedHashSet<>();
+        for (Element tagged : doc.getElementsByAttribute("data-nh-id")) {
+            used.add(tagged.attr("data-nh-id"));
+        }
         walkAssign(doc, "", used, elements, new int[]{0});
     }
 
@@ -354,7 +369,7 @@ public class HtmlPipeline {
             int index = sameTagCount.merge(tag, 1, Integer::sum) - 1;
             String pathSig = path.isEmpty() ? tag + ":" + index : path + ">" + tag + ":" + index;
 
-            if (!NO_ID_TAGS.contains(tag)) {
+            if (!NO_ID_TAGS.contains(tag) && !child.hasAttr("data-nh-id")) {
                 String text = normalizeText(directText(child));
                 String textSig = text.isEmpty() ? null : text;
                 // AI 가 의미 키를 달아줬으면 그게 가장 안정적이다. 없으면 텍스트, 그것도 없으면 구조

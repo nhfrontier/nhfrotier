@@ -115,6 +115,10 @@ com.nh.canvas
 **전부 `ScreenBaker` 를 거쳐야 한다.** 저장본을 직접 읽으면 다운로드·AI 검토·버전 비교만
 편집 이전 상태를 보게 되어 화면과 산출물이 갈린다.
 
+요소가 있는지도 `ScreenBaker.hasElement()` 로 **baking 된 문서에서** 확인한다. `screen_elements` 는
+생성 시점의 지문이라 `aiRewrite` 가 만든 자손은 없고 사라진 요소는 남아 있다. 그 표로 검증하면
+편집을 201 로 받아 놓고 반영 시점에 조용히 건너뛰게 된다.
+
 ### AI 지적은 근거가 없으면 저장하지 않는다
 
 `common/EvidenceVerifier` 가 모델이 낸 인용을 원문과 글자 그대로 대조한다.

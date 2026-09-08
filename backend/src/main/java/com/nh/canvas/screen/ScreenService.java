@@ -284,7 +284,7 @@ public class ScreenService {
         if (!EditProtocol.OPS.contains(op)) {
             throw ApiException.invalid("알 수 없는 편집 연산입니다: " + op);
         }
-        if (!screens.hasElement(screenId, nhId)) {
+        if (!baker.hasElement(screenId, nhId)) {
             throw ApiException.notFound("편집할 요소");
         }
         switch (op) {

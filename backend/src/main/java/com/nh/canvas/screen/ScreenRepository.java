@@ -128,14 +128,6 @@ public class ScreenRepository {
         }
     }
 
-    public boolean hasElement(UUID screenId, String nhId) {
-        return db.sql("SELECT true FROM screen_elements WHERE screen_id = ? AND nh_id = ?")
-                .params(screenId, nhId)
-                .query(Boolean.class)
-                .optional()
-                .orElse(false);
-    }
-
     /** 재생성으로 사라진 요소를 가리키던 의견은 지우지 않고 orphaned 로 남긴다 (05 3-1절). */
     public void reanchorComments(UUID screenId) {
         db.sql("""

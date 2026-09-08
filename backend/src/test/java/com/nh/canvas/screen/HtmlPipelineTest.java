@@ -160,6 +160,44 @@ class HtmlPipelineTest {
     }
 
     @Test
+    @DisplayName("교체 조각의 루트는 원래 식별자를 잇는다 — 같은 요소에 편집을 이어 갈 수 있어야 한다")
+    void should_keep_nh_id_on_replacement_root_when_baking() {
+        PipelineResult processed = pipeline.process("<html><body><div>본문</div></body></html>", List.of());
+        String nhId = processed.elements().get(0).nhId();
+
+        var result = pipeline.applyPatches(processed.html(),
+                List.of(new PatchOp.Replace(nhId, "<section>새 본문</section>")));
+
+        assertThat(pipeline.extractOuterHtml(result.html(), nhId)).startsWith("<section");
+    }
+
+    @Test
+    @DisplayName("교체 조각의 자손에도 식별자가 붙는다 — 없으면 고를 수도 편집할 수도 없다")
+    void should_assign_nh_ids_to_replacement_descendants_when_baking() {
+        PipelineResult processed = pipeline.process("<html><body><div>본문</div></body></html>", List.of());
+        String nhId = processed.elements().get(0).nhId();
+
+        var result = pipeline.applyPatches(processed.html(),
+                List.of(new PatchOp.Replace(nhId, "<div><p>첫 줄</p><p>둘째 줄</p></div>")));
+
+        assertThat(result.html()).containsPattern("<p data-nh-id=\"[0-9a-f]{8}(-\\d+)?\">첫 줄")
+                .containsPattern("<p data-nh-id=\"[0-9a-f]{8}(-\\d+)?\">둘째 줄");
+    }
+
+    @Test
+    @DisplayName("baking 은 읽을 때마다 다시 도므로 자손 식별자는 매번 같아야 한다")
+    void should_produce_same_descendant_ids_when_baked_twice() {
+        PipelineResult processed = pipeline.process("<html><body><div>본문</div></body></html>", List.of());
+        String nhId = processed.elements().get(0).nhId();
+        var ops = List.<PatchOp>of(new PatchOp.Replace(nhId, "<div><p>첫 줄</p><p>둘째 줄</p></div>"));
+
+        String first = pipeline.applyPatches(processed.html(), ops).html();
+        String second = pipeline.applyPatches(processed.html(), ops).html();
+
+        assertThat(second).isEqualTo(first);
+    }
+
+    @Test
     @DisplayName("텍스트 편집은 요소 내용을 통째로 바꾼다")
     void should_replace_text_when_text_patch_applied() {
         PipelineResult processed = pipeline.process("<html><body><div>이전</div></body></html>", List.of());
