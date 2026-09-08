@@ -73,7 +73,7 @@
 - **왜 선택**: 순번 PK는 URL에 노출될 때 다른 리소스를 추측하기 쉽다(IDOR). UUID로 추측 난이도를 올린다. 단, **UUID는 권한 검증의 대체재가 아니다** — 조회 시 멤버십 확인은 별도로 해야 한다.
 
 ### 디자인 시스템 레지스트리 (`design-systems/`) — 패키지가 아니라 자산 계층
-- **무엇**: 저장소 루트의 `design-systems/` 아래 폴더 하나가 디자인 시스템 하나다. 선택지 정본은 `registry.json`이고, 코드가 읽는 것은 각 시스템의 `_ds_manifest.json` 안 `tokens[]`(컬러·타이포·간격 토큰)와 `templates[]`(완성 화면 목록) 두 개뿐이다. 소비 지점은 `mockup/lib/canvas/designSystem.ts` 한 파일이다.
+- **무엇**: 저장소 루트의 `design-systems/` 아래 폴더 하나가 디자인 시스템 하나다. 선택지 정본은 `registry.json`이고, 코드가 읽는 것은 각 시스템의 `_ds_manifest.json` 안 `tokens[]`(컬러·타이포·간격 토큰)와 `templates[]`(완성 화면 목록) 두 개다. **(2026-09-08) `templates[]`는 이름만이 아니라 `entryPath`가 가리키는 `.dc.html` 본문까지 읽어 화면 생성 프롬프트의 예시로 넣는다**(`buildExampleScreensSection`). 사용자에게 참고할 화면을 고르게 하는 대신 그 시스템의 완성 화면을 전부 넣고 모델이 고르게 한다. 예시는 `sanitizeFragment`(parse5)를 거치고 `var(--token)`을 실값으로 치환해 넣는다 — 생성 규칙이 CSS 변수를 금지하므로 예시도 같은 형태여야 한다. 소비 지점은 `mockup/lib/canvas/designSystem.ts` 한 파일이다.
 - **왜 필요**: 화면 생성 프롬프트에 넣을 디자인 토큰이 **하나로 하드코딩**돼 있었다. 그 하나가 실제 NH 값이 아닌 대체 팔레트(올원뱅크 DS, teal)라 결과물을 "NH 디자인"이라 부를 수 없었다. 실제 NH 컬러를 쓰는 기업인터넷뱅킹 시스템이 들어오면서, 하나를 갈아끼우는 대신 **고를 수 있게** 만들었다.
 - **왜 갈아끼우지 않았는지**: 모바일 앱(360×780 · 하단 내비)과 기업 웹(1200px · GNB)은 표면이 달라 한쪽으로 통일할 수 없다. 만들려는 화면이 어느 쪽인지는 사용자만 안다.
 - **왜 `_ds_manifest.json`이 정본인지**: Claude Design export 두 벌이 모두 이 파일에 `{name, value, kind}` 형태의 동일한 토큰 배열을 갖고 있다. 반면 사람이 읽기 좋은 `tokens.json`은 `allone-bank`에만 있다. 공통으로 있는 쪽을 읽어야 새 시스템을 넣을 때 변환 작업이 생기지 않는다.
@@ -84,27 +84,59 @@
 
 ## B. 목표 운영 스택 (행내 배포)
 
-> 아직 구현 전. 각 항목은 [04_SYSTEM_ARCHITECTURE.md](../../개발문서/04_SYSTEM_ARCHITECTURE.md)의 결정을 따른다. 버전은 행내 반입 가능 여부 확인 후 확정한다.
+> ~~아직 구현 전.~~ → **2026-09-08 착수.** Backend 는 `backend/` 에 구현되어 있다(기동·Flyway 마이그레이션·API 호출 확인 완료).
+> Frontend(Vue 3)는 아직 없다. 각 항목은 [04_SYSTEM_ARCHITECTURE.md](../../개발문서/04_SYSTEM_ARCHITECTURE.md)의 결정을 따른다.
 
 ### Vue 3 (Frontend)
 - **무엇**: 컴포넌트 기반 프론트엔드 프레임워크.
 - **왜 선택**: 행내 기존 시스템과 개발 인력의 익숙함. 빌드 산출물을 Nginx에 정적 배포하는 구조라 반입이 단순하다.
 - **역할 경계**: 화면 표시, 파일 선택, Chat 입력, Version/History 시각화까지. **LLM을 직접 호출하지 않는다.**
 
-### Spring Boot (Backend)
-- **무엇**: Java 기반 백엔드 프레임워크.
+### Spring Boot 3.5.6 / Java 21 LTS / Maven (Backend) — 2026-09-08 구현
+- **무엇**: Java 기반 백엔드 프레임워크. 구현 위치는 `backend/` 다.
 - **왜 선택**: 행내 표준 스택이며 SSO 연계·감사 로그·트랜잭션 처리에 대한 사내 레퍼런스가 축적되어 있다.
+- **왜 Java 21인지**: LTS 이며 record·sealed interface·switch 패턴 매칭을 쓸 수 있다. DTO 와 편집 연산(`PatchOp`)을
+  record/sealed 로 두면 필드가 늘 때 컴파일이 누락을 잡아 준다.
+- **왜 Maven 인지**: 행내 Nexus 미러·오프라인 반입 레퍼런스가 많고 심사 대상 빌드 파일이 `pom.xml` 하나다.
+  Gradle 은 빌드 스크립트가 코드라 반입 심사 대상이 하나 더 늘어난다.
 - **책임**: 인증/인가, 프로젝트 도메인, 파일 메타데이터, 협업, Version, History, Export orchestration.
+
+### Spring `JdbcClient` (DB 접근) — ORM 을 쓰지 않는다
+- **무엇**: Spring Framework 6.1 이 제공하는 SQL 실행 API. 파라미터 바인딩과 record 매핑을 해 준다.
+- **왜 선택**: 이 제품의 목록 API 는 전부 **집계를 함께 반환**해야 한다(05_API_DB_SPEC 1절 "N+1 금지").
+  프로젝트 목록 한 줄에 멤버 수·미처리 검토 건수가 붙고, 커서 페이지네이션은 `(created_at, id)` 튜플 비교를 쓴다.
+  이런 질의는 SQL 로 쓰는 편이 짧고 무엇이 실행되는지가 코드에 드러난다.
+- **왜 JPA 가 아닌지**: JPA 의 지연 로딩이 05 명세가 금지한 N+1 을 만들어 내는 가장 흔한 원인이다.
+  막으려면 fetch join·`@EntityGraph`·DTO projection 을 결국 손으로 쓰게 되는데, 그러면 SQL 을 쓰는 것과 같아지면서
+  영속성 컨텍스트라는 추가 개념만 남는다. 엔티티 그래프가 얕고(대부분 단일 테이블 + 집계) 쓰기가 단순해 얻는 것이 적다.
+- **보안상 같은 점**: 파라미터 바인딩만 쓴다. 문자열 연결로 값을 넣지 않는다 (SECURITY D-2).
+  동적인 것은 `WHERE` 절의 **구조**뿐이고 값은 언제나 `?` 로 나간다.
+- **바인딩 주의**: PostgreSQL JDBC 드라이버는 `java.time.Instant` 를 바인딩하지 못한다("Can't infer the SQL type").
+  커서 위치는 `Cursors.Position#at()` 이 `OffsetDateTime` 으로 바꿔 주고, 시각 컬럼은 가급적 DB 의 `now()` 로 채운다.
+
+### jsoup 1.18.3 (HTML 정제·요소 ID 부여·baking) — 2026-09-08 도입
+- **무엇**: WHATWG 준수 HTML 파서 + Safelist 정제기. `backend/.../screen/HtmlPipeline.java` 에서 쓴다.
+- **왜 필요**: 프로토타입의 parse5 파이프라인을 운영 스택으로 옮겨야 했다. 한 번의 파싱으로 정제와 `data-nh-id` 부여를
+  함께 하고, 편집 반영(baking) 시 DOM 을 조작해 다시 직렬화한다.
+- **왜 jsoup 인지**: 파서와 정제기를 한 라이브러리가 갖고 있다. 정제를 겸하는 용도에서는 스펙 준수가 곧 보안이며,
+  DOM 순회·재직렬화 API 가 있어야 ID 부여와 baking 을 같은 트리 위에서 할 수 있다.
+- **비용**: 약 450KB, 순수 Java, MIT, 추가 의존성 없음.
+- **주의**: `data-nh-id` 조회에 셀렉터 문자열을 조립하지 않는다. 값이 요청 본문에서 오므로 셀렉터 주입이 된다 —
+  `getElementsByAttributeValue` 를 쓴다.
 
 ### PostgreSQL
 - **무엇**: 관계형 데이터베이스.
 - **왜 선택**: Version 계보(`parent_version_id` 자기참조)와 History 이벤트를 관계로 다뤄야 하고, JSON 컬럼으로 `payload_summary` 같은 가변 구조도 함께 담을 수 있다.
 - **저장 대상**: 프로젝트·사용자·멤버·파일 메타데이터·댓글·Review·Version·History·Template. **파일 바이너리는 저장하지 않는다.**
 
-### Redis
-- **무엇**: 인메모리 저장소.
-- **왜 선택**: 세션·캐시·비동기 Job 상태 후보.
-- **미결**: 실제 운영 용도와 운영 주체가 확정되지 않았다. 장애 시 영향 범위를 먼저 정의해야 한다.
+### Redis — **도입하지 않았다** (2026-09-08)
+- **무엇**: 인메모리 저장소. 세션·캐시·Job 상태의 후보였다.
+- **왜 지금 넣지 않았는지**: 실제 운영 용도와 운영 주체가 미결인데, 미결인 컴포넌트를 먼저 넣으면
+  장애 시 영향 범위를 정의하지 못한 채 의존만 생긴다. 초기 규모에서는 **DB 테이블 자체가 큐로 충분하다** —
+  `ai_jobs` / `exports` 를 `FOR UPDATE SKIP LOCKED` 로 집으므로 컨테이너를 늘려도 한 작업이 두 번 실행되지 않는다.
+- **어디를 고치면 되는지**: 큐를 밖으로 빼야 하면 `ai/AiJobWorker` · `export/ExportWorker` 두 클래스만 바꾼다.
+  세션은 애초에 없다(SSO 위임). 캐시는 아직 필요한 지점이 나오지 않았다.
+- **미결**: 위 판단은 초기 규모 전제다. 사용자·동시 호출이 늘면 재검토한다.
 
 ### Docker / Nginx
 - **무엇**: 컨테이너 런타임과 리버스 프록시.
@@ -141,12 +173,17 @@
 | 외부 SaaS 협업 도구 연동 | 협업 기능 확보 | 행내 업무 자료의 외부 반출 불가 | 내부 구축 |
 | 외부 이미지 생성 AI (DALL·E, Imagen 등) | 카드·홍보물 시안의 그래픽 소재 생성 | 행내 반입 승인 절차가 별도로 필요하고, 업무 자료의 외부 반출이 불가하며, 생성 이미지의 저작권·상표 리스크를 은행 산출물에 지울 수 없다 | 브랜드 자산 라이브러리(FR-04 `BRAND_ASSET`)에 사전 등록된 소재 + CSS/SVG 조합. AI는 배치만 한다 |
 | 신규 NH 디자인 시스템 구축 | UI 일관성 | 기존 NH 자산과 중복되며 유지 주체가 이원화된다 | 기존 NH 디자인 자산을 업무 맥락에 연결 |
+| JPA / Hibernate (운영 백엔드) | DB 접근 | 목록마다 집계를 함께 반환해야 하는데(05 1절 N+1 금지) 지연 로딩이 그 금지를 어기는 주된 경로다. 막으려면 결국 DTO projection 을 손으로 쓰게 되어 SQL 을 쓰는 것과 같아지고, 영속성 컨텍스트라는 개념만 추가된다. 엔티티 그래프가 얕아 얻는 것이 적다 | Spring `JdbcClient` + 명시적 SQL |
+| Gradle (운영 백엔드 빌드) | 빌드 도구 | 빌드 스크립트가 코드라 폐쇄망 반입 심사 대상이 하나 더 늘어난다. 행내 Nexus 미러 레퍼런스도 Maven 쪽이 많다 | Maven (`pom.xml` 하나) |
+| Redis (초기 도입) | 세션·캐시·Job 큐 | 운영 용도·운영 주체가 미결인데 먼저 넣으면 장애 영향 범위를 정의하지 못한 채 의존만 생긴다. 초기 규모에서는 DB 테이블 + `FOR UPDATE SKIP LOCKED` 로 충분하다 | `ai_jobs`·`exports` 테이블 큐 + 폴링 워커 |
+| OWASP Java HTML Sanitizer | 운영 백엔드 HTML 정제 | 정제는 강하지만 DOM 순회·재직렬화 API 가 없어 `data-nh-id` 부여와 baking 을 못 한다. 파서를 하나 더 써야 해 의존성이 둘이 된다 | jsoup |
 | node-html-parser | HTML 정제·요소 ID 부여 | 150KB로 훨씬 가볍지만 WHATWG 스펙 비준수다. 엣지케이스를 관대하게 넘기고 직렬화가 일부를 정규화해, **정제를 겸하는 용도로는 브라우저와 해석이 갈릴 위험**이 있다 | parse5 |
 | cheerio | 같음 | 셀렉터 쿼리가 필요 없다(전체 DFS 한 번이면 충분). parse5보다 무거운데 얻는 게 없다 | parse5 |
 | jsdom / DOMPurify | 같음 | 10MB+ 로 무겁고 느리다. DOMPurify는 표준 정제기지만 DOM 환경이 필요하고, ID 부여 순회를 어차피 따로 해야 한다 | parse5 + 자체 화이트리스트 |
 | 자작 HTML 토크나이저 | 같음 | 의존성 0이지만 정제를 겸하므로 파싱 오차가 곧 보안 구멍이 된다 | parse5 |
 | DS별 토큰 변환기 자작 | 디자인 시스템마다 다른 토큰 포맷을 하나로 맞추기 | Claude Design export가 이미 `_ds_manifest.json`에 공통 스키마(`{name, value, kind}`)로 토큰을 내려준다. 변환기를 만들면 export 포맷이 바뀔 때마다 따라 고쳐야 한다 | `_ds_manifest.json`의 `tokens[]`를 그대로 읽는다 |
 | 디자인 시스템 단일화(하나만 유지) | 선택 UI·분기 제거 | 모바일 앱과 기업 웹은 캔버스 폭·내비게이션 구조가 달라 한쪽으로 통일하면 다른 쪽 화면을 만들 수 없다 | `design-systems/registry.json` 기반 선택 |
+| 참고 템플릿 선택 UI | 생성 출발점 지정 | 고른 값이 프롬프트까지 가지 않아 사용자 선택이 버려지고 있었다. 고르게 하는 것보다 **완성 화면을 전부 넣고 모델이 고르게 하는 편**이 정확하고, 시스템 프롬프트 캐시도 살린다 | `buildExampleScreensSection` 자동 주입 |
 | 그래프 라이브러리 (react-flow 등) | 화면 흐름도 | 화면 8개 이하 격자 배치면 충분하다. 절대배치 박스 + SVG 라인 100줄로 해결됨 | `ScreenFlow.tsx` 직접 구현 |
 
 ---

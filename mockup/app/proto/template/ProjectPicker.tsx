@@ -13,7 +13,6 @@ interface Project {
 export interface PickerTarget {
   designSystemId: string;
   designSystemLabel: string;
-  templateName?: string;
 }
 
 /**
@@ -72,8 +71,7 @@ export function ProjectPicker({ target, onClose }: { target: PickerTarget; onClo
         <div className="p-5 border-b border-slate-100">
           <h3 className="text-base font-bold text-slate-900">어느 프로젝트에서 만들까요?</h3>
           <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-            <span className="font-medium text-indigo-600">{target.designSystemLabel}</span>
-            {target.templateName ? ` · ${target.templateName}` : ''} 으로 시작합니다.
+            <span className="font-medium text-indigo-600">{target.designSystemLabel}</span> 으로 시작합니다.
           </p>
         </div>
 

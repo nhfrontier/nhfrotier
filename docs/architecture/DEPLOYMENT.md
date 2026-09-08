@@ -116,6 +116,12 @@ Root Directory가 `mockup`이라 기본 추적 범위 밖이다. `next.config.ts
 `outputFileTracingIncludes`로 넣어 두었으나 **첫 배포에서 실제로 읽히는지 확인이 필요하다.**
 읽히지 않으면 화면 생성은 계속 동작하고 프롬프트에서 디자인 토큰 절만 빠진다.
 
+**(2026-09-08) 추적 대상이 늘었다.** 화면 생성 프롬프트가 완성 화면 예시를 함께 넣으므로
+`../design-systems/*/templates/*/*.dc.html` 가 `outputFileTracingIncludes`에 추가됐다.
+**빠뜨리면 로컬은 되고 배포본만 예시 없이 조용히 동작한다.**
+빌드 후 확인: `.next/server/app/api/screens/[screenId]/generate/route.js.nft.json` 에
+`.dc.html` 5개(nh-ibz 4 + allone-bank 1)가 들어 있어야 한다.
+
 ### B. 운영 (미확정 — 인프라 협의 후 확정)
 
 | 키 | 용도 | 상태 |
@@ -156,6 +162,48 @@ Nginx / Reverse Proxy
 - 공개 접점은 DMZ에 두고 내부망과 분리한다.
 - 방화벽은 서비스에 필요한 최소 포트만 허용한다. "allow all" 금지.
 - Frontend / Backend / AI Worker는 stateless로 유지해 K8s 전환 여지를 남긴다.
+
+---
+
+## 4-1. 폐쇄망 반입 방식 — Docker 이미지 (2026-09-08 결정)
+
+운영 소스는 **외부(개발망)에서 개발·빌드하고, 이미지를 파일로 말아 폐쇄망에 반입**한다.
+폐쇄망에는 npm·Maven registry 도 Docker Hub 도 없으므로 이 방식이 아니면 의존성을 넣을 수 없다.
+
+### 절차
+
+```bash
+# 개발망 — 번들 생성
+node scripts/build-release.mjs 0.1.0     # → dist/nh-canvas-0.1.0/
+
+# 반입 (USB / 승인된 전송 경로)
+
+# 폐쇄망
+sha256sum -c checksums.txt
+docker load -i images.tar
+cp .env.example .env                      # DB_PASSWORD 등을 채운다
+docker compose up -d
+curl -fsS http://localhost:8080/actuator/health
+```
+
+번들 구성과 설치 절차는 생성물 안의 `INSTALL.md` 를 정본으로 한다.
+
+### 반드시 지킬 것
+
+| 규칙 | 이유 |
+|---|---|
+| **`--platform linux/amd64` 로 빌드** | ARM 맥에서 빌드하면 반입 후 `exec format error` 로 죽는다. 가장 흔한 사고라 `scripts/build-release.mjs` 가 옵션을 하드코딩하고 빌드 후 아키텍처를 검증한다 |
+| **베이스 이미지는 다이제스트로 고정** | 태그(`:21-jre`)는 나중에 다른 이미지를 가리켜 재현성과 심사가 무너진다 |
+| **비밀값을 이미지에 굽지 않는다** | `docker history` 로 레이어가 보인다. 전부 환경변수로 주입한다 |
+| **반입 이미지는 실행 전용** | 멀티스테이지의 빌더 스테이지는 최종 이미지에 없다. 폐쇄망에서 재빌드할 수 없으며 이는 의도된 동작이다 |
+| **커밋 해시를 이미지에 박는다** | `org.opencontainers.image.revision`. 반입 주기가 느려 "이게 어느 소스냐"를 나중에 못 찾는다 |
+| **볼륨 두 개를 함께 백업** | `db-data` 와 `file-storage` 를 따로 복구하면 DB 메타데이터와 실제 파일이 어긋난다 |
+
+### 아직 안 된 것
+
+- **프론트엔드(Vue 3) 이미지** — 저장소에 골격이 없다. 확정되면 `docker-compose.yml` 에 서비스로 추가하고 `build-release.mjs` 의 저장 목록에 넣는다.
+- **취약점 스캔 리포트** — 반입 심사 자료로 필요하다. 현재 번들에는 의존성 목록(`dependencies.txt`)만 들어간다.
+- **Maven 오프라인 의존성** — 지금은 개발망에서 빌드하므로 문제없다. 폐쇄망에서 빌드해야 할 상황이 생기면 사내 Nexus 미러가 필요하다.
 
 ---
 

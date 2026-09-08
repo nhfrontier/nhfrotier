@@ -24,23 +24,6 @@
   [data-ds="allone-bank"] [data-for="allone-bank"],
   [data-ds="nh-ibz"] [data-for="nh-ibz"],
   [data-ds="doc"] [data-for="doc"] { display:block; }
-  .chips { gap:8px;flex-wrap:wrap; }
-  [data-ds="allone-bank"] .chips[data-for="allone-bank"],
-  [data-ds="nh-ibz"] .chips[data-for="nh-ibz"],
-  [data-ds="doc"] .chips[data-for="doc"] { display:flex; }
-
-  .chip { padding:6px 14px;border-radius:999px;font-size:12.5px;font-weight:500;border:1px solid #e2e8f0;color:#64748b;background:#fff;cursor:pointer;font-family:inherit; }
-  .chip:hover { border-color:#c7d2fe; }
-  [data-tpl="app-screen"] .chip[data-tpl="app-screen"],
-  [data-tpl="login"] .chip[data-tpl="login"],
-  [data-tpl="dashboard"] .chip[data-tpl="dashboard"],
-  [data-tpl="product-detail"] .chip[data-tpl="product-detail"],
-  [data-tpl="process-section"] .chip[data-tpl="process-section"],
-  [data-tpl="nh-dashboard"] .chip[data-tpl="nh-dashboard"],
-  [data-tpl="onboarding-form"] .chip[data-tpl="onboarding-form"],
-  [data-tpl="event-banner"] .chip[data-tpl="event-banner"],
-  [data-tpl="leaflet"] .chip[data-tpl="leaflet"] { background:#4f46e5;border-color:#4f46e5;color:#fff; }
-
   .slot { flex:1;height:88px;border:2px dashed #cbd5e1;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:11.5px;color:#94a3b8; }
   .go { width:100%;padding:11px;background:#4f46e5;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;text-align:center;display:block; }
   .go:hover { background:#4338ca;color:#fff; }
@@ -71,7 +54,7 @@
     </div>
   </header>
 
-  <main id="brief-root" data-ds="allone-bank" data-tpl="" style="max-width:1376px;margin:0 auto;padding:32px;">
+  <main id="brief-root" data-ds="allone-bank" style="max-width:1376px;margin:0 auto;padding:32px;">
 
     <div style="margin-bottom:20px;">
       <a href="template.html" style="font-size:12.5px;color:#94a3b8;">← Template</a>
@@ -124,27 +107,6 @@
           </div>
         </div>
 
-        <!-- ── 참고 템플릿 ── -->
-        <div class="card">
-          <h2>참고 템플릿</h2>
-          <p class="hint">백지에서 시작하지 않습니다. 가까운 것을 고르면 그 구성을 바탕으로 만듭니다.</p>
-          <div class="chips" data-for="allone-bank">
-            <button type="button" class="chip" data-tpl="app-screen">모바일 앱 화면</button>
-          </div>
-          <div class="chips" data-for="nh-ibz">
-            <button type="button" class="chip" data-tpl="login">로그인</button>
-            <button type="button" class="chip" data-tpl="dashboard">메인 대시보드</button>
-            <button type="button" class="chip" data-tpl="product-detail">상품 상세</button>
-            <button type="button" class="chip" data-tpl="process-section">프로세스 섹션</button>
-          </div>
-          <div class="chips" data-for="doc">
-            <button type="button" class="chip" data-tpl="nh-dashboard">NH 대시보드 공통형</button>
-            <button type="button" class="chip" data-tpl="onboarding-form">간편 온보딩 폼</button>
-            <button type="button" class="chip" data-tpl="event-banner">이벤트 배너형</button>
-            <button type="button" class="chip" data-tpl="leaflet">안내문 리플렛형</button>
-          </div>
-        </div>
-
         <!-- ── 기획안 ── -->
         <div class="card">
           <h2>기획안</h2>
@@ -173,7 +135,7 @@
           <ul style="margin:0;padding-left:16px;font-size:12px;color:#64748b;line-height:1.9;">
             <li>고른 디자인 시스템의 <strong style="color:#334155;">컬러 토큰</strong>과 간격·반경 규칙</li>
             <li>모바일/웹에 따른 <strong style="color:#334155;">화면 흐름과 기준 폭</strong></li>
-            <li>참고 템플릿의 <strong style="color:#334155;">구성 순서</strong></li>
+            <li>디자인 시스템에 담긴 <strong style="color:#334155;">완성 화면 예시</strong>의 짜임새 (고를 필요 없음)</li>
             <li>올린 참조 화면의 스타일</li>
           </ul>
         </div>
@@ -191,21 +153,14 @@
 </div>
 
 <script>
-  // Template 화면에서 넘어온 ?ds= / ?tpl= / ?doc= 을 그대로 화면에 반영한다.
+  // Template 화면에서 넘어온 ?ds= / ?doc= 을 그대로 화면에 반영한다.
+  // 참고할 화면은 고르지 않는다 — 고른 디자인 시스템의 완성 화면을 AI가 전부 참고한다.
   (function () {
     var root = document.getElementById('brief-root');
     var params = new URLSearchParams(location.search);
     var doc = params.get('doc');
 
     root.setAttribute('data-ds', doc ? 'doc' : (params.get('ds') === 'nh-ibz' ? 'nh-ibz' : 'allone-bank'));
-    root.setAttribute('data-tpl', doc || params.get('tpl') || '');
-
-    var chips = document.querySelectorAll('.chip');
-    for (var i = 0; i < chips.length; i++) {
-      chips[i].addEventListener('click', function () {
-        root.setAttribute('data-tpl', this.getAttribute('data-tpl'));
-      });
-    }
   })();
 </script>
 </body>

@@ -55,7 +55,7 @@ export default function ProtoTemplatePage() {
         {/* ── 디자인 시스템 ── */}
         <section className="mb-7">
           <h2 className="text-[15px] font-bold text-slate-900 mb-0.5">디자인 시스템</h2>
-          <p className="text-[12.5px] text-slate-400 mb-3.5">고르면 그 시스템의 컬러 토큰·컴포넌트 규칙을 가진 채 화면 만들기로 들어갑니다.</p>
+          <p className="text-[12.5px] text-slate-400 mb-3.5">고르면 그 시스템의 컬러 토큰·컴포넌트 규칙과 완성 화면 예시를 가진 채 화면 만들기로 들어갑니다. 참고할 화면을 따로 고를 필요는 없습니다.</p>
 
           {loading ? (
             <div className="flex gap-3.5">
@@ -89,7 +89,7 @@ export default function ProtoTemplatePage() {
                   <p className="text-[11.5px] text-slate-400 leading-relaxed">
                     {ds.note}
                     <br />
-                    기준 폭 {ds.canvas} · 토큰 {ds.tokenCount}개 · 컴포넌트 {ds.componentCount}개
+                    기준 폭 {ds.canvas} · 토큰 {ds.tokenCount}개 · 컴포넌트 {ds.componentCount}개 · 예시 화면 {ds.templateItems.length}장
                   </p>
                   <p className="mt-3 text-[12px] font-semibold text-slate-400 group-hover:text-indigo-600 transition-colors">
                     이 디자인으로 시작 →
@@ -98,41 +98,6 @@ export default function ProtoTemplatePage() {
               ))}
             </div>
           )}
-        </section>
-
-        {/* ── 화면 템플릿 ── */}
-        <section className="mb-7">
-          <h2 className="text-[15px] font-bold text-slate-900 mb-0.5">화면 템플릿</h2>
-          <p className="text-[12.5px] text-slate-400 mb-3.5">백지에서 시작하지 않습니다. 완성된 화면을 복사해 내용만 바꾸세요.</p>
-
-          <div className="flex flex-col gap-5">
-            {systems.map((ds) => (
-              <div key={ds.id}>
-                <h3 className="text-[13px] font-semibold text-slate-500 mb-2.5">{ds.label}</h3>
-                <div className="grid grid-cols-4 gap-4">
-                  {ds.templateItems.map((item) => (
-                    <div key={item.slug} className="bg-white border border-slate-200 rounded-xl overflow-hidden hover:border-indigo-200 hover:shadow-[0_4px_12px_rgba(79,70,229,0.08)] transition-all">
-                      <div className="h-[110px] p-3.5 flex flex-col gap-1.5" style={{ background: ds.tint }}>
-                        <div className="h-1.5 w-1/2 rounded" style={{ background: ds.swatches[0] }} />
-                        <div className="flex-1 rounded bg-white/80" />
-                        <div className="h-2 w-2/5 rounded" style={{ background: ds.swatches[0] }} />
-                      </div>
-                      <div className="p-3.5">
-                        <h4 className="text-sm font-bold text-slate-900 mb-1">{item.name}</h4>
-                        <p className="text-[11.5px] text-slate-400 mb-2.5 line-clamp-2 min-h-[32px]">{item.description}</p>
-                        <button
-                          onClick={() => setTarget({ designSystemId: ds.id, designSystemLabel: ds.label, templateName: item.name })}
-                          className="w-full py-1.5 bg-indigo-600 text-white text-xs font-semibold rounded-md hover:bg-indigo-700 transition-colors"
-                        >
-                          이 Template로 시작
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
         </section>
 
         {/* ── 문서 양식 ── */}
