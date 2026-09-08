@@ -116,9 +116,9 @@ element_patches    (2026-09-05 추가)
 |---|---|---|
 | `screens` | `version_id`, `screen_key`, `name`, `role`, `sort_order`, `html_content`, `status`, `error_message` | Version에 속한 화면 한 장. `status`로 화면별 생성 성공/실패를 따로 다뤄 실패한 화면만 재시도한다 |
 | `screen_elements` | `screen_id`, `nh_id`, `tag`, `doc_order`, `path_sig`, `text_sig` | 요소 지문. 화면을 다시 만든 뒤 메모를 원래 자리에 다시 잇는 데 쓴다 |
-| `element_patches` | `screen_id`, `nh_id`, `user_id`, `op`, `payload`, `reason`, `source`, `seq`, `reverted_at` | 요소 편집 이력. `op`은 `setText`/`setStyle`/`setAttr`/`aiRewrite`. **원본 HTML을 덮어쓰지 않는다** |
+| `element_patches` | `screen_id`, `nh_id`, `user_id`, `op`, `payload`, `reason`, `source`, `seq`, `reverted_at`, `comment_id` | 요소 편집 이력. `op`은 `setText`/`setStyle`/`setAttr`/`aiRewrite`. **원본 HTML을 덮어쓰지 않는다** |
 
-`comments` 확장: `screen_id`, `nh_id`, `anchor_status`(`none`/`anchored`/`orphaned`), `resolved_at`.
+`comments` 확장: `screen_id`, `nh_id`, `anchor_status`(`none`/`anchored`/`orphaned`), `resolved_at`, `parent_id`.
 `anchor_status='none'`이 일반 의견이고, 요소를 지목한 의견은 `anchored`다. 재생성으로 앵커가 끊기면 삭제하지 않고 `orphaned`로 남겨 사람이 다시 붙일 수 있게 한다. ([FR-06](기능명세/FR-06_협업의견.md)의 "일반 의견과 특정 영역/요소에 대한 의견을 구분해 등록한다"가 여기서 실체를 얻는다)
 
 **화면 간 이동 관계는 테이블로 두지 않는다.** 생성 HTML의 `data-goto="화면key"` 속성이 유일한 출처이며, 저장 시 존재하지 않는 화면을 가리키는 값은 제거된다. 별도 테이블을 두면 HTML과 어긋날 수 있고, 어긋나면 "눌러도 반응 없는 버튼"이 된다.
@@ -133,7 +133,10 @@ element_patches    (2026-09-05 추가)
 | POST | `/screens/{screenId}/generate` | 2단계. 화면 한 장. 다시 호출하면 그대로 재시도 |
 | POST | `/screens/{screenId}/patches` · DELETE `/patches/{patchId}` | 요소 편집 기록 / 되돌리기(soft revert) |
 | POST | `/screens/{screenId}/ai-edit` | 선택한 요소만 AI가 재생성. 요소의 outerHTML만 보낸다 |
-| GET/POST | `/screens/{screenId}/comments` | 요소 앵커 의견 |
+| GET/POST | `/screens/{screenId}/comments` | 요소 앵커 의견. POST는 `parentId`로 답글을 만든다(2026-09-08). 답글은 앵커를 갖지 않고, 답글의 답글은 뿌리로 평탄화된다 |
+| GET | `/mockups/{mockupId}/patches` | 한 Version의 편집 내역 전체(2026-09-08). 되돌린 것을 포함하고 `payload`는 뺀다. 편집 이력 목록과, 의견 스레드에 끼는 AI 반영 카드가 함께 읽는다 |
+
+`ai-edit` 요청에 `commentId`를 실으면 만들어진 편집이 그 의견에 연결된다(`element_patches.comment_id`). 이것이 "의견 → AI 반영 → 스레드로 회신"의 연결 고리다. AI의 답을 `comments` 행으로 만들지 않는 이유는 [ARCHITECTURE.md 12절](../docs/architecture/ARCHITECTURE.md)과 같다 — **저장은 분리하고 합치는 것은 화면에서만 한다.**
 
 팬아웃(화면별 호출)은 **클라이언트가 한다.** 서버가 한 요청에서 N개를 처리하면 타임아웃 위험이 커지고 부분 실패가 감춰진다.
 
