@@ -5,6 +5,18 @@
    ========================================================================== */
 
 :root {
+  /* ---- 농협 공식 CI 전용색상 (PANTONE 규격) ----
+     정본은 mockup/public/assets/nh/ci/nh-colors.jpg 규격서이고,
+     값은 mockup/app/proto/assets/data.ts 의 NH_CI_COLORS 와 같아야 한다.
+
+     주의 — 아래 --nh-blue-* / --nh-green-* 는 ibz.nonghyup.com 실측 웹 팔레트로
+     값이 다르다(#0094d9 vs #005ca9). 섞어 쓰지 말 것.
+     CI 색은 로고·브랜드 표기에 쓰고, UI 색은 아래 웹 팔레트를 쓴다. */
+  --nh-ci-blue:        #005ca9; /* PANTONE 300 C  — 워드마크 */
+  --nh-ci-yellow:      #fbba00; /* PANTONE 1235 C — 심볼마크 */
+  --nh-ci-green:       #04a64b; /* PANTONE 354 C */
+  --nh-ci-light-green: #a2c617; /* PANTONE 368 C */
+
   /* ---- Brand: NH Blue (primary) ---- */
   --nh-blue-700: #00689b;
   --nh-blue-600: #007ec0;

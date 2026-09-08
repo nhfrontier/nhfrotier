@@ -63,6 +63,21 @@ services:
       # 호스트 경로·NFS 로 바꾸면 호스트 쪽 소유권이 적용된다. 앱이 기동 시 이 디렉터리를 만들지
       # 못하면 기동 자체가 중단되므로, 미리 `chown -R 10001:10001` 하거나 user: 로 uid 를 맞출 것.
       - file-storage:/var/storage
+    # 운영에서는 백엔드를 호스트로 열지 않는다. 진입점은 frontend 이고 /api 만 프록시된다.
+    # 백엔드에 직접 붙어 확인해야 하면 아래를 잠시 푼다.
+    # ports: ["${BACKEND_PORT:-18081}:8080"]
+    restart: unless-stopped
+
+  frontend:
+    image: nh-canvas-frontend:${APP_VERSION:-0.1.0}
+    build:
+      context: ./frontend
+      args:
+        GIT_SHA: ${GIT_SHA:-unknown}
+        BUILD_TIME: ${BUILD_TIME:-unknown}
+    depends_on:
+      backend:
+        condition: service_started
     ports:
       - "${HOST_PORT:-8080}:8080"
     restart: unless-stopped

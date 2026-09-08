@@ -34,4 +34,9 @@ Full contract: `readme.md` → **AI 작성 규칙**.
 ## Substitutions (flag to user for production)
 - Font: **Noto Sans KR** substitutes proprietary **NH 바른고딕**.
 - Icons: **Lucide** substitutes NH's custom icon set.
-- Logo & illustrations: typographic/geometric placeholders, not official CI artwork.
+- Illustrations: geometric placeholders, not official CI artwork.
+- ~~Logo: typographic placeholder.~~ **Resolved 2026-09-08** — `assets/` carries the official NH symbol and wordmark, vector-extracted from the official originals. Regenerate with `node scripts/trace-nh-ci.mjs`; never hand-edit the paths.
+
+## Brand colors — two sets, do not mix
+- **CI 전용색상** (`--nh-ci-blue #005CA9` · `--nh-ci-yellow #FBBA00` · `--nh-ci-green #04A64B` · `--nh-ci-light-green #A2C617`): PANTONE-spec values. Logo and brand marks only.
+- **UI palette** (`--nh-blue-500 #0094D9` etc.): measured from the live ibz site. Buttons, links, surfaces.

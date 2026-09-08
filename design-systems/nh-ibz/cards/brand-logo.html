@@ -1,21 +1,31 @@
-<!-- @dsCard group="Brand" viewport="700x180" name="Logo — 로고 운용" subtitle="기본 · 심볼 · 다크 배경" -->
+<!-- @dsCard group="Brand" viewport="700x200" name="Logo — 로고 운용" subtitle="공식 CI 심볼·워드마크 기반 · 기본 · 심볼 · 다크 배경" -->
 <!doctype html>
 <html lang="ko">
 <head>
 <meta charset="utf-8">
 <link rel="stylesheet" href="../styles.css">
 <style>
-  body { margin: 0; padding: 0; background: var(--white); display:flex; height:180px; }
+  body { margin: 0; padding: 0; background: var(--white); }
+  .row { display:flex; height:160px; }
   .cell { flex:1; display:flex; align-items:center; justify-content:center; }
   .light { background: var(--white); }
   .soft { background: var(--grey-50); }
   .dark { background: var(--nh-navy-800); }
   .b { border-right:1px solid var(--border-subtle); }
+  .note { padding:9px 14px; border-top:1px solid var(--border-subtle); font-size:11.5px; color:var(--text-muted); line-height:1.5; }
+  .note b { color:var(--text-body); font-weight:700; }
 </style>
 </head>
 <body>
-  <div class="cell light b"><img src="../assets/logo.svg" height="34" alt="logo"></div>
-  <div class="cell soft b"><img src="../assets/logo-mark.svg" height="44" alt="mark"></div>
-  <div class="cell dark"><img src="../assets/logo-white.svg" height="34" alt="logo white"></div>
+  <div class="row">
+    <div class="cell light b"><img src="../assets/logo.svg" height="34" alt="logo"></div>
+    <div class="cell soft b"><img src="../assets/logo-mark.svg" height="44" alt="mark"></div>
+    <div class="cell dark"><img src="../assets/logo-white.svg" height="34" alt="logo white"></div>
+  </div>
+  <div class="note">
+    <b>심볼·워드마크는 농협 공식 CI 원본에서 벡터로 추출한 것이다</b> — 눈대중으로 그린 것이 아니다.
+    <code>scripts/trace-nh-ci.mjs</code> 가 원본 JPG 에서 만들고 원본과의 픽셀 일치율을 재서 검증한다. 값을 손으로 고치지 말고 그 스크립트를 다시 돌릴 것.
+    심볼 노랑은 다크 배경에서도 바뀌지 않는다. "기업뱅킹"은 상표가 아닌 서비스명이라 활자로 조판한다.
+  </div>
 </body>
 </html>

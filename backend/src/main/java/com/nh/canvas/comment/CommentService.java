@@ -10,6 +10,7 @@ import com.nh.canvas.history.HistoryRecorder;
 import com.nh.canvas.project.ProjectAccessGuard;
 import com.nh.canvas.project.ProjectRepository;
 import com.nh.canvas.project.ProjectRole;
+import com.nh.canvas.screen.ScreenBaker;
 import com.nh.canvas.screen.ScreenRepository;
 import com.nh.canvas.screen.ScreenRepository.ScreenRow;
 import java.util.List;
@@ -29,15 +30,18 @@ public class CommentService {
 
     private final CommentRepository comments;
     private final ScreenRepository screens;
+    private final ScreenBaker baker;
     private final ProjectRepository projects;
     private final ProjectAccessGuard guard;
     private final HistoryRecorder history;
     private final AuditLogger audit;
 
-    public CommentService(CommentRepository comments, ScreenRepository screens, ProjectRepository projects,
-                          ProjectAccessGuard guard, HistoryRecorder history, AuditLogger audit) {
+    public CommentService(CommentRepository comments, ScreenRepository screens, ScreenBaker baker,
+                          ProjectRepository projects, ProjectAccessGuard guard, HistoryRecorder history,
+                          AuditLogger audit) {
         this.comments = comments;
         this.screens = screens;
+        this.baker = baker;
         this.projects = projects;
         this.guard = guard;
         this.history = history;
@@ -92,7 +96,7 @@ public class CommentService {
         String anchorNhId = rootId != null ? null : nhId;
         String anchorStatus = "none";
         if (anchorNhId != null) {
-            if (!screens.hasElement(screenId, anchorNhId)) {
+            if (!baker.hasElement(screenId, anchorNhId)) {
                 throw ApiException.notFound("지목한 요소");
             }
             anchorStatus = "anchored";

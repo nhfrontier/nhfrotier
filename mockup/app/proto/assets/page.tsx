@@ -48,7 +48,7 @@ export default function ProtoAssetsPage() {
           <div className="flex-1">
             <p className="text-[13px] text-slate-400 mb-1.5">외부 AI는 백지에서 시작합니다.</p>
             <p className="text-lg font-bold text-white tracking-[-0.02em]">
-              뚝딱은 <span className="text-indigo-300">NH가 이미 가진 자산</span>에서 시작합니다.
+              위드캔버스는 <span className="text-indigo-300">NH가 이미 가진 자산</span>에서 시작합니다.
             </p>
           </div>
           <div className="flex items-stretch">

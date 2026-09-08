@@ -51,25 +51,54 @@ export 에 딸려오는 `uploads/` 는 디자인 시스템을 만들 때 넣은 
 
 자세한 내용은 [`allone-bank/readme.md`](allone-bank/readme.md) 의 Provenance 절.
 
-### `nh-ibz` — 색은 실제 NH, 나머지는 대체재다
+### `nh-ibz` — 로고와 색은 공식, 서체·아이콘·일러스트는 대체재다
 
 | | 실제 값 |
 |---|---|
-| 브랜드 색 | NH Blue `#0094D9` · NH Green `#00A04E` · navy `#122F50` — **실제 NH 색이다** |
-| 로고 | `assets/logo*.svg` 는 **공식 CI 가 아니다.** "NH" 를 파란 라운드 사각형에 넣은 타이포 플레이스홀더 |
+| CI 전용색상 | **공식이다.** `--nh-ci-blue #005CA9`(300C) · `--nh-ci-yellow #FBBA00`(1235C) · `--nh-ci-green #04A64B`(354C) · `--nh-ci-light-green #A2C617`(368C) |
+| UI 팔레트 | NH Blue `#0094D9` · NH Green `#00A04E` · navy `#122F50` — `ibz.nonghyup.com` **실측값**이다. CI 규격값과 다르니 섞어 쓰지 말 것 |
+| 로고 | ~~`assets/logo*.svg` 는 **공식 CI 가 아니다.** "NH" 를 파란 라운드 사각형에 넣은 타이포 플레이스홀더~~ → **(2026-09-08) 공식 CI 로 교체됐다.** 심볼마크·워드마크를 공식 원본에서 벡터로 추출해 쓴다 (아래 참고) |
 | 폰트 | NH 바른고딕(비공개) 대신 **Noto Sans KR** |
 | 아이콘 | NH 자체 아이콘셋 대신 **Lucide** |
 | 일러스트 | `assets/illustrations/` 는 NH 팔레트로 그린 기하 도형 플레이스홀더 |
 
 자세한 내용은 [`nh-ibz/readme.md`](nh-ibz/readme.md) 의 "⚠️ Substitutions to confirm" 절.
 
+#### 로고는 손으로 그린 것이 아니다 — 고칠 때는 스크립트를 돌린다
+
+`assets/` 의 로고 5개는 전부 **[`scripts/trace-nh-ci.mjs`](../scripts/trace-nh-ci.mjs) 가 만든 산출물**이다.
+공식 CI 원본 JPG(`mockup/public/assets/nh/logo/`)의 윤곽을 추출해 path 로 바꾸고,
+그 SVG 를 다시 래스터로 그려 **원본과의 픽셀 일치율(IoU)** 을 잰다. 99% 미만이면 스크립트가 실패한다.
+
+```bash
+node scripts/trace-nh-ci.mjs            # 다시 만든다
+node scripts/trace-nh-ci.mjs --verify   # 일치율만 잰다
+```
+
+| 파일 | 내용 |
+|---|---|
+| `nh-symbol.svg` | 공식 심볼마크 (NH Yellow) — 원본에서 추출 |
+| `nh-wordmark.svg` | 공식 워드마크 "NH" (CI Blue) — 원본에서 추출 |
+| `logo.svg` · `logo-white.svg` | 락업 = 심볼 + 워드마크 + "기업뱅킹"(활자) |
+| `logo-mark.svg` | 심볼 단독 |
+
+**path 를 손으로 고치지 말 것.** 같은 path 가 락업 3개와 템플릿 3개에 들어 있어 한 곳만 고치면 조용히 갈라진다.
+스크립트가 그 여섯 곳을 한 번에 갱신한다.
+
+**템플릿의 로고는 파일 참조가 아니라 인라인 `<svg>` 다.** 템플릿은 AI 화면 생성 프롬프트의 예시로 들어가는데,
+그 전에 거치는 정제가 상대경로 `src` 를 **속성째 잘라낸다**(`mockup/lib/canvas/htmlPipeline.ts`).
+`<img src="../../assets/logo.svg">` 로 두면 모델에게는 빈 `<img>` 만 보여 생성 화면에 로고가 나오지 않는다.
+인라인 구간은 `<!--nh-logo-->` ~ `<!--/nh-logo-->` 로 표시돼 있고 스크립트가 그 사이를 갈아 끼운다.
+
 ### 공식 CI 자산의 정본은 여기가 아니다
 
 농협 공식 심볼마크·워드마크·전용색상은 `mockup/public/assets/nh/` 가 정본이다.
 반입 절차와 PANTONE 값은 `mockup/public/assets/nh/README.md` 를 따른다.
+`nh-ibz/assets/` 의 로고는 그 원본에서 유도한 **파생물**이지 정본이 아니다.
 
-> **운영 반입 시 교체 대상**: 위 표의 "대체재" 행 전부.
-> 담당 주체는 미결이다 — [08_DECISIONS_OPEN_ISSUES.md](../개발문서/08_DECISIONS_OPEN_ISSUES.md)
+> **운영 반입 시 교체 대상**: 위 표의 "대체재" 행 — 서체·아이콘·일러스트.
+> 로고는 2026-09-08 에 해소됐다. 담당 주체는 나머지 항목에 대해 여전히 미결이다
+> — [08_DECISIONS_OPEN_ISSUES.md](../개발문서/08_DECISIONS_OPEN_ISSUES.md)
 
 ---
 

@@ -42,6 +42,18 @@ public class ScreenBaker {
     }
 
     /**
+     * 지금 보이는 문서에 그 요소가 있는가. 편집·의견 앵커의 대상 검증은 이것을 기준으로 한다.
+     *
+     * <p>{@code screen_elements} 는 생성 시점의 지문이라 교체 조각의 자손은 없고, 교체·되돌리기로
+     * 사라진 요소는 남아 있다. 그 표를 믿으면 "받아 놓고 반영은 안 되는" 편집이 생긴다.
+     */
+    public boolean hasElement(UUID screenId, String nhId) {
+        return screens.findById(screenId)
+                .map(screen -> pipeline.extractOuterHtml(bake(screenId, screen.htmlContent()), nhId) != null)
+                .orElse(false);
+    }
+
+    /**
      * DB 행을 반영 연산으로 바꾼다.
      *
      * <p>화이트리스트를 여기서 <b>한 번 더</b> 확인한다. 저장 시점에도 검사하지만,

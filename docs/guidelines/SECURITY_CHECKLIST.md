@@ -177,6 +177,25 @@ CSP는 `srcDoc` 조립 시 `<meta http-equiv="Content-Security-Policy">`로 넣�
 
 편집 값(`element_patches.payload`)은 사용자·AI가 넣은 값이며 저장 시점에는 화이트리스트 검사만 받는다. **저장된 값을 신뢰하지 않는다**는 것이 이 두 대응의 전제다.
 
+### 운영 프론트엔드에도 같은 조합을 적용 (2026-09-08)
+
+`frontend/` 의 협업 캔버스가 프로토타입과 같은 결정을 따른다. 구현 위치는
+`frontend/src/canvas/protocol.ts`(계약·신뢰 판정), `frontend/src/canvas/runtime.ts`(프레임 안 스크립트),
+`frontend/src/components/DesignCanvas.vue`(프레임 호스트)다.
+
+| 항목 | 확인한 값 |
+|---|---|
+| `sandbox` | `["allow-scripts"]` 뿐. `allow-same-origin` 없음 |
+| 부모의 프레임 DOM 접근 | `iframe.contentDocument` 가 `null` — 불투명 오리진 확인 |
+| 프레임 → 부모 신뢰 판정 | `event.source === iframe.contentWindow` 대조만. **origin 은 항상 `"null"` 이라 검증에 못 쓴다** |
+| 부모 → 프레임 | `targetOrigin` 이 `'*'` 로 강제됨. 그래서 이 방향에 **사용자 식별자·세션·토큰을 싣지 않는다** |
+| 저장본 | `<script` 없음. 런타임은 `srcdoc` 조립 시점에만 주입하고 DB 에 넣지 않는다 |
+
+- **미리보기 전용 화면은 `sandbox=""`(모든 제약)로 둔다.** 요소 선택이 필요 없으면 스크립트 권한도 필요 없다.
+  캔버스만 `allow-scripts` 를 받는다 — 필요 없는 권한을 기본값으로 만들지 않기 위해서다.
+- 편집 화이트리스트(`EDITABLE_STYLE_PROPS`·`EDITABLE_ATTRS`)의 정본은 `backend/.../EditProtocol.java` 다.
+  프론트의 사본은 편의일 뿐 통제가 아니며, 서버가 저장·반영 양쪽에서 다시 검사한다.
+
 ### 상태
 **부분 확정** — 위 샌드박스 조합과 정제 파이프라인, baking 대응은 프로토타입에 적용 완료. 운영 적용 시 행내 보안 검토를 거쳐 확정한다.
 
@@ -210,7 +229,7 @@ CSP는 `srcDoc` 조립 시 `<meta http-equiv="Content-Security-Policy">`로 넣�
 
 | 항목 | 구현 |
 |---|---|
-| 인가 (A01 IDOR) | `ProjectAccessGuard` 한 곳. `projectId`/`fileId`/`versionId`/`commentId`/`jobId`/`exportId` 를 받는 모든 경로가 지난다. 리소스 id → 프로젝트 역추적 메서드를 가드에 모아, 호출부가 조인을 손으로 쓰다 빠뜨리는 경로를 없앴다 |
+| 인가 (A01 IDOR) | `ProjectAccessGuard` 한 곳. `projectId`/`fileId`/`versionId`/`commentId`/`jobId`/`exportId` 를 받는 모든 경로가 지난다. 리소스 id → 프로젝트 역추적 메서드를 가드에 모아, 호출부가 조인을 손으로 쓰다 빠뜨리는 경로를 없앴다. **`ProjectAccessGuardTest` 20건이 실제 PostgreSQL 위에서 회귀를 막는다** — 타 프로젝트 멤버의 접근, 삭제된 프로젝트·소프트 삭제 리소스, 역할 미달을 각 진입점마다 확인한다 (2026-09-08) |
 | 인가 모델 | `OWNER`/`EDITOR`/`REVIEWER`/`VIEWER`. 판정은 Backend 한 곳에서만 |
 | 파라미터 바인딩 (A03) | `JdbcClient` 로 값은 전부 `?`. 동적인 것은 `WHERE` 절 구조뿐이며 값 문자열을 잇지 않는다 |
 | 에러 비노출 (D-2) | `GlobalExceptionHandler` 가 `ErrorCode` 로 정규화. 스택·DB 제약 메시지·내부 경로를 응답에 넣지 않고 traceId 만 준다. `server.error.include-*` 도 전부 never |
@@ -232,6 +251,7 @@ CSP는 `srcDoc` 조립 시 `<meta http-equiv="Content-Security-Policy">`로 넣�
 | 개인정보 마스킹 (P-2) | 미적용. 현재 표시 대상이 사용자 이름·부서뿐이나, 화면이 생기면 적용 대상을 다시 본다 |
 | 파기 절차 (P-3) | 미적용. 보관기간·파기 로그 수립 필요 |
 | 감사 로그 보존 | 테이블에 남기지만 **1년 이상 보존을 보장하는 운영 절차와 조회 수단이 없다** |
+| **가드 호출 자체는 미검증** | 가드의 판정은 테스트가 덮지만, **컨트롤러가 그 가드를 실제로 부르는지는 확인하지 않는다.** 호출부 52곳 중 하나가 가드를 건너뛰어도 현재 테스트는 전부 통과한다. HTTP 진입점 단위 테스트가 필요하다 |
 | SAST/DAST | 미적용. 배포 전 승인 항목 |
 | 전송 구간 | 애플리케이션은 평문 HTTP 다. HTTPS 종단은 Reverse Proxy 몫이며 아직 구성되지 않았다 |
 | AI 입력 범위 | FR-15 가 의견 원문을 LLM 에 보내는 구조는 그대로다. 필터·마스킹이 없고 허용 범위는 1절의 미결 항목이다 |

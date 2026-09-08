@@ -1,0 +1,32 @@
+<!-- @dsCard group="Colors" viewport="700x180" name="CI — 농협 공식 전용색상" subtitle="PANTONE 규격 4색 · 로고·브랜드 표기 전용" -->
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 18px; background: var(--white); }
+  .row { display: flex; gap: 10px; }
+  .sw { flex: 1; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border-subtle); }
+  .chip { height: 62px; }
+  .meta { padding: 7px 9px; }
+  .name { font-size: 12px; font-weight: 600; color: var(--text-strong); }
+  .pantone { font-size: 10.5px; color: var(--text-muted); margin-top: 2px; }
+  .hex { font-size: 11px; color: var(--text-muted); font-family: var(--font-mono); margin-top: 1px; }
+  .note { margin-top: 12px; font-size: 11.5px; color: var(--text-muted); line-height: 1.5; }
+  .note b { color: var(--text-body); font-weight: 700; }
+</style>
+</head>
+<body>
+  <div class="row">
+    <div class="sw"><div class="chip" style="background:var(--nh-ci-blue)"></div><div class="meta"><div class="name">NH Blue</div><div class="pantone">PANTONE 300 C</div><div class="hex">#005CA9</div></div></div>
+    <div class="sw"><div class="chip" style="background:var(--nh-ci-yellow)"></div><div class="meta"><div class="name">NH Yellow</div><div class="pantone">PANTONE 1235 C</div><div class="hex">#FBBA00</div></div></div>
+    <div class="sw"><div class="chip" style="background:var(--nh-ci-green)"></div><div class="meta"><div class="name">NH Green</div><div class="pantone">PANTONE 354 C</div><div class="hex">#04A64B</div></div></div>
+    <div class="sw"><div class="chip" style="background:var(--nh-ci-light-green)"></div><div class="meta"><div class="name">NH Light Green</div><div class="pantone">PANTONE 368 C</div><div class="hex">#A2C617</div></div></div>
+  </div>
+  <div class="note">
+    <b>UI 색과 섞어 쓰지 않는다.</b> 위 4색은 규격서(<code>ci/nh-colors.jpg</code>)의 CI 전용색상으로 로고·브랜드 표기에만 쓴다.
+    화면의 버튼·링크·배경은 ibz 실측 웹 팔레트(<code>--nh-blue-500 #0094D9</code> 등)를 쓴다 — 같은 "NH 블루"라는 이름이지만 값이 다르다.
+  </div>
+</body>
+</html>
