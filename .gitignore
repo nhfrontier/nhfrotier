@@ -51,3 +51,7 @@ dist/
 
 # Maven 빌드 산출물
 target/
+
+# 운영 백엔드의 로컬 파일 저장소(FILE_STORAGE_PATH 기본값). 업로드 원본과 Export 산출물이 쌓인다.
+# 실물은 File Storage 의 몫이고 DB 에는 메타데이터만 있으므로 저장소에 넣지 않는다.
+backend/var/
