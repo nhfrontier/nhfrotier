@@ -63,4 +63,4 @@ AC 전문 정본: [02_USER_STORIES_AC.md](개발문서/02_USER_STORIES_AC.md)
 |---|---|---|
 | 설계 | ✅ | PRD FR-05 · US-020/021 · `/ai/jobs` API · AI Orchestrator 계층 반영 |
 | 프로토타입 검증 | 부분 | [MockupGen](MockupGen_기능명세서.md) PFR-04(생성 파이프라인), PFR-05(격리 뷰어). 단 프로토타입은 브라우저 직접 호출·동기 처리라 Orchestrator·비동기 Job은 미검증. ~~Template 연계 미검증~~ → **(2026-09-08) 디자인 시스템 토큰과 완성 화면 예시가 2단계 프롬프트로 들어가는 경로까지 연결됨**(FR-04). 생성 품질 대조는 미실시 |
-| 운영 구현 | ⬜ 미착수 | P2 — 티켓 FE-004, BE-006·007 ([백로그](개발문서/06_DEVELOPMENT_BACKLOG.md)) |
+| 운영 구현 | 🟡 백엔드 완료 | 2단계 생성(`plan-screens` → `screens/{id}/generate`)·요소 AI 편집·비동기 Job·워커·AI Orchestrator. **LLM endpoint 가 미확정이라 대역 응답으로 동작한다**(`LLM_ENABLED=false`). backend/ 구현 (2026-09-08). PostgreSQL 기동·API 호출까지 확인. 프론트엔드(Vue 3)는 미착수 — 티켓 BE-006·007 |

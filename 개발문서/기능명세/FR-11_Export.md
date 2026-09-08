@@ -51,4 +51,4 @@ AC 전문 정본: [02_USER_STORIES_AC.md](개발문서/02_USER_STORIES_AC.md)
 |---|---|---|
 | 설계 | ✅ | PRD FR-11 · US-050 · `/exports` API 반영 |
 | 프로토타입 검증 | 부분 | [MockupGen](MockupGen_기능명세서.md) PFR-05-05(HTML 다운로드), PFR-10(기획서 HTML 생성·다운로드). HTML 한정이며 업무 포맷 변환·Version 연결은 미검증 |
-| 운영 구현 | ⬜ 미착수 | P4 — 티켓 BE-011 ([백로그](개발문서/06_DEVELOPMENT_BACKLOG.md)) |
+| 운영 구현 | 🟡 백엔드 부분 | Export Job·전용 워커·다운로드·감사 기록까지. **지원 포맷은 ZIP(화면별 HTML) 하나**이며 반출 HTML 은 baking 을 거친다. PDF/PNG 는 렌더러가 필요하고 포맷 우선순위가 미결이라 422 로 거절한다. backend/ 구현 (2026-09-08). PostgreSQL 기동·API 호출까지 확인. 프론트엔드(Vue 3)는 미착수 — 티켓 BE-011 |

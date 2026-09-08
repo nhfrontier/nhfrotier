@@ -47,4 +47,4 @@ AC 전문 정본: [02_USER_STORIES_AC.md](개발문서/02_USER_STORIES_AC.md)
 |---|---|---|
 | 설계 | ✅ | PRD FR-07 · US-031 · `/reviews` API 반영 |
 | 프로토타입 검증 | — 미검증 | 프로토타입([MockupGen](MockupGen_기능명세서.md))에 의견 취합 기능 없음 |
-| 운영 구현 | ⬜ 미착수 | P3 — 티켓 FE-007, BE-008 ([백로그](개발문서/06_DEVELOPMENT_BACKLOG.md)) |
+| 운영 구현 | 🟡 백엔드 완료 | `POST /reviews/summarize` 가 비동기 Job 을 만들고 워커가 합의/이견/추가확인으로 묶는다. **근거 댓글이 없는 항목은 저장하지 않는다.** backend/ 구현 (2026-09-08). PostgreSQL 기동·API 호출까지 확인. 프론트엔드(Vue 3)는 미착수 — 티켓 BE-008 |

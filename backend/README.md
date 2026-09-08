@@ -127,8 +127,15 @@ com.nh.canvas
 정본은 `docs/guidelines/RESPONSIBLE_DESIGN.md` 와 `docs/guidelines/USABILITY_REVIEW.md` 이며,
 규칙을 바꿀 때는 양쪽을 함께 고친다.
 
+### 컨테이너로 띄우기
+
+`backend/Dockerfile` · 루트 `docker-compose.yml` · `scripts/build-release.mjs`(폐쇄망 반입 번들)가 있다.
+절차는 [DEPLOYMENT.md](../docs/architecture/DEPLOYMENT.md) 4-1절 참고.
+
+**`pom.xml` 을 고치면 Dockerfile 의 `dependency:go-offline` 레이어 캐시와 반입 번들의
+`dependencies.txt` 가 따라가야 한다.** 의존성을 추가·제거하면 반입 번들을 다시 만든다.
+
 ### 아직 없는 것
 
-- **Dockerfile / compose / 폐쇄망 반입 번들** — 다른 작업 갈래에서 다룬다.
 - **PDF·PNG Export** — 렌더러가 필요하고 포맷 우선순위가 미결이다. 현재 지원은 ZIP(화면별 HTML) 하나.
 - **통합 테스트** — 단위 테스트만 있다. 실 DB 를 띄운 수동 확인은 마쳤다.

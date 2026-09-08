@@ -142,7 +142,7 @@ AC 전문 정본: [02_USER_STORIES_AC.md](개발문서/02_USER_STORIES_AC.md)
 |---|---|---|
 | 설계 | ✅ | 렌즈 정본 [USABILITY_REVIEW.md](docs/guidelines/USABILITY_REVIEW.md) · US-034 · API 3종 |
 | 프로토타입 검증 | ⬜ 미착수 | — |
-| 운영 구현 | ⬜ 미착수 | ❓ 티켓 미발행. 인프라·LLM endpoint 협의 대기 |
+| 운영 구현 | 🟡 백엔드 완료 | 검토 실행·조회·결정 3종. 입력(기획안+전 화면+의견 전문)은 서버가 DB 에서 조립하고 상한 초과 시 413 이다. 인용은 선언한 출처와 대조한 뒤 실패하면 전체와 다시 맞춰 출처를 바로잡고, 살아남은 것이 없으면 지적을 버린다. 기획안은 `versions.proposal` 에 남는다. backend/ 구현 (2026-09-08). PostgreSQL 기동·API 호출까지 확인. 프론트엔드(Vue 3)는 미착수 |
 
 ## 9. 설계 판단 기록
 
