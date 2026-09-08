@@ -8,12 +8,12 @@ import path from 'path';
  * 선택지 정본은 registry.json이고, 각 시스템에서 읽는 것은
  * _ds_manifest.json의 tokens[]·templates[] 두 개뿐이다.
  *
- * naru-bank만 갖고 있는 tokens.json에는 의존하지 않는다 —
+ * allone-bank만 갖고 있는 tokens.json에는 의존하지 않는다 —
  * Claude Design export마다 있을 수도 없을 수도 있어서다.
  *
  * 주의: 자산의 실체는 design-systems/README.md를 볼 것.
- * naru-bank는 UI 라벨이 "올원뱅크"지만 실제로는 창작 브랜드(teal, 로고 없음)이고,
- * nh-ibz는 색만 실제 NH이며 로고·폰트·아이콘은 대체재다.
+ * allone-bank는 올원뱅크에서 UX 패턴만 가져왔고 색(teal)·로고는 실제 CI가 아닌 대체재이며,
+ * nh-ibz는 색만 실제 NH이고 로고·폰트·아이콘은 대체재다.
  */
 
 export interface DesignSystemMeta {

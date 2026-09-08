@@ -1,9 +1,9 @@
 {
-  "default": "naru-bank",
+  "default": "allone-bank",
   "systems": [
     {
-      "id": "naru-bank",
-      "dir": "naru-bank",
+      "id": "allone-bank",
+      "dir": "allone-bank",
       "label": "올원뱅크 (모바일 앱)",
       "surface": "mobile",
       "canvas": "360x780",

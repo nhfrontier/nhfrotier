@@ -21,11 +21,11 @@
 
   /* Template 화면에서 넘어온 선택을 그대로 보여준다. 루트의 data-ds 하나로 갈아 끼운다. */
   [data-for] { display:none; }
-  [data-ds="naru-bank"] [data-for="naru-bank"],
+  [data-ds="allone-bank"] [data-for="allone-bank"],
   [data-ds="nh-ibz"] [data-for="nh-ibz"],
   [data-ds="doc"] [data-for="doc"] { display:block; }
   .chips { gap:8px;flex-wrap:wrap; }
-  [data-ds="naru-bank"] .chips[data-for="naru-bank"],
+  [data-ds="allone-bank"] .chips[data-for="allone-bank"],
   [data-ds="nh-ibz"] .chips[data-for="nh-ibz"],
   [data-ds="doc"] .chips[data-for="doc"] { display:flex; }
 
@@ -71,7 +71,7 @@
     </div>
   </header>
 
-  <main id="brief-root" data-ds="naru-bank" data-tpl="" style="max-width:1376px;margin:0 auto;padding:32px;">
+  <main id="brief-root" data-ds="allone-bank" data-tpl="" style="max-width:1376px;margin:0 auto;padding:32px;">
 
     <div style="margin-bottom:20px;">
       <a href="template.html" style="font-size:12.5px;color:#94a3b8;">← Template</a>
@@ -84,7 +84,7 @@
       <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:16px;">
 
         <div class="card" style="padding:16px 18px;">
-          <div data-for="naru-bank">
+          <div data-for="allone-bank">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
               <span style="font-size:14px;font-weight:700;color:#0f172a;">올원뱅크</span>
               <span class="tag" style="color:#475569;background:#f1f5f9;">모바일 앱</span>
@@ -128,7 +128,7 @@
         <div class="card">
           <h2>참고 템플릿</h2>
           <p class="hint">백지에서 시작하지 않습니다. 가까운 것을 고르면 그 구성을 바탕으로 만듭니다.</p>
-          <div class="chips" data-for="naru-bank">
+          <div class="chips" data-for="allone-bank">
             <button type="button" class="chip" data-tpl="app-screen">모바일 앱 화면</button>
           </div>
           <div class="chips" data-for="nh-ibz">
@@ -197,7 +197,7 @@
     var params = new URLSearchParams(location.search);
     var doc = params.get('doc');
 
-    root.setAttribute('data-ds', doc ? 'doc' : (params.get('ds') === 'nh-ibz' ? 'nh-ibz' : 'naru-bank'));
+    root.setAttribute('data-ds', doc ? 'doc' : (params.get('ds') === 'nh-ibz' ? 'nh-ibz' : 'allone-bank'));
     root.setAttribute('data-tpl', doc || params.get('tpl') || '');
 
     var chips = document.querySelectorAll('.chip');
