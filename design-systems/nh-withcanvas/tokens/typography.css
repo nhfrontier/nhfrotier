@@ -1,0 +1,31 @@
+:root{
+  --font-sans:"NanumSquareNeo","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --font-mono:"SFMono-Regular",Menlo,Consolas,monospace;
+
+  /* 크기 — 비디자이너가 읽는 화면이라 본문을 15px로 올렸다 */
+  --fs-display:30px;   --lh-display:1.28;   /* @kind font */
+  --fs-h1:23px;        --lh-h1:1.35;        /* @kind font */
+  --fs-h2:18px;        --lh-h2:1.4;         /* @kind font */
+  --fs-h3:16px;        --lh-h3:1.45;        /* @kind font */
+  --fs-body:15px;      --lh-body:1.62;      /* @kind font */
+  --fs-body-sm:14px;   --lh-body-sm:1.6;    /* @kind font */
+  --fs-label:13px;     --lh-label:1.45;     /* @kind font */
+  --fs-caption:12px;   --lh-caption:1.45;   /* @kind font */
+
+  --fw-light:300;    /* @kind font */
+  --fw-regular:400;  /* @kind font */
+  --fw-bold:700;     /* @kind font */
+  --fw-heavy:800;    /* @kind font */
+
+  --tracking-tight:-.02em;   /* @kind font */
+  --tracking-normal:-.005em; /* @kind font */
+  --tracking-wide:.04em;     /* @kind font */
+
+  /* 시맨틱 롤 */
+  --type-page-title:var(--fw-heavy) var(--fs-h1)/var(--lh-h1) var(--font-sans);   /* @kind font */
+  --type-section:var(--fw-bold) var(--fs-h2)/var(--lh-h2) var(--font-sans);        /* @kind font */
+  --type-card-title:var(--fw-bold) var(--fs-h3)/var(--lh-h3) var(--font-sans);     /* @kind font */
+  --type-body:var(--fw-regular) var(--fs-body)/var(--lh-body) var(--font-sans);    /* @kind font */
+  --type-label:var(--fw-bold) var(--fs-label)/var(--lh-label) var(--font-sans);    /* @kind font */
+  --type-caption:var(--fw-regular) var(--fs-caption)/var(--lh-caption) var(--font-sans); /* @kind font */
+}

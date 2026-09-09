@@ -1,0 +1,91 @@
+<!-- @dsCard group="위드캔버스" viewport="1000x900" name="팀 공유용 시연 문서" subtitle="무엇을 보는 것인지 · 역할 3명 · 화면 10장 링크" -->
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>NH 위드캔버스 — 팀 공유용</title>
+<link rel="stylesheet" href="../../styles.css">
+<style>
+body{background:var(--surface-canvas)}
+.wrap{max-width:900px;margin:0 auto;padding:var(--sp-16) var(--sp-8) var(--sp-20)}
+.mark{width:34px;height:34px;border-radius:var(--r-sm);background:var(--white);border:1px solid var(--border-default);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.mark img{width:24px;height:24px;object-fit:contain}
+.lede{font-size:17px;line-height:1.75;color:var(--text-body);margin-top:var(--sp-4)}
+h2{margin:var(--sp-16) 0 var(--sp-5)}
+.card{background:var(--surface-card);border:1px solid var(--border-hairline);border-radius:var(--r-card);padding:var(--sp-5)}
+.roles{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sp-4)}
+.role b{display:block;font-size:var(--fs-h3);color:var(--text-title);margin-bottom:6px}
+.role p{font:var(--type-caption);color:var(--text-muted);line-height:1.7}
+.steps{display:flex;flex-direction:column;gap:var(--sp-2)}
+.step{display:flex;align-items:flex-start;gap:var(--sp-4);background:var(--surface-card);border:1px solid var(--border-hairline);border-radius:var(--r-card);padding:var(--sp-4) var(--sp-5);text-decoration:none}
+.step:hover{border-color:var(--border-ai);text-decoration:none}
+.num{width:26px;height:26px;border-radius:var(--r-pill);background:var(--blue-50);color:var(--nh-blue);font:var(--type-caption);font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.step b{display:block;font-size:var(--fs-h3);color:var(--text-title);margin-bottom:3px}
+.step p{font:var(--type-caption);color:var(--text-muted);line-height:1.7}
+.who{margin-left:auto;flex-shrink:0;font:var(--type-caption);font-weight:700;padding:3px 9px;border-radius:var(--r-pill)}
+.w-plan{background:var(--info-bg);color:var(--info-fg)}
+.w-dev{background:var(--ok-bg);color:var(--ok-fg)}
+.w-comp{background:var(--warn-bg);color:var(--warn-fg)}
+.changes{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-4)}
+.changes ul{margin:0;padding-left:18px}
+.changes li{font-size:var(--fs-body-sm);line-height:1.9;color:var(--text-body)}
+.foot{margin-top:var(--sp-16);padding-top:var(--sp-6);border-top:1px solid var(--border-default);font:var(--type-caption);color:var(--text-faint);line-height:1.8}
+</style></head><body>
+<div class="wrap">
+  <div style="display:flex;align-items:center;gap:12px">
+    <span class="mark"><img src="../../assets/nh-symbol-bank.jpg" alt="NH"></span>
+    <span style="font:var(--type-label);color:var(--text-muted)">NH농협은행 · 사내 협업 시스템 시안</span>
+  </div>
+
+  <h1 style="font-size:34px;margin-top:var(--sp-6)">기획과 개발이 같은 화면을 보고 정합니다</h1>
+  <p class="lede">
+    지금은 기획서에 글로 적고, 회의에서 말로 설명하고, 개발이 다르게 이해한 채로 만들어집니다.
+    위드캔버스는 그 사이에 <b>화면 한 장</b>을 놓습니다. 기획자가 화면을 만들고, 개발·현업이 그 화면 위 어색한 곳을 손가락으로 짚듯 눌러 한 줄 남기고,
+    기획자가 하나씩 반영을 결정합니다. 결정한 것과 하지 않은 것이 이유와 함께 남습니다.
+  </p>
+
+  <h2>보는 사람에 따라 화면이 다릅니다</h2>
+  <div class="roles">
+    <div class="card role"><b>기획 담당자</b><p>화면을 만들고, 모인 의견을 반영·보류·반려로 결정합니다. 판을 만드는 권한이 이 사람에게만 있습니다.</p></div>
+    <div class="card role"><b>개발 담당자</b><p>구현할 수 있는지, 빠진 상태가 없는지 짚습니다. 결정 버튼이 보이지 않습니다.</p></div>
+    <div class="card role"><b>준법 담당자</b><p>담당자가 스스로 판단하지 않고 넘긴 지적만 봅니다. 화면을 고치지 않고 판단만 남깁니다.</p></div>
+  </div>
+
+  <h2>화면 10장 — 눌러보실 수 있습니다</h2>
+  <div class="steps">
+    <a class="step" href="index.html#list"><span class="num">1</span><span><b>홈 — 내가 맡은 일</b><p>메뉴가 없습니다. 지금 할 일 한 줄과 목록 하나뿐입니다.</p></span><span class="who w-plan">기획</span></a>
+    <a class="step" href="index.html#new"><span class="num">2</span><span><b>새 프로젝트 만들기</b><p>이름·무엇을·누가 함께·언제까지, 네 가지만 정하면 열립니다.</p></span><span class="who w-plan">기획</span></a>
+    <a class="step" href="index.html#files"><span class="num">3</span><span><b>참고자료 올리기</b><p>기획서·화면정의서·API 명세를 올립니다. 어느 자료를 AI가 읽을지 스위치로 정합니다.</p></span><span class="who w-plan">기획</span></a>
+    <a class="step" href="index.html#invite"><span class="num">4</span><span><b>검토자 초대·알림</b><p>사람마다 물어볼 것이 다릅니다. 알림 문구에 그 말이 그대로 들어갑니다.</p></span><span class="who w-plan">기획</span></a>
+    <a class="step" href="index.html#newtask"><span class="num">5</span><span><b>세 가지만 물어보기</b><p>빈 프롬프트 칸을 주지 않습니다. 무엇을·누가 보게·어떤 느낌, 고르기만 하면 됩니다.</p></span><span class="who w-plan">기획</span></a>
+    <a class="step" href="index.html#workspace"><span class="num">6</span><span><b>협업 캔버스</b><p>모드는 보기·짚기 둘뿐입니다. 짚은 자리에 번호 핀이 남습니다.</p></span><span class="who w-plan">기획</span></a>
+    <a class="step" href="index.html#reviewer"><span class="num">7</span><span><b>개발 담당자 화면</b><p>짚은 요소의 태그·연결 화면·기획서 근거가 함께 보이고, 구현 관점 태그를 달아 남깁니다.</p></span><span class="who w-dev">개발</span></a>
+    <a class="step" href="index.html#decide"><span class="num">8</span><span><b>한 장씩 결정하기</b><p>한 화면에 한 장만. 키보드 1·2·3·4로도 됩니다. 목록으로 늘어놓지 않습니다.</p></span><span class="who w-plan">기획</span></a>
+    <a class="step" href="index.html#compliance"><span class="num">9</span><span><b>준법 검토</b><p>넘겨받은 지적만. 근거 규정과 판단 이유를 적어 담당자에게 돌려보냅니다.</p></span><span class="who w-comp">준법</span></a>
+    <a class="step" href="index.html#changes"><span class="num">10</span><span><b>무엇이 바뀌었나</b><p>두 판을 겹쳐 손잡이로 봅니다. 바뀐 곳마다 누구 의견이었는지가 붙습니다.</p></span><span class="who w-plan">기획</span></a>
+  </div>
+
+  <h2>지금 목업에서 달라진 점</h2>
+  <div class="changes">
+    <div class="card">
+      <b style="display:block;font:var(--type-label);color:var(--text-title);margin-bottom:8px">구조</b>
+      <ul>
+        <li>상단 전역 탭 5개 → 없앰</li>
+        <li>대시보드 카드 6블록 → 할 일 한 줄 + 목록</li>
+        <li>검토 카드 목록 → 한 장씩 결정</li>
+        <li>역할별로 보이는 버튼이 다름</li>
+      </ul>
+    </div>
+    <div class="card">
+      <b style="display:block;font:var(--type-label);color:var(--text-title);margin-bottom:8px">말</b>
+      <ul>
+        <li>Version 4 → 4번째 판</li>
+        <li>History → 기록 / Export → 내려받기</li>
+        <li>DRAFT·ACTIVE·REVIEW → 자료 준비·초안 만들기·의견 모으기</li>
+        <li>선택/미리보기 모드 → 짚기 / 보기</li>
+      </ul>
+    </div>
+  </div>
+
+  <p class="foot">
+    이 문서와 화면은 검토용 시안입니다. 캔버스 안의 화면은 정적 목업이며, 실제 제품에서는 AI가 만든 HTML을 샌드박스 iframe으로 격리해 렌더링합니다.<br>
+    색은 농협 CI 전용색상(NH Blue #005CA9 · Yellow #FBBA00 · Green #04A64B)을 따르고, 서체는 나눔스퀘어네오입니다.
+  </p>
+</div>
+</body></html>

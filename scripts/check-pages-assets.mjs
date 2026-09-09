@@ -15,7 +15,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 /** Pages 가 서빙하는 정적 HTML 디렉터리. 늘리려면 여기에 추가한다. */
-const SERVED_DIRS = ["mockup-site"];
+const SERVED_DIRS = ["mockup-site", "design-systems/nh-withcanvas/ui_kits"];
 
 const REPO = process.cwd();
 

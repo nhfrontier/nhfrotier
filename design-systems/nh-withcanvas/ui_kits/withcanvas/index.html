@@ -1,0 +1,52 @@
+<!-- @dsCard group="위드캔버스" viewport="1440x900" name="위드캔버스 — 클릭스루" subtitle="새 프로젝트 → 자료 → 초대 → 캔버스 → 결정 → 판 비교 · 개발자·준법 화면 포함" -->
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>NH 위드캔버스</title>
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/lucide@0.454.0/dist/umd/lucide.min.js"></script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>html,body{height:100%}#root{height:100vh;overflow:auto}</style>
+</head><body>
+<div id="root"></div>
+<script type="text/babel" src="Shared.jsx"></script>
+<script type="text/babel" src="ProjectListScreen.jsx"></script>
+<script type="text/babel" src="NewProjectScreen.jsx"></script>
+<script type="text/babel" src="FilesScreen.jsx"></script>
+<script type="text/babel" src="InviteScreen.jsx"></script>
+<script type="text/babel" src="NewTaskScreen.jsx"></script>
+<script type="text/babel" src="WorkspaceScreen.jsx"></script>
+<script type="text/babel" src="DecideScreen.jsx"></script>
+<script type="text/babel" src="ChangesScreen.jsx"></script>
+<script type="text/babel" src="ReviewerScreen.jsx"></script>
+<script type="text/babel" src="ComplianceScreen.jsx"></script>
+<script type="text/babel">
+const SCREENS = {
+  list:      p => <ProjectListScreen {...p} />,
+  new:       p => <NewProjectScreen {...p} />,
+  files:     p => <FilesScreen {...p} />,
+  invite:    p => <InviteScreen {...p} />,
+  newtask:   p => <NewTaskScreen {...p} />,
+  workspace: p => <WorkspaceScreen {...p} />,
+  decide:    p => <DecideScreen {...p} />,
+  changes:   p => <ChangesScreen {...p} />,
+  reviewer:  p => <ReviewerScreen {...p} />,
+  compliance:p => <ComplianceScreen {...p} />
+};
+function App(){
+  const initial = (location.hash || "").replace("#","");
+  const [route,setRoute] = React.useState(SCREENS[initial] ? initial : "list");
+  const [role,setRole] = React.useState(initial==="reviewer" ? "reviewer" : "maker");
+  const go = r => { setRoute(r); history.replaceState(null,"",`#${r}`); };
+  const toggleRole = () => { const next = role==="maker"?"reviewer":"maker"; setRole(next); go(next==="maker"?"list":"reviewer"); };
+  React.useEffect(()=>{
+    const onHash = () => { const r=(location.hash||"").replace("#",""); if(SCREENS[r]) setRoute(r); };
+    window.addEventListener("hashchange",onHash); return ()=>window.removeEventListener("hashchange",onHash);
+  },[]);
+  React.useEffect(()=>{ if(window.lucide) window.lucide.createIcons({nameAttr:"data-lucide",attrs:{"stroke-width":1.75}}); });
+  const render = SCREENS[route] || SCREENS.list;
+  return render(route==="list" ? {go,role,onRole:toggleRole} : {go});
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body></html>

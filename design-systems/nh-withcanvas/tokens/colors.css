@@ -1,0 +1,68 @@
+:root{
+  /* ── NH 공식 전용색상 (CI 규격서 · PANTONE 정본) ───────────────── */
+  --nh-blue:#005CA9;          /* PANTONE 300 C */
+  --nh-yellow:#FBBA00;        /* PANTONE 1235 C — 심볼마크 색 */
+  --nh-green:#04A64B;         /* PANTONE 354 C */
+  --nh-light-green:#A2C617;   /* PANTONE 368 C */
+
+  /* NH Blue ramp — 파생값. 정본은 --nh-blue 하나뿐이다 */
+  --blue-50:#EDF4FA;--blue-100:#D6E6F3;--blue-200:#A9C9E4;--blue-300:#6FA4D0;
+  --blue-500:#005CA9;--blue-600:#004E90;--blue-700:#003D71;
+
+  /* ── 잉크 / 뉴트럴 (기본 골격) ────────────────────────────────── */
+  --ink-900:#14181C;--ink-800:#22282E;--ink-700:#333B44;--ink-600:#4A545F;
+  --ink-500:#6A7480;--ink-400:#8D97A3;--ink-300:#B6BEC7;--ink-200:#D8DDE3;
+  --ink-100:#E9ECEF;--ink-50:#F4F5F7;--white:#FFFFFF;
+
+  /* ── 상태색 ─────────────────────────────────────────────────── */
+  --ok-fg:#04A64B;--ok-bg:#EAF7EF;--ok-border:#BFE5CE;
+  --warn-fg:#A15C00;--warn-bg:#FFF6E0;--warn-border:#F5D999;
+  --danger-fg:#C0392B;--danger-bg:#FDEDEA;--danger-border:#F3C4BC;
+  --info-fg:#005CA9;--info-bg:#EDF4FA;--info-border:#C4DBEE;
+
+  /* ── 시맨틱: 서피스 ───────────────────────────────────────────
+     캔버스의 시안이 주인공이다. 앱 서피스는 물러서고, 시안만 하얗게 뜬다 */
+  --surface-canvas:#F4F5F7;        /* 앱 배경 */
+  --surface-card:#FFFFFF;          /* 카드·패널 */
+  --surface-sunken:#EDEFF2;        /* 캔버스 무대(시안이 놓이는 바닥) */
+  --surface-bar:#FFFFFF;           /* 상단바 */
+  --surface-ai:#F0F4F8;            /* AI가 말하는 자리 — 사람 카드와 톤으로 구분 */
+  --surface-ai-strong:#E4EBF2;     /* AI 라벨 배지 */
+  --surface-decided:#FFFAEC;       /* 사람이 결정한 자리 — NH Yellow 계열 */
+  --overlay-scrim:rgba(20,24,28,.42);
+
+  /* ── 시맨틱: 텍스트 ─────────────────────────────────────────── */
+  --text-title:var(--ink-900);
+  --text-body:var(--ink-700);
+  --text-muted:var(--ink-500);
+  --text-faint:var(--ink-400);
+  --text-on-accent:#FFFFFF;
+  --text-link:var(--nh-blue);
+  --text-link-hover:var(--blue-700);
+
+  /* ── 시맨틱: 보더 / 구분선 ──────────────────────────────────── */
+  --border-hairline:var(--ink-100);
+  --border-default:var(--ink-200);
+  --border-strong:var(--ink-300);
+  --border-focus:var(--nh-blue);
+  --border-ai:var(--blue-300);
+  --border-decided:var(--nh-yellow);
+
+  /* ── 시맨틱: 액션 ───────────────────────────────────────────── */
+  --action-primary:var(--nh-blue);
+  --action-primary-hover:var(--blue-600);
+  --action-primary-press:var(--blue-700);
+  --action-quiet-bg:var(--white);
+  --action-quiet-hover:var(--ink-50);
+  --action-disabled-bg:var(--ink-100);
+  --action-disabled-fg:var(--ink-400);
+  --action-compliance:var(--nh-yellow);      /* 준법에 넘기기 — 사람 손을 떠나는 액션 */
+  --action-compliance-fg:#7A5A00;
+
+  /* ── 캔버스 전용 ────────────────────────────────────────────── */
+  --pin-bg:var(--nh-blue);--pin-fg:#FFFFFF;
+  --pick-outline:var(--nh-blue);             /* 짚기 모드 선택 테두리 */
+  --pick-fill:rgba(0,92,169,.06);
+  --unresolved-outline:var(--danger-fg);     /* 아직 결정되지 않은 지적 */
+  --diff-bg:#FFF6E0;--diff-border:var(--nh-yellow);
+}

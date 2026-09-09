@@ -62,11 +62,22 @@
 
 ### 디자인 시스템 레지스트리 (`design-systems/`) — 패키지가 아니라 자산 계층
 - **무엇**: 저장소 루트의 `design-systems/` 아래 폴더 하나가 디자인 시스템 하나다. 선택지 정본은 `registry.json`이고, 코드가 읽는 것은 각 시스템의 `_ds_manifest.json` 안 `tokens[]`(컬러·타이포·간격 토큰)와 `templates[]`(완성 화면 목록) 두 개뿐이다. 소비 지점은 `mockup/lib/canvas/designSystem.ts` 한 파일이다.
-- **왜 필요**: 화면 생성 프롬프트에 넣을 디자인 토큰이 **하나로 하드코딩**돼 있었다. 그 하나가 가상 은행(나루뱅크, teal)이라 결과물을 "NH 디자인"이라 부를 수 없었다. 실제 NH 컬러를 쓰는 기업인터넷뱅킹 시스템이 들어오면서, 하나를 갈아끼우는 대신 **고를 수 있게** 만들었다.
+- **왜 필요**: 화면 생성 프롬프트에 넣을 디자인 토큰이 **하나로 하드코딩**돼 있었다. 그 하나가 가상 은행(나루뱅크, teal)이라 결과물을 "NH 디자인"이라 부를 수 없었다. 실제 NH 컬러를 쓰는 기업인터넷뱅킹 시스템이 들어오면서, 하나를 갈아끼우는 대신 **고를 수 있게** 만들었다. ~~나루뱅크(`naru-bank`)~~ → **2026-09-08 `nh-allonebank`로 교체.** 실제 올원뱅크 앱 화면 기반 아트보드가 들어오면서 창작 브랜드 대체재를 걷어냈다.
 - **왜 갈아끼우지 않았는지**: 모바일 앱(360×780 · 하단 내비)과 기업 웹(1200px · GNB)은 표면이 달라 한쪽으로 통일할 수 없다. 만들려는 화면이 어느 쪽인지는 사용자만 안다.
-- **왜 `_ds_manifest.json`이 정본인지**: Claude Design export 두 벌이 모두 이 파일에 `{name, value, kind}` 형태의 동일한 토큰 배열을 갖고 있다. 반면 사람이 읽기 좋은 `tokens.json`은 `naru-bank`에만 있다. 공통으로 있는 쪽을 읽어야 새 시스템을 넣을 때 변환 작업이 생기지 않는다.
+- **왜 `_ds_manifest.json`이 정본인지**: Claude Design export 두 벌이 모두 이 파일에 `{name, value, kind}` 형태의 동일한 토큰 배열을 갖고 있다. 반면 사람이 읽기 좋은 `tokens.json`은 `nh-ibz`에만 있다. 공통으로 있는 쪽을 읽어야 새 시스템을 넣을 때 변환 작업이 생기지 않는다. 디자인 시스템 export가 아니라 **아트보드만 있는 경우**(`nh-allonebank`)는 manifest를 직접 짓되 `tokens[]`를 아트보드 실사용 값에서 추출하고 `source.kind`에 `artboard-derived`를 남긴다.
 - **비용**: 0. 런타임 의존성이 아니라 읽기 전용 자산이며, `fs.readFileSync` + 캐시로 끝난다.
 - **주의**: `<id>/uploads/` 는 커밋하지 않는다. 디자인 시스템을 만들 때 넣은 **실제 서비스 화면 캡처**라, 루트가 GitHub Pages로 공개 서빙되는 이 저장소에서는 그대로 공개 URL이 된다. 자산의 실체와 대체재 목록은 `design-systems/README.md`.
+- **레지스트리에 넣지 않는 시스템도 있다**: `nh-withcanvas`(2026-09-08 추가)는 폴더만 두고 `registry.json`에 등재하지 않았다. 앞의 둘은 *AI가 만들어 줄 고객 화면*의 재료지만, 이것은 *이 제품 자신의 UI*다. 등재하면 생성 선택지에 떠서 고객용 계좌 신청 화면이 사내 협업 툴 스타일로 뽑힌다. `designSystem.ts`는 `registry.json`만 읽고 디렉터리를 훑지 않으므로 미등재 폴더는 무해하다.
+
+### React 18 + Babel standalone + Lucide (CDN) — `mockup-site/` 화면구성 전용
+- **무엇**: 공유 링크의 화면구성(`design-systems/nh-withcanvas/ui_kits/withcanvas/`)이 브라우저에서 JSX를 그대로 실행한다. React 18.3.1 · react-dom 18.3.1 · `@babel/standalone` 7.29 · Lucide 0.454 를 unpkg에서 `<script>`로 받고, 화면 10장은 `.jsx` 파일 그대로 `<script type="text/babel" src>`로 읽힌다. 빌드 산출물이 없다.
+- **왜 선택**: 목업 표면의 제약이 "정적 파일이어야 한다"는 것 하나다(Pages가 저장소를 통째로 정적 서빙한다). 번들러를 붙이면 `mockup-site/`에 빌드 단계와 산출물 커밋이 생기고, Claude Design 프로젝트에서 다시 내려받을 때(`/design-sync`) 원본과 산출물이 어긋난다. CDN + 런타임 트랜스파일이면 **export한 `.jsx`를 손대지 않고 그대로 열 수 있다.**
+- **왜 A절 프로토타입(`mockup/`)의 React와 다른 항목인지**: 같은 React지만 다른 표면이다. `mockup/`은 Next.js가 번들하고 npm 의존성으로 관리한다. 이쪽은 `package.json`이 없고 npm 설치 대상도 아니다. 버전을 올릴 곳은 `ui_kits/withcanvas/index.html`의 `<script src>` 한 곳뿐이다.
+- **대가 세 가지**:
+  1. **런타임 트랜스파일**이라 첫 로드가 느리고(`babel.min.js` ~2.7MB) 개발용 React 빌드를 쓴다. 검토용 목업이라 감수한다.
+  2. **`file://`로 열면 빈 화면이다.** Babel이 `.jsx`를 XHR로 읽는데 로컬 파일 간 요청이 CORS로 막힌다. Pages에서는 같은 출처라 정상이다. 로컬 확인은 `python3 -m http.server`로 한다.
+  3. **사내망에서 unpkg·jsdelivr가 막히면 열리지 않는다.** 폰트(나눔스퀘어네오)도 jsDelivr 사본이다. 운영 반입 대상이 아니라 검토용 표면이므로 그대로 두되, 사내 시연이 필요하면 세 파일을 저장소에 받아 상대참조로 바꾸면 된다.
+- **주의**: `index.html`의 `<script>`에 SRI(`integrity`)가 붙어 있다. 버전을 올릴 때 해시를 함께 갱신하지 않으면 스크립트가 로드되지 않고 화면이 비어 버린다.
 
 ---
 

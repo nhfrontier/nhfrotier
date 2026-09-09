@@ -1,0 +1,18 @@
+:root{
+  /* 4px 기준. 여백 넉넉한 쪽으로 기울인다 */
+  --sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-5:20px;--sp-6:24px;
+  --sp-8:32px;--sp-10:40px;--sp-12:48px;--sp-16:64px;--sp-20:80px;
+
+  --gap-inline:var(--sp-2);      /* 버튼·칩 사이 */
+  --gap-stack:var(--sp-3);       /* 목록 항목 사이 */
+  --gap-section:var(--sp-8);     /* 섹션 사이 */
+  --pad-card:var(--sp-5);        /* 카드 내부 */
+  --pad-panel:var(--sp-6);       /* 우측 패널 내부 */
+  --pad-page:var(--sp-10);       /* 본문 좌우 */
+
+  --bar-h:60px;                  /* 상단바 높이 */
+  --panel-w:340px;               /* 우측 협업 패널 */
+  --rail-h:96px;                 /* 하단 화면 필름스트립 */
+  --content-max:1180px;
+  --hit-min:44px;                /* 최소 터치 타겟 */
+}

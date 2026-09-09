@@ -1,0 +1,18 @@
+:root{
+  --r-xs:4px;--r-sm:8px;--r-md:12px;--r-lg:16px;--r-xl:20px;--r-pill:999px;
+  --r-card:var(--r-md);
+  --r-control:var(--r-sm);
+  --r-chip:var(--r-pill);
+
+  --bw-hairline:1px;
+  --bw-emphasis:2px;      /* 선택된 카드·짚은 요소 */
+  --bw-accent-edge:3px;   /* AI 카드 좌측 보더 */
+
+  /* 그림자는 얕게. 떠 있는 것은 시안과 진짜 오버레이뿐 */
+  --sh-flat:none; /* @kind shadow */
+  --sh-card:0 1px 2px rgba(20,24,28,.05);
+  --sh-raised:0 2px 6px rgba(20,24,28,.06),0 8px 24px rgba(20,24,28,.05);
+  --sh-overlay:0 12px 40px rgba(20,24,28,.16);
+  --sh-artboard:0 1px 3px rgba(20,24,28,.08),0 12px 32px rgba(20,24,28,.08);
+  --ring-focus:0 0 0 3px rgba(0,92,169,.22);
+}

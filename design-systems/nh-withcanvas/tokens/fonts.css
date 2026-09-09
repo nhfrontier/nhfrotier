@@ -1,0 +1,7 @@
+/* 나눔스퀘어네오 — 농협 계열 채널의 본문 서체.
+   행내 반입된 정식 폰트 파일이 없어 공개 CDN 사본(jsDelivr / moonspam)을 참조한다.
+   운영 반입 시 사내 경로의 woff2로 src만 교체하면 된다. */
+@font-face{font-family:"NanumSquareNeo";font-style:normal;font-weight:300;font-display:swap;src:url("https://cdn.jsdelivr.net/gh/moonspam/NanumSquareNeo@1.0/NanumSquareNeoTTF-aLt.woff2") format("woff2")}
+@font-face{font-family:"NanumSquareNeo";font-style:normal;font-weight:400;font-display:swap;src:url("https://cdn.jsdelivr.net/gh/moonspam/NanumSquareNeo@1.0/NanumSquareNeoTTF-bRg.woff2") format("woff2")}
+@font-face{font-family:"NanumSquareNeo";font-style:normal;font-weight:700;font-display:swap;src:url("https://cdn.jsdelivr.net/gh/moonspam/NanumSquareNeo@1.0/NanumSquareNeoTTF-cBd.woff2") format("woff2")}
+@font-face{font-family:"NanumSquareNeo";font-style:normal;font-weight:800;font-display:swap;src:url("https://cdn.jsdelivr.net/gh/moonspam/NanumSquareNeo@1.0/NanumSquareNeoTTF-dEb.woff2") format("woff2")}

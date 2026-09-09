@@ -74,6 +74,40 @@ node scripts/check-pages-assets.mjs
 
 ---
 
-## 화면 목록
+## 화면 목록 — 세대가 둘이다
 
-`main.html` 이 진입점이다. 나머지는 거기서 링크된다.
+`main.html` 이 진입점이다. **2026-09-08 부터 진입점이 가리키는 것이 바뀌었다.**
+
+| | 무엇 | 어디 |
+|---|---|---|
+| **현행** | NH 위드캔버스 클릭스루 화면 10장 (React) | `design-systems/nh-withcanvas/ui_kits/withcanvas/index.html` |
+| **이전** | NH뚝딱협업스튜디오 정적 화면 17장 | `mockup-site/*.html` (여기 그대로) |
+
+`main.html` 은 이제 **위드캔버스 진입 문서**다 — 무엇을 보는 것인지, 역할이 왜 셋인지,
+화면 10장이 각각 무엇인지 설명하고 각 항목이 클릭스루의 해당 화면(`index.html#해시`)으로 간다.
+문서 아래쪽 "이전 화면구성" 목록에서 옛 화면 17장을 그대로 열 수 있다.
+
+### 옛 화면 17장을 지우지 않은 이유
+
+개발문서·기능명세·`프로젝트문서.html` 이 그 화면들을 가리키고 있다. 지우면 문서 쪽 링크가 404 가 된다.
+대체된 것이지 폐기된 것이 아니므로 파일로 남기고, 진입점에서만 세대를 구분한다.
+
+### 클릭스루는 `mockup-site/` 밖에 있다
+
+본체가 `design-systems/nh-withcanvas/` 에 있는 것은 그것이 **Claude Design export 원본 위치**이고,
+`styles.css`·`tokens/`·`_ds_bundle.js` 를 킷과 한 벌로 두어야 재동기화(`/design-sync`)가 깨지지 않기 때문이다.
+사본을 만들지 않는다.
+
+그래서 `scripts/check-pages-assets.mjs` 의 `SERVED_DIRS` 에
+`design-systems/nh-withcanvas/ui_kits` 를 추가했다 — 여기도 Pages 로 공개되는 화면이라
+같은 404 검사를 받아야 한다.
+
+### `file://` 로 열면 클릭스루가 빈 화면이다
+
+Babel 이 `.jsx` 를 XHR 로 읽는데 로컬 파일 간 요청은 브라우저가 막는다.
+**Pages 에서는 같은 출처라 그냥 열린다.** 로컬 확인은 서버를 띄워서 한다.
+
+```bash
+python3 -m http.server 8000      # 저장소 루트에서
+# http://127.0.0.1:8000/mockup-site/main.html
+```
